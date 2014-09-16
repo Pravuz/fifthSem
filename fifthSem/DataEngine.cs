@@ -3,36 +3,62 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ScadaCommunicationProtocol;
 
 namespace fifthSem
 {
     class DataEngine
     {
-        // public programvariables (hostname, settings etc):
-        public bool isMaster, hasCom;
-        public string hostname, filename;
-        public int hostId, uptime, tempAlarmHigh, tempAlarmLow;
+        public bool hasCom;
+        public static string hostname, filename;
+        public int hostId, tempAlarmHigh, tempAlarmLow;
+        public const int REQUEST = 0, RECIEVE = 1, PUSH = 2;
 
-        // private classvariables:
-        //mTcpConnection
-        private int sizeOfFile, timeSinceLastBc;
+        private string logFolder = @"%USERPROFILE%\My Documents\Loggs\";
+        private string logFile;
+        private int sizeOfFile, timeSinceLastPush;
+        private ScpHost mScpHost;
 
-        // Constants:
-        // Tables: 
-        // byref tcpClass's list of connections
+        /// <summary>
+        /// constructor
+        /// </summary>
+        public DataEngine() {
+            DateTime d = DateTime.Now;
+            logFile = d.Month.ToString() + d.Year.ToString();
 
-        
-        // private metods:
+            mScpHost = new ScpHost(1);
+            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+            mScpHost.PacketEvent += PacketHandler;
+            hostname = ScpHost.Name;
+
+            mScpHost.Start();
+
+        }
+
+        private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e) {
+            switch (e.Status) { 
+                case ScpConnectionStatus.Master:
+                    break;
+                case ScpConnectionStatus.Slave:
+                    break;
+                case ScpConnectionStatus.Waiting:
+                    break;
+                default:
+                    break;
+            }
+        }
+        private void PacketHandler(object sender, ScpPacketEventArgs e) {
+            
+        }
+
+        private void TimerTask() {
+            
+        }
 
         /// <summary>
         /// Endrer program/klassevariabler basert på om bruker har huket av boks for tilkobling til rs485 (com)
         /// </summary>
         private void isComConnected() { }
-        
-        /// <summary>
-        /// Opens a tcp-connection from the class ______. this connection is kept alive during the lifetime of the program. 
-        /// </summary>
-        private void openTcpConnection() { }
         
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
         /// <returns> True if the operation was a success and vice/versa. </returns>
