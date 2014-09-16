@@ -17,6 +17,17 @@ namespace fifthSem
             InitializeComponent();
         }
 
+        private void btnSetLimits_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void btnSetPri_Click(object sender, EventArgs e)
+        {
+
+        }
+
+
 
      
     }
