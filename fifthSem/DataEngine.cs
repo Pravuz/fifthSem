@@ -12,8 +12,8 @@ namespace fifthSem
     {
         public static string hostname;
         public int hostId, tempAlarmHigh, tempAlarmLow;
-        public enum Type { REQUEST, RECIEVE, PUSH };
-        public enum Mode { MASTER, SLAVE };
+        public enum ScpMode { MASTER, SLAVE, WAITING };
+        public ScpMode ScpStatus;
 
         private string logFile, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
         private int sizeOfFile;
@@ -22,6 +22,8 @@ namespace fifthSem
         //private alarmhost malarmhost;
 
         public DataEngine() {
+            ScpStatus = ScpMode.WAITING;
+
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
 
@@ -41,10 +43,13 @@ namespace fifthSem
 
             switch (e.Status) { 
                 case ScpConnectionStatus.Master:
+                    ScpStatus = ScpMode.MASTER;
                     break;
                 case ScpConnectionStatus.Slave:
+                    ScpStatus = ScpMode.SLAVE;
                     break;
                 case ScpConnectionStatus.Waiting:
+                    ScpStatus = ScpMode.WAITING
                     break;
                 default:
                     break;
