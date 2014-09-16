@@ -52,6 +52,12 @@
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SCP\ScpHost.cs" />
+    <Compile Include="SCP\ScpHost.ScpTcpClient.cs" />
+    <Compile Include="SCP\ScpHost.ScpTcpServer.cs" />
+    <Compile Include="SCP\ScpHost.ScpUdpClient.cs" />
+    <Compile Include="SCP\ScpHost.ScpUdpServer.cs" />
+    <Compile Include="SCP\ScpPackets.cs" />
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
       <LastGenOutput>Resources.Designer.cs</LastGenOutput>
