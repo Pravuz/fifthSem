@@ -18,28 +18,40 @@ namespace fifthSem
         public ScpMode ScpStatus;
         public ComMode ComStatus;
 
-        private string logFile, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
-        private int sizeOfFile;
+        private string logFile, logFilePath, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
+        private long sizeOfFile = 0;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
+        private FileInfo mFile;
         //private alarmhost malarmhost;
 
         public DataEngineService()
         {
+            //service musthave's
             this.ServiceName = "fifthSemDataEngineService";
             this.CanStop = true;
             this.CanPauseAndContinue = true;
             this.AutoLog = true;
 
+            //waiting will be default mode until protocols are initialized.
             ScpStatus = ScpMode.WAITING;
             ComStatus = ComMode.WAITING;
-
+            
+            //logfile init
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
+            logFilePath = logFolder + logFile;
+            mFile = new FileInfo(logFilePath);
+            logFileCheck();
 
+            //creates objects of protocols
             mScpHost = new ScpHost(1);
             mRS485 = new RS485.RS485(); //passing prio later.
         }
+
+        //
+        //ServiceMethods Start
+        //
 
         public static void Main()
         {
@@ -59,17 +71,13 @@ namespace fifthSem
 
             //starts protocols
             mScpHost.Start();
-            mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None);
+            mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
             //todo: start alarmsystem
 
-            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true;
+            mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
-        }
 
-        protected override void OnShutdown()
-        {
-            base.OnShutdown();
-            this.OnStop(); //?
+            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
 
         protected override void OnStop()
@@ -79,6 +87,7 @@ namespace fifthSem
         }
 
         //
+        //ServiceMethods Stop
         //ComEvents Start
         //
 
@@ -144,14 +153,23 @@ namespace fifthSem
             bool success = true;
             try
             {
-                File.AppendText(logFolder + logFile).Write(s);
+                File.AppendText(logFilePath).Write(s);
             }
             catch (Exception e)
             {
                 success = false;
             }
             return success;
-        }        
+        }
+
+        private void logFileCheck() 
+        {
+            mFile.Refresh();
+            if (File.Exists(logFilePath))
+                sizeOfFile = mFile.Length;
+            else
+                File.Create(logFilePath);
+        }
 
     }
 }
