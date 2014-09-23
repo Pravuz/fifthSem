@@ -49,10 +49,10 @@ namespace RS485
     }
     public class TempEventArgs : EventArgs
     {
-        public string temp;
+        public double temp;
         public TempEventArgs(string temp)
         {
-            this.temp = temp;
+            this.temp = Convert.ToDouble(temp);
         }
     }
 
@@ -157,7 +157,7 @@ namespace RS485
 
             // Read temp and remove unwanted data and make sure all of the data is received
             int indexStart, indexStop;
-            string test = "";
+            string temp = "";
             tempData = tempData + Encoding.ASCII.GetString(data);
             if (tempData.Contains(">") & tempData.Contains("\r")) 
             {
@@ -165,8 +165,8 @@ namespace RS485
                 indexStop = tempData.IndexOf("\r");
                 if (indexStart < indexStop)
                 {
-                    test = tempData.Substring(1 + indexStart, indexStop - indexStart - 1);
-                    if (null != TempHandler) TempHandler(this, new TempEventArgs(test));
+                    temp = tempData.Substring(1 + indexStart, indexStop - indexStart - 1);
+                    if (null != TempHandler) TempHandler(this, new TempEventArgs(temp));
                     tempData = "";
                 }
                 else
