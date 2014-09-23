@@ -9,13 +9,12 @@ using System.IO;
 
 namespace ScadaCommunicationProtocol
 {
-    public enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
-    public delegate void ScpInternalPacketEventHandler(object sender, ScpInternalPacketEventArgs e);
-    public class ScpInternalPacketEventArgs : EventArgs
+    public delegate void ScpInternalPacketEventHandler(object sender, ScpPacketEventArgs e);
+    public class ScpPacketEventArgs : EventArgs
     {
         public ScpPacket Packet;
         public ScpPacket Response;
-        public ScpInternalPacketEventArgs(ScpPacket Packet)
+        public ScpPacketEventArgs(ScpPacket Packet)
         {
             this.Packet = Packet;
             Response = null;
@@ -23,6 +22,7 @@ namespace ScadaCommunicationProtocol
     }
     public abstract class ScpPacket
     {
+        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
         private static int newId = 0;
         public static int GetId()
         {
@@ -55,13 +55,6 @@ namespace ScadaCommunicationProtocol
         public bool IsResponse()
         {
             return (type >= 50) & (type < 100);
-        }
-        public ScpPacketTypes Type
-        {
-            get
-            {
-                return (ScpPacketTypes)type;
-            }
         }
         public ScpPacket()
         {
@@ -162,6 +155,10 @@ namespace ScadaCommunicationProtocol
         {
             return Encoding.ASCII.GetBytes(hostname);
         }
+        public override string ToString()
+        {
+            return "ScpRegRequest - Hostname: " + hostname;
+        }
     }
     public class ScpRegResponse : ScpPacket
     {
@@ -188,6 +185,10 @@ namespace ScadaCommunicationProtocol
             byte[] payload = new byte[1];
             payload[0] = (byte)(ok ? 1 : 0);
             return payload;
+        }
+        public override string ToString()
+        {
+            return "ScpRegResponse - OK: " + ok.ToString();
         }
     }
     public class ScpLogFileRequest : ScpPacket
@@ -216,7 +217,7 @@ namespace ScadaCommunicationProtocol
         }
         public override string ToString()
         {
-            return "Slave filesize: " + fileSize.ToString();
+            return "ScpLogFileRequest - Filesize: " + fileSize.ToString();
         }
     }
     public class ScpLogFileResponse : ScpPacket
@@ -255,11 +256,11 @@ namespace ScadaCommunicationProtocol
         {
             if (file == null || file.Length == 0)
             {
-                return "No file needed";
+                return "ScpLogFileResponse - No file needed";
             }
             else
             {
-                return "Master filesize: " + file.Length.ToString();
+                return "ScpLogFileResponse - Master filesize: " + file.Length.ToString();
             }
         }
     }
@@ -291,7 +292,7 @@ namespace ScadaCommunicationProtocol
         }
         public override string ToString()
         {
-            return "Temp: " + temp.ToString();
+            return "ScpTempBroadcast - Temp: " + temp.ToString();
         }
     }
     public class ScpAlarmBroadcast : ScpPacket
@@ -322,7 +323,7 @@ namespace ScadaCommunicationProtocol
         }
         public override string ToString()
         {
-            return "Alarm!";
+            return "ScpAlarmBroadcast";
         }
     }
     public class ScpAlarmLimitBroadcast : ScpPacket
@@ -364,7 +365,7 @@ namespace ScadaCommunicationProtocol
         }
         public override string ToString()
         {
-            return "Alarmlimit LoLo: " + loLoLimit.ToString()+
+            return "ScpAlarmLimitBroadcast - LoLo: " + loLoLimit.ToString()+
                    " Lo: " + loLimit.ToString()+
                    " Hi: " + hiLimit.ToString()+
                    " HiHi: " + hiHiLimit.ToString();

@@ -69,12 +69,15 @@ namespace ScadaCommunicationProtocol
                         udpClient.Send(bytes, bytes.Length, new IPEndPoint(broadcastAddress, ScpHost.UdpServerPort));
                         bytes = udpClient.Receive(ref ipEndPoint);
                         reply = new ScpMasterDiscoverReply(bytes);
-                        reply.MasterIPEndPoint = ipEndPoint;
+                        if (reply.FromHostName != ScpHost.Name) // Make sure we ignore if reply happens to be from same as sender
+                        {
+                            reply.MasterIPEndPoint = ipEndPoint;
 
-                        // Keep using only this broadcast address for subsequent broadcasts
-                        broadcastAddresses.Clear();
-                        broadcastAddresses.Add(broadcastAddress);
-                        return true;
+                            // Keep using only this broadcast address for subsequent broadcasts
+                            broadcastAddresses.Clear();
+                            broadcastAddresses.Add(broadcastAddress);
+                            return true;
+                        }
                     }
                     catch
                     {

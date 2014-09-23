@@ -13,21 +13,8 @@ namespace ScadaCommunicationProtocol
 
     public delegate void MessageEventHandler(object sender, MessageEventArgs e);
     public delegate void ScpConnectionStatusEventHandler(object sender, ScpConnectionStatusEventArgs e);
-    public delegate void PacketEventHandler(object sender, ScpInternalPacketEventArgs e);
+    public delegate void PacketEventHandler(object sender, ScpPacketEventArgs e);
     public delegate void SlaveConnectionEventHandler(object sender, SlaveConnectionEventArgs e);
-    public class PacketEventArgs : EventArgs
-    {
-        public byte[] Packet;
-        public byte[] Response;
-        public bool IsBroadcast;
-        public PacketEventArgs(byte[] Packet, bool Broadcast)
-        {
-            this.Packet = Packet;
-            this.IsBroadcast = Broadcast;
-            Response = null;
-        }
-    }
-
     public class SlaveConnectionEventArgs : EventArgs
     {
         public bool Connected;
@@ -147,7 +134,7 @@ namespace ScadaCommunicationProtocol
                 MessageEvent(this, e);
             }
         }
-        private void OnPacketEvent(object sender, ScpInternalPacketEventArgs e)
+        private void OnPacketEvent(object sender, ScpPacketEventArgs e)
         {
             if (PacketEvent != null)
             {

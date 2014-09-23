@@ -44,7 +44,7 @@ namespace ScadaCommunicationProtocol
             }
 
             // Triggered when Master receives a message from a slave
-            private void OnPacketEvent(object sender, ScpInternalPacketEventArgs e)
+            private void OnPacketEvent(object sender, ScpPacketEventArgs e)
             {
                 if (e.Packet.IsBroadcast()) // Broadcast the packet to other slaves
                 {
@@ -54,13 +54,6 @@ namespace ScadaCommunicationProtocol
                 if (PacketEvent != null)
                 {
                     PacketEvent(this, e);
-                    /*if (e.Packet.Type == ScpTcpPacketTypes.Request && e.Response != null)
-                    {
-                        // Create the Response packet
-                        ScpTcpPacket response = e.Response;
-                        response.ID = e.Packet.ID;
-                        BroadcastAsync(response);
-                    }*/
                 }
             }
             public ScpTcpServer()
@@ -151,7 +144,7 @@ namespace ScadaCommunicationProtocol
                 }
             }
 
-            private async void scpClient_PacketEvent(object sender, ScpInternalPacketEventArgs e)
+            private async void scpClient_PacketEvent(object sender, ScpPacketEventArgs e)
             {
                 if (e.Packet is ScpRegRequest)
                 {

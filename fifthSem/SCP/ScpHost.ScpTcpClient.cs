@@ -47,7 +47,7 @@ namespace ScadaCommunicationProtocol
                     MessageEvent(this, e);
                 }
             }
-            private void OnPacketEvent(ScpInternalPacketEventArgs e)
+            private void OnPacketEvent(ScpPacketEventArgs e)
             {
                 if (PacketEvent != null)
                 {
@@ -76,7 +76,7 @@ namespace ScadaCommunicationProtocol
                 ScpPacket response = null;
 
                 // Send packet
-                OnMessageEvent(new MessageEventArgs("SCP packet sent! ID: " + packet.Id.ToString() + " Type: " + packet.Type.ToString()));
+                OnMessageEvent(new MessageEventArgs("SCP packet sent! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
 
                 await writeBuffer.SendAsync(packetbuffer);
                 if (packet.IsRequest())
@@ -160,7 +160,7 @@ namespace ScadaCommunicationProtocol
                                     if (packet != null)
                                     {
                                         packet.Source = Hostname;
-                                        OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.Type.ToString()));
+                                        OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
                                         if (pendingRequest && packet.IsResponse() && pendingRequestID == packet.Id)
                                         {
                                             responsePacket = packet;
@@ -170,7 +170,7 @@ namespace ScadaCommunicationProtocol
                                         else if (!packet.IsResponse())
                                         {
                                             ScpPacket clone = packet.Clone();
-                                            OnPacketEvent(new ScpInternalPacketEventArgs(clone));
+                                            OnPacketEvent(new ScpPacketEventArgs(clone));
                                         }
 
                                     }
