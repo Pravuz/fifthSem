@@ -14,8 +14,9 @@ namespace fifthSem
         public static string hostname;
         public int hostId, tempAlarmHigh, tempAlarmLow;
         public enum ScpMode { MASTER, SLAVE, WAITING };
+        public enum ComMode { MASTER, SLAVE, WAITING };
         public ScpMode ScpStatus;
-
+        public ComMode ComStatus;
 
         private string logFile, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
         private int sizeOfFile;
@@ -31,13 +32,13 @@ namespace fifthSem
             this.AutoLog = true;
 
             ScpStatus = ScpMode.WAITING;
+            ComStatus = ComMode.WAITING;
 
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
 
             mScpHost = new ScpHost(1);
-            mRS485 = new RS485.RS485();
-
+            mRS485 = new RS485.RS485(); //passing prio later.
         }
 
         public static void Main()
@@ -61,7 +62,7 @@ namespace fifthSem
             mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None);
             //todo: start alarmsystem
 
-            if (ComConnected()) mScpHost.CanBeMaster = true;
+            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true;
             hostname = ScpHost.Name;
         }
 
@@ -74,16 +75,40 @@ namespace fifthSem
         protected override void OnStop()
         {
             base.OnStop();
+            mRS485.stopCom();            
         }
+
+        //
+        //ComEvents Start
+        //
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         { }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
-        { }
+        { 
+        
+        }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
-        { }
+        {
+            switch (e.status) { 
+                case RS485.ConnectionStatus.Master:
+                    mScpHost.CanBeMaster = true;
+                    break;
+                case RS485.ConnectionStatus.Slave:
+                    mScpHost.CanBeMaster = true;
+                    break;
+                case RS485.ConnectionStatus.Waiting:
+                    mScpHost.CanBeMaster = false;
+                    break;
+            }
+        }
+
+        //
+        //ComEvents Stop
+        //ScpEvents Start
+        //
 
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e) {
             string timeStamp = DateTime.Now.ToLongTimeString();
@@ -107,6 +132,10 @@ namespace fifthSem
         {
 
         }
+
+        //
+        //ScpEvents Stop
+        //
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
         /// <returns> True if the operation was a success and vice/versa. </returns>

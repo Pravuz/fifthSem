@@ -45,7 +45,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataEngine.cs" />
     <Compile Include="DataEngineService.cs">
       <SubType>Component</SubType>
     </Compile>
