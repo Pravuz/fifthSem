@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ScadaCommunicationProtocol;
+using System.IO.Ports;
 
 namespace fifthSem
 {
@@ -15,15 +16,16 @@ namespace fifthSem
         public enum ScpMode { MASTER, SLAVE, WAITING };
         public ScpMode ScpStatus;
 
+
         private string logFile, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
         private int sizeOfFile;
         private ScpHost mScpHost;
-        //private rs485host mrs485host;
+        private RS485.RS485 mRS485;
         //private alarmhost malarmhost;
 
         public DataEngineService()
         {
-            this.ServiceName = "fifthSemDEService";
+            this.ServiceName = "fifthSemDataEngineService";
             this.CanStop = true;
             this.CanPauseAndContinue = true;
             this.AutoLog = true;
@@ -34,6 +36,7 @@ namespace fifthSem
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
 
             mScpHost = new ScpHost(1);
+            mRS485 = new RS485.RS485();
 
         }
 
@@ -46,13 +49,20 @@ namespace fifthSem
         {
             base.OnStart(args);
 
-            if (ComConnected()) mScpHost.CanBeMaster = true;
+            //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
             mScpHost.PacketEvent += PacketHandler;
-            hostname = ScpHost.Name;
+            mRS485.TempHandler += TempEventHandler;
+            mRS485.AlarmHandler += AlarmEventHandler;
+            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
+            //starts protocols
             mScpHost.Start();
-            //start rs485 og alarmsystem
+            mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None);
+            //todo: start alarmsystem
+
+            if (ComConnected()) mScpHost.CanBeMaster = true;
+            hostname = ScpHost.Name;
         }
 
         protected override void OnShutdown()
@@ -65,6 +75,15 @@ namespace fifthSem
         {
             base.OnStop();
         }
+
+        private void TempEventHandler(object sender, RS485.TempEventArgs e)
+        { }
+
+        private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
+        { }
+
+        private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
+        { }
 
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e) {
             string timeStamp = DateTime.Now.ToLongTimeString();
@@ -87,19 +106,6 @@ namespace fifthSem
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
 
-        }
-
-        private void TimerTask()
-        {
-
-        }
-
-        /// <summary>
-        /// Endrer program/klassevariabler basert på om bruker har huket av boks for tilkobling til rs485 (com)
-        /// </summary>
-        private bool ComConnected()
-        {
-            return true;
         }
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
