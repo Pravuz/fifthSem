@@ -31,6 +31,14 @@
             this.components = new System.ComponentModel.Container();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label7 = new System.Windows.Forms.Label();
+            this.label6 = new System.Windows.Forms.Label();
+            this.txtRS485_MS = new System.Windows.Forms.TextBox();
+            this.txtTCP_IP_MS = new System.Windows.Forms.TextBox();
+            this.label5 = new System.Windows.Forms.Label();
+            this.cmbMPri = new System.Windows.Forms.ComboBox();
+            this.btnSetPri = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.txtAlrmAck = new System.Windows.Forms.TextBox();
             this.btnAck = new System.Windows.Forms.Button();
@@ -45,29 +53,23 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.tabPageAL = new System.Windows.Forms.TabPage();
-            this.tabPageEL = new System.Windows.Forms.TabPage();
-            this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.lstAlarm = new System.Windows.Forms.ListView();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
-            this.lstEvent = new System.Windows.Forms.ListView();
+            this.lstAlarm = new System.Windows.Forms.ListView();
+            this.tabPageEL = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.btnSetPri = new System.Windows.Forms.Button();
-            this.cmbMPri = new System.Windows.Forms.ComboBox();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtTCP_IP_MS = new System.Windows.Forms.TextBox();
-            this.txtRS485_MS = new System.Windows.Forms.TextBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.label7 = new System.Windows.Forms.Label();
-            this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.lstEvent = new System.Windows.Forms.ListView();
+            this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
+            this.cmbCOM = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
+            this.groupBox5.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.tabPageAL.SuspendLayout();
-            this.tabPageEL.SuspendLayout();
             this.groupBox3.SuspendLayout();
+            this.tabPageEL.SuspendLayout();
             this.groupBox4.SuspendLayout();
-            this.groupBox5.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabCCALEL
@@ -93,6 +95,92 @@
             this.tabPageCC.TabIndex = 0;
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
+            // 
+            // groupBox5
+            // 
+            this.groupBox5.Controls.Add(this.label8);
+            this.groupBox5.Controls.Add(this.cmbCOM);
+            this.groupBox5.Controls.Add(this.label7);
+            this.groupBox5.Controls.Add(this.label6);
+            this.groupBox5.Controls.Add(this.txtRS485_MS);
+            this.groupBox5.Controls.Add(this.txtTCP_IP_MS);
+            this.groupBox5.Controls.Add(this.label5);
+            this.groupBox5.Controls.Add(this.cmbMPri);
+            this.groupBox5.Controls.Add(this.btnSetPri);
+            this.groupBox5.Location = new System.Drawing.Point(282, 6);
+            this.groupBox5.Name = "groupBox5";
+            this.groupBox5.Size = new System.Drawing.Size(302, 217);
+            this.groupBox5.TabIndex = 19;
+            this.groupBox5.TabStop = false;
+            this.groupBox5.Text = "Setup";
+            // 
+            // label7
+            // 
+            this.label7.AutoSize = true;
+            this.label7.Location = new System.Drawing.Point(27, 106);
+            this.label7.Name = "label7";
+            this.label7.Size = new System.Drawing.Size(107, 13);
+            this.label7.TabIndex = 18;
+            this.label7.Text = "RS485 Master/Slave";
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(27, 67);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(110, 13);
+            this.label6.TabIndex = 17;
+            this.label6.Text = "TCP/IP Master/Slave";
+            // 
+            // txtRS485_MS
+            // 
+            this.txtRS485_MS.Location = new System.Drawing.Point(30, 122);
+            this.txtRS485_MS.Name = "txtRS485_MS";
+            this.txtRS485_MS.ReadOnly = true;
+            this.txtRS485_MS.Size = new System.Drawing.Size(100, 20);
+            this.txtRS485_MS.TabIndex = 16;
+            // 
+            // txtTCP_IP_MS
+            // 
+            this.txtTCP_IP_MS.Location = new System.Drawing.Point(30, 83);
+            this.txtTCP_IP_MS.Name = "txtTCP_IP_MS";
+            this.txtTCP_IP_MS.ReadOnly = true;
+            this.txtTCP_IP_MS.Size = new System.Drawing.Size(100, 20);
+            this.txtTCP_IP_MS.TabIndex = 15;
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(27, 22);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(70, 13);
+            this.label5.TabIndex = 9;
+            this.label5.Text = "MasterPriority";
+            // 
+            // cmbMPri
+            // 
+            this.cmbMPri.FormattingEnabled = true;
+            this.cmbMPri.Items.AddRange(new object[] {
+            "1",
+            "2",
+            "3",
+            "4"});
+            this.cmbMPri.Location = new System.Drawing.Point(30, 40);
+            this.cmbMPri.Name = "cmbMPri";
+            this.cmbMPri.Size = new System.Drawing.Size(121, 21);
+            this.cmbMPri.TabIndex = 14;
+            // 
+            // btnSetPri
+            // 
+            this.btnSetPri.Location = new System.Drawing.Point(195, 38);
+            this.btnSetPri.Name = "btnSetPri";
+            this.btnSetPri.Size = new System.Drawing.Size(75, 23);
+            this.btnSetPri.TabIndex = 13;
+            this.btnSetPri.Text = "Set Priority";
+            this.toolTipAck.SetToolTip(this.btnSetPri, "This button Set the priority of the PC. Check the other pc\'s so you don\'t get con" +
+        "flicts.");
+            this.btnSetPri.UseVisualStyleBackColor = true;
+            this.btnSetPri.Click += new System.EventHandler(this.btnSetPri_Click);
             // 
             // groupBox2
             // 
@@ -228,24 +316,6 @@
             this.tabPageAL.Text = "AlarmList";
             this.tabPageAL.UseVisualStyleBackColor = true;
             // 
-            // tabPageEL
-            // 
-            this.tabPageEL.Controls.Add(this.groupBox4);
-            this.tabPageEL.Location = new System.Drawing.Point(4, 22);
-            this.tabPageEL.Name = "tabPageEL";
-            this.tabPageEL.Size = new System.Drawing.Size(1069, 468);
-            this.tabPageEL.TabIndex = 2;
-            this.tabPageEL.Text = "EventList";
-            this.tabPageEL.UseVisualStyleBackColor = true;
-            // 
-            // lstAlarm
-            // 
-            this.lstAlarm.Location = new System.Drawing.Point(15, 20);
-            this.lstAlarm.Name = "lstAlarm";
-            this.lstAlarm.Size = new System.Drawing.Size(920, 400);
-            this.lstAlarm.TabIndex = 0;
-            this.lstAlarm.UseCompatibleStateImageBehavior = false;
-            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.lstAlarm);
@@ -256,13 +326,23 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "AlarmList";
             // 
-            // lstEvent
+            // lstAlarm
             // 
-            this.lstEvent.Location = new System.Drawing.Point(15, 20);
-            this.lstEvent.Name = "lstEvent";
-            this.lstEvent.Size = new System.Drawing.Size(920, 400);
-            this.lstEvent.TabIndex = 0;
-            this.lstEvent.UseCompatibleStateImageBehavior = false;
+            this.lstAlarm.Location = new System.Drawing.Point(15, 20);
+            this.lstAlarm.Name = "lstAlarm";
+            this.lstAlarm.Size = new System.Drawing.Size(920, 400);
+            this.lstAlarm.TabIndex = 0;
+            this.lstAlarm.UseCompatibleStateImageBehavior = false;
+            // 
+            // tabPageEL
+            // 
+            this.tabPageEL.Controls.Add(this.groupBox4);
+            this.tabPageEL.Location = new System.Drawing.Point(4, 22);
+            this.tabPageEL.Name = "tabPageEL";
+            this.tabPageEL.Size = new System.Drawing.Size(1069, 468);
+            this.tabPageEL.TabIndex = 2;
+            this.tabPageEL.Text = "EventList";
+            this.tabPageEL.UseVisualStyleBackColor = true;
             // 
             // groupBox4
             // 
@@ -274,84 +354,31 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "EventList";
             // 
-            // btnSetPri
+            // lstEvent
             // 
-            this.btnSetPri.Location = new System.Drawing.Point(195, 38);
-            this.btnSetPri.Name = "btnSetPri";
-            this.btnSetPri.Size = new System.Drawing.Size(75, 23);
-            this.btnSetPri.TabIndex = 13;
-            this.btnSetPri.Text = "Set Priority";
-            this.toolTipAck.SetToolTip(this.btnSetPri, "This button Set the priority of the PC. Check the other pc\'s so you don\'t get con" +
-        "flicts.");
-            this.btnSetPri.UseVisualStyleBackColor = true;
-            this.btnSetPri.Click += new System.EventHandler(this.btnSetPri_Click);
+            this.lstEvent.Location = new System.Drawing.Point(15, 20);
+            this.lstEvent.Name = "lstEvent";
+            this.lstEvent.Size = new System.Drawing.Size(920, 400);
+            this.lstEvent.TabIndex = 0;
+            this.lstEvent.UseCompatibleStateImageBehavior = false;
             // 
-            // cmbMPri
+            // cmbCOM
             // 
-            this.cmbMPri.FormattingEnabled = true;
-            this.cmbMPri.Location = new System.Drawing.Point(30, 40);
-            this.cmbMPri.Name = "cmbMPri";
-            this.cmbMPri.Size = new System.Drawing.Size(121, 21);
-            this.cmbMPri.TabIndex = 14;
+            this.cmbCOM.FormattingEnabled = true;
+            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
+            this.cmbCOM.Name = "cmbCOM";
+            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
+            this.cmbCOM.TabIndex = 19;
+            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
             // 
-            // label5
+            // label8
             // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(27, 22);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(70, 13);
-            this.label5.TabIndex = 9;
-            this.label5.Text = "MasterPriority";
-            // 
-            // txtTCP_IP_MS
-            // 
-            this.txtTCP_IP_MS.Location = new System.Drawing.Point(30, 83);
-            this.txtTCP_IP_MS.Name = "txtTCP_IP_MS";
-            this.txtTCP_IP_MS.ReadOnly = true;
-            this.txtTCP_IP_MS.Size = new System.Drawing.Size(100, 20);
-            this.txtTCP_IP_MS.TabIndex = 15;
-            // 
-            // txtRS485_MS
-            // 
-            this.txtRS485_MS.Location = new System.Drawing.Point(30, 122);
-            this.txtRS485_MS.Name = "txtRS485_MS";
-            this.txtRS485_MS.ReadOnly = true;
-            this.txtRS485_MS.Size = new System.Drawing.Size(100, 20);
-            this.txtRS485_MS.TabIndex = 16;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(27, 67);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(110, 13);
-            this.label6.TabIndex = 17;
-            this.label6.Text = "TCP/IP Master/Slave";
-            // 
-            // label7
-            // 
-            this.label7.AutoSize = true;
-            this.label7.Location = new System.Drawing.Point(27, 106);
-            this.label7.Name = "label7";
-            this.label7.Size = new System.Drawing.Size(107, 13);
-            this.label7.TabIndex = 18;
-            this.label7.Text = "RS485 Master/Slave";
-            // 
-            // groupBox5
-            // 
-            this.groupBox5.Controls.Add(this.label7);
-            this.groupBox5.Controls.Add(this.label6);
-            this.groupBox5.Controls.Add(this.txtRS485_MS);
-            this.groupBox5.Controls.Add(this.txtTCP_IP_MS);
-            this.groupBox5.Controls.Add(this.label5);
-            this.groupBox5.Controls.Add(this.cmbMPri);
-            this.groupBox5.Controls.Add(this.btnSetPri);
-            this.groupBox5.Location = new System.Drawing.Point(282, 6);
-            this.groupBox5.Name = "groupBox5";
-            this.groupBox5.Size = new System.Drawing.Size(302, 217);
-            this.groupBox5.TabIndex = 19;
-            this.groupBox5.TabStop = false;
-            this.groupBox5.Text = "Setup";
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(27, 145);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(50, 13);
+            this.label8.TabIndex = 20;
+            this.label8.Text = "COMPort";
             // 
             // Form1
             // 
@@ -363,16 +390,16 @@
             this.Text = "Skadd";
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
+            this.groupBox5.ResumeLayout(false);
+            this.groupBox5.PerformLayout();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabPageAL.ResumeLayout(false);
-            this.tabPageEL.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
+            this.tabPageEL.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
-            this.groupBox5.ResumeLayout(false);
-            this.groupBox5.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -409,6 +436,8 @@
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox cmbMPri;
         private System.Windows.Forms.Button btnSetPri;
+        private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.ComboBox cmbCOM;
     }
 }
 
