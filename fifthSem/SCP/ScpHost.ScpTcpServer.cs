@@ -12,6 +12,9 @@ namespace ScadaCommunicationProtocol
 {
     public partial class ScpHost
     {
+        /// <summary>
+        /// Used internally by ScpHost when in Master mode. Handles connections with slaves.
+        /// </summary>
         private class ScpTcpServer
         {
             private bool enabled = false;
@@ -23,7 +26,8 @@ namespace ScadaCommunicationProtocol
             private TcpListener tcpListener;
 
             public event MessageEventHandler MessageEvent;
-            public event ScpPacketEventHandler PacketEvent;
+            public event ScpInternalPacketEventHandler PacketEvent;
+            public event SlaveConnectionEventHandler SlaveConnectionEvent;
             private void OnMessageEvent(MessageEventArgs e)
             {
                 if (MessageEvent != null)
@@ -31,16 +35,32 @@ namespace ScadaCommunicationProtocol
                     MessageEvent(this, e);
                 }
             }
-            private void OnPacketEvent(object sender, ScpPacketEventArgs e)
+            private void OnSlaveConnectionEvent(object sender, SlaveConnectionEventArgs e)
             {
-                if (e.Packet.Broadcast) // Broadcast the packet to other slaves
+                if (SlaveConnectionEvent != null)
                 {
-                    Task broadcast = this.SendAsync(e.Packet);
+                    SlaveConnectionEvent(this, e);
+                }
+            }
+
+            // Triggered when Master receives a message from a slave
+            private void OnPacketEvent(object sender, ScpInternalPacketEventArgs e)
+            {
+                if (e.Packet.IsBroadcast()) // Broadcast the packet to other slaves
+                {
+                    Task broadcast = this.BroadcastAsync(e.Packet);
                     broadcast.Wait();
                 }
                 if (PacketEvent != null)
                 {
                     PacketEvent(this, e);
+                    /*if (e.Packet.Type == ScpTcpPacketTypes.Request && e.Response != null)
+                    {
+                        // Create the Response packet
+                        ScpTcpPacket response = e.Response;
+                        response.ID = e.Packet.ID;
+                        BroadcastAsync(response);
+                    }*/
                 }
             }
             public ScpTcpServer()
@@ -72,25 +92,15 @@ namespace ScadaCommunicationProtocol
                 }
             }
 
-            public async Task<ScpTcpPacket> SendAsync(ScpTcpPacket packet)
+            public async Task BroadcastAsync(ScpPacket packet)
             {
-                ScpTcpPacket response = null;
-                if (packet.Broadcast)
+                if (packet.IsBroadcast())
                 {
                     foreach (ScpTcpClient scpClient in scpClients.Where(scp => scp.Hostname != packet.Source))
                     {
                         await scpClient.SendAsync(packet);
                     }
                 }
-                else
-                {
-                    ScpTcpClient scpClient = scpClients.SingleOrDefault(scp => scp.Hostname == packet.Destination);
-                    if (scpClient != null)
-                    {
-                        response = await scpClient.SendAsync(packet);
-                    }
-                }
-                return response;
             }
 
             private async Task listener()
@@ -122,73 +132,42 @@ namespace ScadaCommunicationProtocol
                 }
                 else
                 {
-                    OnMessageEvent(new MessageEventArgs("Slave connected: " + scpClient.Hostname));
+                    scpClient.PacketEvent -= scpClient_PacketEvent;
+                    scpClient.PacketEvent += OnPacketEvent;
                     scpClients.Add(scpClient);
+                    // Slave connected event
+                    OnMessageEvent(new MessageEventArgs("Slave connected: " + scpClient.Hostname));
+                    OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
+                    await scpClientTask;
+                    // Slave disconnected event
+                    OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(false, scpClient.Hostname));
+                    OnMessageEvent(new MessageEventArgs("Slave disconnected: " + scpClient.Hostname));
+                    scpClients.Remove(scpClient);
                 }
-                scpClient.PacketEvent -= scpClient_PacketEvent;
-                scpClient.PacketEvent += OnPacketEvent;
-                // Wait for registration from client
-                await scpClientTask;
-                OnMessageEvent(new MessageEventArgs("Slave disconnected: " + scpClient.Hostname));
 
-                scpClients.Remove(scpClient);
                 lock (_lock)
                 {
                     clientsConnected--;
                 }
             }
 
-            private void scpClient_PacketEvent(object sender, ScpPacketEventArgs e)
+            private async void scpClient_PacketEvent(object sender, ScpInternalPacketEventArgs e)
             {
-                if (e.Packet.Type == ScpTcpPacketTypes.RegRequest)
+                if (e.Packet is ScpRegRequest)
                 {
-                    byte[] test = e.Packet.GetBytes();
-                    //OnMessageEvent(new MessageEventArgs("Reg request received."+BitConverter.ToString(e.Packet.GetBytes())));
-                    ScpTcpPacket packet = new ScpTcpPacket(ScpTcpPacketTypes.RegResponse, new byte[] { 1 }, false);
-                    packet.ID = e.Packet.ID;
-                    ((ScpTcpClient)sender).Hostname = Encoding.ASCII.GetString(e.Packet.Payload);
-                    ((ScpTcpClient)sender).SendAsync(packet);
-                    TcpClient tcpClient = ((ScpTcpClient)sender).tcpClient;
-                }
-            }
-
-            private void tcpTimeout(Object source, ElapsedEventArgs e)
-            {
-                // Disconnect the client
-                OnMessageEvent(new MessageEventArgs("Timeout!"));
-            }
-
-            private async Task clientAsync(TcpClient tcpClient)
-            {
-                byte[] message = new byte[8192];
-                int bytesRead;
-                System.Timers.Timer timeout = new System.Timers.Timer(2000);//Timer((TimerCallback)tcpTimeout,tcpClient,5000,2000);
-                timeout.Elapsed += tcpTimeout;
-
-
-                NetworkStream ns = tcpClient.GetStream();
-
-                timeout.Start();
-                while (enabled && tcpClient.Connected)
-                {
+                    ScpRegRequest request = (ScpRegRequest)e.Packet;
+                    byte[] test = request.GetBytes();
+                    ScpPacket packet = new ScpRegResponse(true);
+                    packet.Id = request.Id;
+                    ((ScpTcpClient)sender).Hostname = request.Hostname;
                     try
                     {
-                        while (true)
-                        {
-                            // Implement TCP protocol messages
-                            bytesRead = await ns.ReadAsync(message, 0, 8192);
-                            timeout.Interval = 2000;
-
-                        }
+                        await ((ScpTcpClient)sender).SendAsync(packet).ConfigureAwait(false);
                     }
-                    catch
+                    catch // F.ex. timeout
                     {
                     }
-                    break;
                 }
-                OnMessageEvent(new MessageEventArgs("Client disconnected, ip address: " + ((IPEndPoint)tcpClient.Client.RemoteEndPoint).Address.ToString()));
-                tcpClient.Close();
-
             }
         }
     }

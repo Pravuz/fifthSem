@@ -49,13 +49,13 @@ namespace fifthSem
                     ScpStatus = ScpMode.SLAVE;
                     break;
                 case ScpConnectionStatus.Waiting:
-                    ScpStatus = ScpMode.WAITING
+                    ScpStatus = ScpMode.WAITING;
                     break;
                 default:
                     break;
             }
         }
-        private void PacketHandler(object sender, ScpPacketEventArgs e) {
+        private void PacketHandler(object sender, PacketEventArgs e) {
             
         }
 
@@ -90,7 +90,7 @@ namespace fifthSem
     /// <summary>
     /// Creates an object of a temperature reading. 
     /// </summary>
-    private class temperatureReading {
+    public class temperatureReading {
         public DateTime dateTime { get; set; }
         public double temp { get; set; }
 

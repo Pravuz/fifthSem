@@ -12,8 +12,32 @@ namespace ScadaCommunicationProtocol
     public enum ScpConnectionStatus { Waiting, Master, Slave };
 
     public delegate void MessageEventHandler(object sender, MessageEventArgs e);
-    public delegate void ScpPacketEventHandler(object sender, ScpPacketEventArgs e);
     public delegate void ScpConnectionStatusEventHandler(object sender, ScpConnectionStatusEventArgs e);
+    public delegate void PacketEventHandler(object sender, ScpInternalPacketEventArgs e);
+    public delegate void SlaveConnectionEventHandler(object sender, SlaveConnectionEventArgs e);
+    public class PacketEventArgs : EventArgs
+    {
+        public byte[] Packet;
+        public byte[] Response;
+        public bool IsBroadcast;
+        public PacketEventArgs(byte[] Packet, bool Broadcast)
+        {
+            this.Packet = Packet;
+            this.IsBroadcast = Broadcast;
+            Response = null;
+        }
+    }
+
+    public class SlaveConnectionEventArgs : EventArgs
+    {
+        public bool Connected;
+        public string Name;
+        public SlaveConnectionEventArgs(bool Connected, string Name)
+        {
+            this.Connected = Connected;
+            this.Name = Name;
+        }
+    }
 
     public class ScpConnectionStatusEventArgs : EventArgs
     {
@@ -23,17 +47,6 @@ namespace ScadaCommunicationProtocol
             this.Status = Status;
         }
     }
-    public class ScpPacketEventArgs : EventArgs
-    {
-        public ScpTcpPacket Packet;
-        public ScpTcpPacket Response;
-        public ScpPacketEventArgs(ScpTcpPacket Packet)
-        {
-            this.Packet = Packet;
-            Response = null;
-        }
-    }
-    // Class for the data to be passed to message event handlers
     public class MessageEventArgs : EventArgs
     {
         public string Message { get; set; }
@@ -43,25 +56,37 @@ namespace ScadaCommunicationProtocol
         }
     }
 
+    /// <summary>
+    /// This class establishes a SCP host, and automatically detect Master/Slave status of this host (ScpConnectionStatus).
+    /// </summary>
     public partial class ScpHost
     {
         static public string Name;
         static public int Priority;
         static public readonly int UdpServerPort = 1234;
-        static public readonly int TcpServerPort = 1236;
+        static public readonly int TcpServerPort = 1234;
 
+        /// <summary>
+        /// Debug event.....
+        /// </summary>
         public event MessageEventHandler MessageEvent;
 
         /// <summary>
         /// Event is triggered whenever a SCP packet is recieved (Either a SCP-Request or SCP-Push).
         /// Handler for this event should set the Response property of the EventArgs to reply to the request.
         /// </summary>
-        public event ScpPacketEventHandler PacketEvent;
+        public event PacketEventHandler PacketEvent;
 
         /// <summary>
         /// Triggered whenever there is a change in the connection status of this SCP host.
         /// </summary>
         public event ScpConnectionStatusEventHandler ScpConnectionStatusEvent;
+
+        /// <summary>
+        /// When in Master mode, triggered when a slave connects/disconnects.
+        /// Includes hostname of slave, and if it was a connection or disconnection.
+        /// </summary>
+        public event SlaveConnectionEventHandler SlaveConnectionEvent;
 
         private ScpConnectionStatus scpConnectionStatus = ScpConnectionStatus.Waiting;
 
@@ -74,6 +99,19 @@ namespace ScadaCommunicationProtocol
 
         private bool canBeMaster = true;
         private IPAddress masterIPAddress;
+        private Task checkTask;
+
+        public ScpConnectionStatus ScpConnectionStatus
+        {
+            get
+            {
+                return scpConnectionStatus;
+            }
+        }
+        /// <summary>
+        /// Used to control if this host can be SCP master or not.
+        /// Default: true
+        /// </summary>
         public bool CanBeMaster
         {
             get
@@ -82,6 +120,12 @@ namespace ScadaCommunicationProtocol
             }
             set
             {
+                if (scpConnectionStatus == ScpConnectionStatus.Master && value == false)
+                {
+                    scpUdpServer.Stop();
+                    scpTcpServer.Stop();
+                    setConnectionStatus(ScpConnectionStatus.Waiting);
+                }
                 canBeMaster = value;
             }
         }
@@ -93,17 +137,6 @@ namespace ScadaCommunicationProtocol
                 return; // No change so just return
             }
             scpConnectionStatus = status;
-            if (status == ScpConnectionStatus.Slave)
-            {
-                scpUdpServer.Stop();
-                scpTcpServer.Stop();
-            }
-            else if (status == ScpConnectionStatus.Waiting)
-            {
-
-                scpUdpServer.Stop();
-                scpTcpServer.Stop();
-            }
             OnScpConnectionStatusEvent(this, new ScpConnectionStatusEventArgs(status));
         }
 
@@ -114,9 +147,9 @@ namespace ScadaCommunicationProtocol
                 MessageEvent(this, e);
             }
         }
-        private void OnPacketEvent(object sender, ScpPacketEventArgs e)
+        private void OnPacketEvent(object sender, ScpInternalPacketEventArgs e)
         {
-            if (PacketEvent != null) // Don't raise the event in case it has already been handled by ScpTcpClient/Server
+            if (PacketEvent != null)
             {
                 PacketEvent(this, e);
             }
@@ -126,6 +159,13 @@ namespace ScadaCommunicationProtocol
             if (ScpConnectionStatusEvent != null)
             {
                 ScpConnectionStatusEvent(this, e);
+            }
+        }
+        private void OnSlaveConnectionEvent(object sender, SlaveConnectionEventArgs e)
+        {
+            if (SlaveConnectionEvent != null)
+            {
+                SlaveConnectionEvent(this, e);
             }
         }
         public ScpHost(int priority)
@@ -138,48 +178,54 @@ namespace ScadaCommunicationProtocol
             scpTcpServer = new ScpTcpServer();
             scpTcpClient = new ScpTcpClient();
 
-            scpTcpServer.MessageEvent += OnMessageEvent;
             scpTcpClient.MessageEvent += OnMessageEvent;
-
             scpTcpClient.PacketEvent += OnPacketEvent;
-            scpTcpServer.PacketEvent += OnPacketEvent;
 
+            scpTcpServer.MessageEvent += OnMessageEvent;
+            scpTcpServer.PacketEvent += OnPacketEvent;
+            scpTcpServer.SlaveConnectionEvent += OnSlaveConnectionEvent;
         }
 
         /// <summary>
-        /// Sends a packet asyncronously to the network.
-        /// Throws an exception if response is not received in time or there are any network errors
+        /// Sends a Broadcast packet asyncronously to all SCP hosts.
+        /// Throws an exception if there are any network errors
         /// </summary>
         /// <param name="packet"></param>
-        /// <returns>ScpTcpPacket returned. For Push requests, this return value is null</returns>
-        public async Task<ScpTcpPacket> SendPacket(ScpTcpPacket packet)
+        /// <returns></returns>
+        public async Task SendBroadcastAsync(ScpPacket packet)
         {
-            ScpTcpPacket response = null;
+            //ScpPacket packet = new ScpPacket(ScpTcpPacketTypes.Broadcast, data);
             if (scpConnectionStatus == ScpConnectionStatus.Slave)
             {
-                response = await scpTcpClient.SendAsync(new ScpTcpPacket(ScpTcpPacketTypes.KeepAlive, null, true));
+                await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
             }
             else if (scpConnectionStatus == ScpConnectionStatus.Master)
             {
-                response = await scpTcpServer.SendAsync(new ScpTcpPacket(ScpTcpPacketTypes.KeepAlive, null, true));
-            }
-            return response;
-        }
-        public void SendPacket()
-        {
-            if (scpConnectionStatus == ScpConnectionStatus.Slave)
-            {
-                Task task = scpTcpClient.SendAsync(new ScpTcpPacket(ScpTcpPacketTypes.KeepAlive, null, true));
-            }
-            else if (scpConnectionStatus == ScpConnectionStatus.Master)
-            {
-                Task task = scpTcpServer.SendAsync(new ScpTcpPacket(ScpTcpPacketTypes.KeepAlive, null, true));
+                await scpTcpServer.BroadcastAsync(packet).ConfigureAwait(false);
             }
         }
 
+        /// <summary>
+        /// Sends a Request packet asyncronously to the SCP master.
+        /// Throws an exception if response is not received in time or there are any network errors
+        /// If used when in Master mode, returns null.
+        /// </summary>
+        /// <param name="packet"></param>
+        /// <returns>ScpTcpPacket returned</returns>
+        public async Task<ScpPacket> SendRequestAsync(ScpPacket request)
+        {
+            ScpPacket response = null;
+            if (scpConnectionStatus == ScpConnectionStatus.Slave)
+            {
+                //ScpTcpPacket packet = new ScpTcpPacket(ScpTcpPacketTypes.Request, data);
+                //ScpTcpPacket response = await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
+                response = await scpTcpClient.SendAsync(request).ConfigureAwait(false);
+            }
+            return response;
+        }
         public void Start()
         {
-            Task checkTask = checkScpConnection();
+            checkTask = checkScpConnection();
         }
         /// <summary>
         /// Detects master/slave role of this host on the network
@@ -225,7 +271,6 @@ namespace ScadaCommunicationProtocol
                     // checking if other master is present, fall back to slave if another master with higher priority exists
                     while (scpConnectionStatus == ScpConnectionStatus.Master)
                     {
-                        await Task.Delay(5000);
                         if (scpUdpClient.DiscoverMaster(out reply))
                         {
                             if ((reply.MasterPriority <= ScpHost.Priority) && (reply.FromHostName != ScpHost.Name))
@@ -236,13 +281,13 @@ namespace ScadaCommunicationProtocol
                                 scpTcpServer.Stop();
                             }
                         }
+                        await Task.Delay(5000);
                     }
                 }
                 else
                 {
                     await Task.Delay(5000);// Make sure we wait some seconds before trying another connection...
                 }
-                //await Task.Delay(1000);// Make sure we wait some seconds before trying another connection...
             }
         }
 
