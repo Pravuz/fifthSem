@@ -49,10 +49,10 @@ namespace RS485
     }
     public class TempEventArgs : EventArgs
     {
-        public double temp;
+        public string temp;
         public TempEventArgs(string temp)
         {
-            this.temp = Convert.ToDouble(temp);
+            this.temp = temp;
         }
     }
 
@@ -113,10 +113,17 @@ namespace RS485
             serialPort.ReadTimeout = 500;
             serialPort.WriteTimeout = 500;
 
-            // Subscribe to event and open serial port for data
-            serialPort.DataReceived +=
-                new SerialDataReceivedEventHandler(serialPortDataReceived);
-            serialPort.Open();
+            try
+            {
+                // Subscribe to event and open serial port for data
+                serialPort.DataReceived +=
+                    new SerialDataReceivedEventHandler(serialPortDataReceived);
+                serialPort.Open();
+            }
+            catch(Exception e)
+            {
+                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(e.Message));
+            }
 
             // Start thread
             threadEnabled = true;
@@ -159,23 +166,26 @@ namespace RS485
             int indexStart, indexStop;
             string temp = "";
             tempData = tempData + Encoding.ASCII.GetString(data);
-            if (tempData.Contains(">") & tempData.Contains("\r")) 
+            if(connectionStatus == ConnectionStatus.Master & tempData.Contains("#"))
+            {
+                connectionStatus = ConnectionStatus.Slave;
+                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus));
+            }
+
+            if (tempData.Contains(">") & tempData.Contains("\r"))
             {
                 indexStart = tempData.IndexOf(">");
-                indexStop = tempData.IndexOf("\r");
-                if (indexStart < indexStop)
+                indexStop = tempData.IndexOf("\r",indexStart);
+                if (indexStart < indexStop )
                 {
-                    temp = tempData.Substring(1 + indexStart, indexStop - indexStart - 1);
-                    if (null != TempHandler) TempHandler(this, new TempEventArgs(temp));
+                    string fortegn;
+                    temp = tempData.Substring(2 + indexStart, indexStop - indexStart - 1);
+                    fortegn = tempData.Substring(1 + indexStart,1);
+                    temp = temp.TrimStart('0'); // Remove null in front of temp data
+                    if (null != TempHandler) TempHandler(this, new TempEventArgs(fortegn + temp + "°C"));
                     tempData = "";
                 }
-                else
-                    tempData = "";
             }
-            //else if(tempData.Contains("#") & tempData.Contains("\r"))
-            //{
-            //    tempData = "";
-            //}
 
             // Reset getTempTimout
             getTempTimeout = 0;
@@ -211,10 +221,10 @@ namespace RS485
                         stopCom();
                     }
                     // Com port surveillance. If Master does not receive temp after 5 request, an alarm event is flagged.
-                    if(getTempTimeout++ == 5)
+                    if (getTempTimeout++ == 5)
                     {
                         if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs("Timout: Temperatur ikke mottatt i løpet av 5 forespørsler."));
-                        connectionStatus = ConnectionStatus.Slave; // Master goes over to slave mode.
+                        stopCom();
                     }
                 }
                 Thread.Sleep(1000);
