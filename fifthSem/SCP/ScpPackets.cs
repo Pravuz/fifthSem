@@ -4,180 +4,450 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using System.Threading;
+using System.IO;
 
 namespace ScadaCommunicationProtocol
 {
-    public enum ScpTcpPacketTypes { RegRequest=1, RegResponse=64, FileRequest=2, FileResponse=65, Temperature=128, Alarm=129, KeepAlive=130 };
-    public class ScpTcpPacket
+    public delegate void ScpInternalPacketEventHandler(object sender, ScpPacketEventArgs e);
+    public class ScpPacketEventArgs : EventArgs
     {
-        private ScpTcpPacketTypes type;
-        private byte[] payload;
-
-        /// <summary>
-        /// When set to true, message will be broadcasted to all ScpHosts when sent.
-        /// Only applicable to Push messages, ignored for other message types.
-        /// </summary>
-        public bool Broadcast { get; set; }
-        /// <summary>
-        /// Destination address (Hostname) of the destination.
-        /// When in slave mode, this is ignored as the message is always sent to the master.
-        /// </summary>
-        public string Destination { get; set; }
-        /// <summary>
-        /// Source address (Hostname). Don't set manually, will be provided by ScpHost when message is received.
-        /// </summary>
+        public ScpPacket Packet;
+        public ScpPacket Response;
+        public ScpPacketEventArgs(ScpPacket Packet)
+        {
+            this.Packet = Packet;
+            Response = null;
+        }
+    }
+    public abstract class ScpPacket
+    {
+        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
+        private static int newId = 0;
+        public static int GetId()
+        {
+            return Interlocked.Increment(ref newId);
+        }
+        protected int id;
+        protected int type;
         public string Source { get; set; }
-        public byte[] Payload
-        {
-            get { return payload; }
-        }
-        public int ID { get; set; }
-        public bool IsRequest
+        public int Id
         {
             get
             {
-                return (byte)type < 64;
+                return id;
             }
-        }
-        public bool IsResponse
-        {
-            get
+            set
             {
-                return ((byte)type >= 64) & ((byte)type <= 127);
+                id = value;
             }
         }
-        public ScpTcpPacketTypes Type
+        public bool IsBroadcast()
         {
-            get
+            return type >= 100;
+        }
+        
+        public bool IsRequest()
+        {
+            return type < 50;
+        }
+
+        public bool IsResponse()
+        {
+            return (type >= 50) & (type < 100);
+        }
+        public ScpPacket()
+        {
+            id = GetId();
+        }
+        public ScpPacket(byte[] bytes)
+        {
+            type = bytes[4];
+            id = BitConverter.ToInt32(bytes, 6);
+        }
+
+        public static ScpPacket Create(byte[] bytes, int length=0)
+        {
+            ScpPacket packet = null;
+            if (length == 0)
             {
-                return type;
+                length = bytes.Length;
             }
+            if (length >= 10)
+            {
+                try
+                {
+                    switch ((ScpPacketTypes)bytes[4])
+                    {
+                        case ScpPacketTypes.RegRequest:
+                            packet = new ScpRegRequest(bytes, length);
+                            break;
+                        case ScpPacketTypes.RegResponse:
+                            packet = new ScpRegResponse(bytes, length);
+                            break;
+                        case ScpPacketTypes.AlarmBroadcast:
+                            packet = new ScpAlarmBroadcast(bytes, length);
+                            break;
+                        case ScpPacketTypes.AlarmLimitBroadcast:
+                            packet = new ScpAlarmLimitBroadcast(bytes, length);
+                            break;
+                        case ScpPacketTypes.LogFileRequest:
+                            packet = new ScpLogFileRequest(bytes, length);
+                            break;
+                        case ScpPacketTypes.LogFileResponse:
+                            packet = new ScpLogFileResponse(bytes, length);
+                            break;
+                        case ScpPacketTypes.TempBroadcast:
+                            packet = new ScpTempBroadcast(bytes, length);
+                            break;
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+            return packet;
         }
-        public ScpTcpPacket Clone()
+        public byte[] GetBytes()
         {
-            ScpTcpPacket clone = new ScpTcpPacket(GetBytes());
+            return GetBytes(GetPayload());
+        }
+        protected byte[] GetBytes(byte[] payload)
+        {
+            byte[] message = BitConverter.GetBytes(payload.Length + 10);
+            Array.Resize(ref message, 6);
+            message[4] = (byte)type;
+            message[5] = (byte)0;
+
+            return message.Concat(BitConverter.GetBytes(id)).Concat(payload).ToArray();
+        }
+        
+        protected abstract byte[] GetPayload();
+        public ScpPacket Clone()
+        {
+            ScpPacket clone = ScpPacket.Create(GetBytes());
             clone.Source = this.Source;
-            clone.Destination = this.Destination;
             return clone;
         }
-
-        public ScpTcpPacket(byte[] buffer, int bufferlength=0)
+    }
+    public class ScpRegRequest : ScpPacket
+    {
+        private string hostname;
+        public string Hostname
         {
-            Source = "";
-            if (bufferlength==0)
+            get
             {
-                bufferlength = buffer.Length;
+                return hostname;
             }
-            int length = BitConverter.ToInt32(buffer, 0);
-            if ((length + 10) != bufferlength)
-            {
-                throw new Exception("Invalid packet");
-            }
-            Broadcast = buffer[4] == 1;
-            type = (ScpTcpPacketTypes)buffer[5];
-            ID = BitConverter.ToInt32(buffer, 6);
-            payload = new byte[bufferlength-10];
-            Array.Copy(buffer, 10, payload,0, bufferlength-10);
         }
-
-        public ScpTcpPacket(ScpTcpPacketTypes type, byte[] payload, bool broadcast)
+        public ScpRegRequest(string hostname) : base()
         {
-            Source = "";
-            this.Broadcast = broadcast;
-            if (payload == null)
+            this.hostname = hostname;
+            type = (byte)ScpPacketTypes.RegRequest;
+        }
+        public ScpRegRequest(byte[] bytes, int length)
+            : base(bytes)
+        {
+            hostname = Encoding.ASCII.GetString(bytes, 10, length - 10);
+        }
+        protected override byte[] GetPayload()
+        {
+            return Encoding.ASCII.GetBytes(hostname);
+        }
+        public override string ToString()
+        {
+            return "ScpRegRequest - Hostname: " + hostname;
+        }
+    }
+    public class ScpRegResponse : ScpPacket
+    {
+        private bool ok;
+        public bool Ok
+        {
+            get
             {
-                this.payload = new byte[0];
+                return ok;
+            }
+        }
+        public ScpRegResponse(bool ok)
+        {
+            this.ok = ok;
+            type = (byte)ScpPacketTypes.RegResponse;
+        }
+        public ScpRegResponse(byte[] bytes, int length)
+            : base(bytes)
+        {
+            ok = bytes[10] == 1;
+        }
+        protected override byte[] GetPayload()
+        {
+            byte[] payload = new byte[1];
+            payload[0] = (byte)(ok ? 1 : 0);
+            return payload;
+        }
+        public override string ToString()
+        {
+            return "ScpRegResponse - OK: " + ok.ToString();
+        }
+    }
+    public class ScpLogFileRequest : ScpPacket
+    {
+        private int fileSize;
+        public int FileSize
+        {
+            get
+            {
+                return fileSize;
+            }
+        }
+        public ScpLogFileRequest(int fileSize) : base()
+        {
+            this.fileSize = fileSize;
+            type = (byte)ScpPacketTypes.LogFileRequest;
+        }
+        public ScpLogFileRequest(byte[] bytes, int length)
+            : base(bytes)
+        {
+            fileSize = BitConverter.ToInt32(bytes, 10);
+        }
+        protected override byte[] GetPayload()
+        {
+            return BitConverter.GetBytes(fileSize);
+        }
+        public override string ToString()
+        {
+            return "ScpLogFileRequest - Filesize: " + fileSize.ToString();
+        }
+    }
+    public class ScpLogFileResponse : ScpPacket
+    {
+        private byte[] file;
+        public byte[] File
+        {
+            get
+            {
+                return file;
+            }
+        }
+        public ScpLogFileResponse(byte[] file)
+        {
+            if (file == null)
+            {
+                this.file = new byte[0];
             }
             else
             {
-                this.payload = payload.ToArray();
+                this.file = file;
             }
-            this.type = type;
+            type = (byte)ScpPacketTypes.LogFileResponse;
         }
-        public byte[] GetBytes()
+        public ScpLogFileResponse(byte[] bytes, int length)
+            : base(bytes)
         {
-            byte[] message = BitConverter.GetBytes(payload.Length);
-            Array.Resize(ref message, 6);
-            message[4] = (byte)((Broadcast) ? 1 : 0);
-            message[5] = (byte)type;
-            
-            return message.Concat(BitConverter.GetBytes(ID)).Concat(payload).ToArray();
+            file = new byte[length - 10];
+            Array.Copy(bytes, 10, file, 0, length - 10);
         }
-
-    }
-    /// <summary>
-    /// Base class for Scp UDP packets. Main purpose is to construct correct Scp UDP packet from received bytes
-    /// Used only internally by SCPHost class.
-    /// </summary>
-    public abstract class ScpUdpPacket
-    {
-        public static ScpUdpPacket Create(byte[] bytes)
+        protected override byte[] GetPayload()
         {
-            if (bytes[0] == 1) // Master discover packet
+            return file;
+        }
+        public override string ToString()
+        {
+            if (file == null || file.Length == 0)
             {
-                return new ScpMasterDiscover(bytes);
-            }
-            else if (bytes[0] == 2) // Master discover reply packet
-            {
-                return new ScpMasterDiscoverReply(bytes);
+                return "ScpLogFileResponse - No file needed";
             }
             else
             {
-                return null;
+                return "ScpLogFileResponse - Master filesize: " + file.Length.ToString();
             }
         }
     }
 
-    /// <summary>
-    /// Udp packet for discovering other masters on network
-    /// </summary>
-    /// 
-    public class ScpMasterDiscover : ScpUdpPacket
+    public class ScpTempBroadcast : ScpPacket
     {
-        public string FromHostName;
-        public ScpMasterDiscover(byte[] bytes)
+        private double temp;
+        public double Temp
         {
-            FromHostName = Encoding.ASCII.GetString(bytes, 1, bytes.Length - 1);
+            get
+            {
+                return temp;
+            }
         }
-        public ScpMasterDiscover(string FromHostName)
+        public ScpTempBroadcast(double temp)
+            : base()
         {
-            this.FromHostName = FromHostName;
+            this.temp = temp;
+            type = (byte)ScpPacketTypes.TempBroadcast;
         }
+        public ScpTempBroadcast(byte[] bytes, int length)
+            : base(bytes)
+        {
+            temp = BitConverter.ToDouble(bytes, 10);
+        }
+        protected override byte[] GetPayload()
+        {
+            return BitConverter.GetBytes(temp);
+        }
+        public override string ToString()
+        {
+            return "ScpTempBroadcast - Temp: " + temp.ToString();
+        }
+    }
+    public class ScpAlarmBroadcast : ScpPacket
+    {
+        private byte[] alarm;
+        public byte[] Alarm
+        {
+            get
+            {
+                return alarm;
+            }
+        }
+        public ScpAlarmBroadcast(byte[] alarm)
+            : base()
+        {
+            this.alarm = alarm;
+            type = (byte)ScpPacketTypes.AlarmBroadcast;
+        }
+        public ScpAlarmBroadcast(byte[] bytes, int length)
+            : base(bytes)
+        {
+            alarm = new byte[length - 10];
+            Array.Copy(bytes, 10, alarm, 0, length - 10);
+        }
+        protected override byte[] GetPayload()
+        {
+            return alarm;
+        }
+        public override string ToString()
+        {
+            return "ScpAlarmBroadcast";
+        }
+    }
+    public class ScpAlarmLimitBroadcast : ScpPacket
+    {
+        private double loLoLimit;
+        private double loLimit;
+        private double hiLimit;
+        private double hiHiLimit;
+        public double LoLoLimit { get { return loLoLimit; } }
+        public double LoLimit { get { return loLimit; } }
+        public double HiLimit { get { return hiLimit; } }
+        public double HiHiLimit { get { return hiHiLimit; } }
+        public ScpAlarmLimitBroadcast(double loLoLimit, double loLimit, double hiLimit, double hiHiLimit)
+            : base()
+        {
+            this.loLoLimit = loLoLimit;
+            this.loLimit = loLimit;
+            this.hiLimit = hiLimit;
+            this.hiHiLimit = hiHiLimit;
+            type = (byte)ScpPacketTypes.AlarmLimitBroadcast;
+        }
+        public ScpAlarmLimitBroadcast(byte[] bytes, int length)
+            : base(bytes)
+        {
+            loLoLimit = BitConverter.ToDouble(bytes, 10);
+            loLimit = BitConverter.ToDouble(bytes, 18);
+            hiLimit = BitConverter.ToDouble(bytes, 26);
+            hiHiLimit = BitConverter.ToDouble(bytes, 34);
+        }
+        protected override byte[] GetPayload()
+        {
+            byte[] payload = new byte[8 * 4];
+            Array.Copy(BitConverter.GetBytes(loLoLimit), 0, payload, 0, 8);
+            Array.Copy(BitConverter.GetBytes(loLimit), 0, payload, 8, 8);
+            Array.Copy(BitConverter.GetBytes(hiLimit), 0, payload, 16, 8);
+            Array.Copy(BitConverter.GetBytes(hiHiLimit), 0, payload, 24, 8);
 
-        public byte[] GetBytes()
+            return payload;
+        }
+        public override string ToString()
         {
-            byte[] bytes = new byte[1];
-            bytes[0] = 1;
-            return bytes.Concat(Encoding.ASCII.GetBytes(FromHostName)).ToArray();
+            return "ScpAlarmLimitBroadcast - LoLo: " + loLoLimit.ToString()+
+                   " Lo: " + loLimit.ToString()+
+                   " Hi: " + hiLimit.ToString()+
+                   " HiHi: " + hiHiLimit.ToString();
         }
     }
 
-    public class ScpMasterDiscoverReply : ScpUdpPacket
+    public partial class ScpHost
     {
-        public string FromHostName;
-        public IPEndPoint MasterIPEndPoint;
-        public int MasterPriority;
-        public ScpMasterDiscoverReply(byte[] bytes)
+        /// <summary>
+        /// Base class for Scp UDP packets. Main purpose is to construct correct Scp UDP packet from received bytes
+        /// Used only internally by SCPHost class.
+        /// </summary>
+        public abstract class ScpUdpPacket
         {
-            MasterPriority = bytes[1];
-            FromHostName = Encoding.ASCII.GetString(bytes, 2, bytes.Length - 2);
-        }
-        public ScpMasterDiscoverReply()
-        {
-            this.FromHostName = ScpHost.Name;
-            this.MasterPriority = ScpHost.Priority;
+            public static ScpUdpPacket Create(byte[] bytes)
+            {
+                if (bytes[0] == 1) // Master discover packet
+                {
+                    return new ScpMasterDiscover(bytes);
+                }
+                else if (bytes[0] == 2) // Master discover reply packet
+                {
+                    return new ScpMasterDiscoverReply(bytes);
+                }
+                else
+                {
+                    return null;
+                }
+            }
         }
 
         /// <summary>
-        /// Gets the raw packet bytes for sending on the network
+        /// Udp packet for discovering other masters on network
         /// </summary>
-        /// <returns></returns>
-        public byte[] GetBytes()
+        /// 
+        private class ScpMasterDiscover : ScpUdpPacket
         {
-            byte[] bytes = new byte[2];
-            bytes[0] = 2;
-            bytes[1] = (byte)MasterPriority;
-            return bytes.Concat(Encoding.ASCII.GetBytes(FromHostName)).ToArray();
+            public string FromHostName;
+            public ScpMasterDiscover(byte[] bytes)
+            {
+                FromHostName = Encoding.ASCII.GetString(bytes, 1, bytes.Length - 1);
+            }
+            public ScpMasterDiscover(string FromHostName)
+            {
+                this.FromHostName = FromHostName;
+            }
+
+            public byte[] GetBytes()
+            {
+                byte[] bytes = new byte[1];
+                bytes[0] = 1;
+                return bytes.Concat(Encoding.ASCII.GetBytes(FromHostName)).ToArray();
+            }
+        }
+
+        private class ScpMasterDiscoverReply : ScpUdpPacket
+        {
+            public string FromHostName;
+            public IPEndPoint MasterIPEndPoint;
+            public int MasterPriority;
+            public ScpMasterDiscoverReply(byte[] bytes)
+            {
+                MasterPriority = bytes[1];
+                FromHostName = Encoding.ASCII.GetString(bytes, 2, bytes.Length - 2);
+            }
+            public ScpMasterDiscoverReply()
+            {
+                this.FromHostName = ScpHost.Name;
+                this.MasterPriority = ScpHost.Priority;
+            }
+
+            /// <summary>
+            /// Gets the raw packet bytes for sending on the network
+            /// </summary>
+            /// <returns></returns>
+            public byte[] GetBytes()
+            {
+                byte[] bytes = new byte[2];
+                bytes[0] = 2;
+                bytes[1] = (byte)MasterPriority;
+                return bytes.Concat(Encoding.ASCII.GetBytes(FromHostName)).ToArray();
+            }
         }
     }
 }

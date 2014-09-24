@@ -5,19 +5,24 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
+using System.Threading.Tasks.Dataflow;
 using System.Net;
 
 namespace ScadaCommunicationProtocol
 {
     public partial class ScpHost
     {
+        /// <summary>
+        /// Used internally by ScpHost. Handles TCP sessions and communication.
+        /// </summary>
         private class ScpTcpClient
         {
             public TcpClient tcpClient;
             public AutoResetEvent ClientDisconnectedEvent;
             public event MessageEventHandler MessageEvent;
-            public event ScpPacketEventHandler PacketEvent;
+            public event ScpInternalPacketEventHandler PacketEvent;
             public Task ReaderTask;
+            private Task keepAliveTask;
 
             // Hostname to other end of connection
             public string Hostname { get; set; }
@@ -25,14 +30,16 @@ namespace ScadaCommunicationProtocol
             private IPAddress address;
             private int port;
             private NetworkStream ns;
-            private int pendingRequestCount;
-            private int requestCounter = 0;
+            private int pendingRequestID;
             private bool pendingRequest = false;
             private bool enabled = false;
             private CancellationTokenSource requestCancelToken = new CancellationTokenSource();
             private CancellationTokenSource clientCancelToken = new CancellationTokenSource();
-            private ScpTcpPacket requestPacket;
-            private ScpTcpPacket responsePacket;
+            private ScpPacket requestPacket;
+            private ScpPacket responsePacket;
+            private Object _lock = new Object();
+            private BufferBlock<byte[]> writeBuffer;
+            private Task writerTask;
             private void OnMessageEvent(MessageEventArgs e)
             {
                 if (MessageEvent != null)
@@ -40,47 +47,41 @@ namespace ScadaCommunicationProtocol
                     MessageEvent(this, e);
                 }
             }
-
             private void OnPacketEvent(ScpPacketEventArgs e)
             {
                 if (PacketEvent != null)
                 {
                     PacketEvent(this, e);
-                    if (e.Response != null)
+                    if (e.Response != null) // Reply in case this was a request
                     {
-                        Task send = SendAsync(e.Response);
-                        send.Wait();
+                        e.Response.Id = e.Packet.Id;
+                        SendAsync(e.Response).Wait();
                     }
                 }
             }
-
             public ScpTcpClient()
             {
                 Hostname = "";
                 ClientDisconnectedEvent = new AutoResetEvent(false);
             }
-
             /// <summary>
             /// Sends a packet asyncronously to the network.
             /// Throws an exception if response is not received in time or there are any network errors
             /// </summary>
             /// <param name="packet"></param>
-            /// <returns>ScpTcpPacket returned. For Push requests, this return value is null</returns>
-            public async Task<ScpTcpPacket> SendAsync(ScpTcpPacket packet)
+            /// <returns>ScpTcpPacket returned. For Broadcast and Response packet, return value is null</returns>
+            public async Task<ScpPacket> SendAsync(ScpPacket packet)
             {
-                if (!packet.IsResponse)
-                {
-                    packet.ID = requestCounter;
-                }
                 byte[] packetbuffer = packet.GetBytes();
-                ScpTcpPacket response = null;
+                ScpPacket response = null;
 
                 // Send packet
-                OnMessageEvent(new MessageEventArgs("SCP packet sent! ID: " + packet.ID.ToString() + " Type: " + packet.Type.ToString()));
-                await ns.WriteAsync(packetbuffer, 0, packetbuffer.Length);
-                if (packet.IsRequest) // Wait for response
+                OnMessageEvent(new MessageEventArgs("SCP packet sent! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+
+                await writeBuffer.SendAsync(packetbuffer);
+                if (packet.IsRequest())
                 {
-                    pendingRequestCount = requestCounter;
+                    pendingRequestID = packet.Id;
                     pendingRequest = true;
                     requestPacket = packet;
                     responsePacket = null;
@@ -102,8 +103,24 @@ namespace ScadaCommunicationProtocol
                     }
                     pendingRequest = false;
                 }
-                requestCounter++;
                 return response;
+            }
+
+            private async Task WriterAsync()
+            {
+                writeBuffer = new BufferBlock<byte[]>();
+                while (enabled)
+                {
+                    byte[] data = await writeBuffer.ReceiveAsync();
+                    int offset = 0;
+                    while (offset < (data.Length-8192))
+                    {
+                        await ns.WriteAsync(data, offset, 8192);
+                        offset += 8192;
+                    }
+                    int count = data.Length - offset;
+                    await ns.WriteAsync(data, 0, count);
+                }
             }
 
             /// <summary>
@@ -127,39 +144,49 @@ namespace ScadaCommunicationProtocol
                     while (enabled)
                     {
                         bytesread = await ns.ReadAsync(tempbuffer, 0, 8192);
-                        await Task.Delay(100);
                         Array.Copy(tempbuffer, 0, buffer, totalbytesread, bytesread);
                         totalbytesread += bytesread;
-                        if (totalbytesread < 4)
+                        if (totalbytesread >= 4)
                         {
-                            continue;
-                        }
-                        if (packetLength == -1) // New packet starting
-                        {
-                            packetLength = BitConverter.ToInt32(buffer, 0);
-                        }
-                        if (totalbytesread >= (packetLength+10)) // Complete packet received
-                        {
-                            ScpTcpPacket packet = new ScpTcpPacket(buffer, packetLength + 10);
-                            packet.Source = Hostname;
-                            OnMessageEvent(new MessageEventArgs("SCP packet received! From: "+Hostname+" ID: " + packet.ID.ToString() + " Type: "+packet.Type.ToString()));
-                            if (pendingRequest && packet.IsResponse)
+                            while (totalbytesread >= 4)
                             {
-                                responsePacket = packet;
-                                requestCancelToken.Cancel(); // response to a pending request
-                            }
-                            else
-                            {
-                                ScpTcpPacket clone = packet.Clone();
-                                OnPacketEvent(new ScpPacketEventArgs(clone));
-                            }
+                                if (packetLength == -1) // New packet starting
+                                {
+                                    packetLength = BitConverter.ToInt32(buffer, 0);
+                                }
+                                if (totalbytesread >= (packetLength)) // Complete packet received
+                                {
+                                    ScpPacket packet = ScpPacket.Create(buffer,packetLength);//new ScpTcpPacket(buffer, packetLength);
+                                    if (packet != null)
+                                    {
+                                        packet.Source = Hostname;
+                                        OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                                        if (pendingRequest && packet.IsResponse() && pendingRequestID == packet.Id)
+                                        {
+                                            responsePacket = packet;
+                                            requestCancelToken.Cancel(); // Response is recevied, stop the SendAsync method from waiting any longer
+                                            requestCancelToken = new CancellationTokenSource();
+                                        }
+                                        else if (!packet.IsResponse())
+                                        {
+                                            ScpPacket clone = packet.Clone();
+                                            OnPacketEvent(new ScpPacketEventArgs(clone));
+                                        }
 
-                            if (totalbytesread>(packetLength+10))
-                            {
-                                Array.Copy(buffer, packetLength+10,buffer,0,totalbytesread-(packetLength+10));
+                                    }
+                                    // If bytes in buffer was more than one complete packet, move remaining bytes to beginning of buffer
+                                    if (totalbytesread > (packetLength))
+                                    {
+                                        Array.Copy(buffer, packetLength, buffer, 0, totalbytesread - (packetLength));
+                                    }
+                                    totalbytesread -= packetLength;
+                                    packetLength = -1;
+                                }
+                                else
+                                {
+                                    break;
+                                }
                             }
-                            totalbytesread -= packetLength + 10;
-                            packetLength = -1;
                         }
                     }
                     tcpClient.Close();
@@ -173,6 +200,16 @@ namespace ScadaCommunicationProtocol
                 }
             }
 
+            private async Task KeepAlive()
+            {
+                byte[] keepAlivepacket = BitConverter.GetBytes(4);
+                while (enabled)
+                {
+                    await writeBuffer.SendAsync(keepAlivepacket);
+                    await Task.Delay(1000);
+                }
+            }
+
             // Used by slave for connecting to master
             public async Task<bool> Connect(IPAddress address, int port, string hostname)
             {
@@ -181,23 +218,21 @@ namespace ScadaCommunicationProtocol
                 this.address = address;
                 this.port = port;
                 tcpClient = new TcpClient();
-                await tcpClient.ConnectAsync(address, port);
-                ReaderTask = ReaderAsync();
                 try
                 {
-                    ScpTcpPacket request = new ScpTcpPacket(ScpTcpPacketTypes.RegRequest, Encoding.ASCII.GetBytes(hostname), false);
-                    ScpTcpPacket response = await SendAsync(request);
-                    if (response == null || response.Type != ScpTcpPacketTypes.RegResponse)
+                    await tcpClient.ConnectAsync(address, port);
+                    writerTask = WriterAsync();
+                    ReaderTask = ReaderAsync();
+                    ScpPacket request = new ScpRegRequest(hostname);
+                    ScpPacket response = await SendAsync(request);
+                    if (response != null && response is ScpRegResponse && ((ScpRegResponse)response).Ok)
                     {
-                        Disconnect();
-                    }
-                    else if (response.Payload[0] != 1) // Verify that Master acceps this slave connection
-                    {
-                        Disconnect();
+                        connected = true;
+                        keepAliveTask = KeepAlive();
                     }
                     else
                     {
-                        connected = true;
+                        Disconnect();
                     }
                 }
                 catch
@@ -212,6 +247,8 @@ namespace ScadaCommunicationProtocol
             {
                 enabled = true;
                 tcpClient = client;
+                writerTask = WriterAsync();
+                keepAliveTask = KeepAlive();
                 await ReaderAsync();
             }
 

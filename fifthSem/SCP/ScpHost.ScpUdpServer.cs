@@ -12,7 +12,7 @@ namespace ScadaCommunicationProtocol
     public partial class ScpHost
     {
         /// <summary>
-        /// This class listens for UDP broadcasts from other ScpHosts and replies with master information
+        /// Used internally by ScpHost when in Master mode. Purpose is to reply to UDP broadcasts from oth SCP hosts with master information.
         /// </summary>
         private class ScpUdpServer
         {
@@ -36,7 +36,7 @@ namespace ScadaCommunicationProtocol
                 {
                     enabled = false;
                     udpMasterServer.Close();
-                    receiveTask.Wait(1000);
+                    //receiveTask.Wait(1000);
                 }
             }
 

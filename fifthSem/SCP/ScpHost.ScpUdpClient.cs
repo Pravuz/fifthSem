@@ -13,7 +13,7 @@ namespace ScadaCommunicationProtocol
     public partial class ScpHost
     {
         /// <summary>
-        /// This class handles discovering SCP master hosts using UDP broadcasts
+        /// Used internally by ScpHost. Purpose is to discover SCP Masters on network using UDP Broadcast
         /// </summary>
         private class ScpUdpClient
         {
@@ -26,9 +26,9 @@ namespace ScadaCommunicationProtocol
                 udpClient.Client.ReceiveTimeout = 100;
                 broadcastAddresses = new List<IPAddress>();
                 
-                //findBroadcastAddresses();
+                findBroadcastAddresses();
                 // Hardcoded broadcast address for testing.....
-                broadcastAddresses.Add(new IPAddress(new byte[] {192,168,9,255}));
+                //broadcastAddresses.Add(new IPAddress(new byte[] {192,168,9,255}));
             }
 
             private void findBroadcastAddresses()
@@ -69,12 +69,15 @@ namespace ScadaCommunicationProtocol
                         udpClient.Send(bytes, bytes.Length, new IPEndPoint(broadcastAddress, ScpHost.UdpServerPort));
                         bytes = udpClient.Receive(ref ipEndPoint);
                         reply = new ScpMasterDiscoverReply(bytes);
-                        reply.MasterIPEndPoint = ipEndPoint;
+                        if (reply.FromHostName != ScpHost.Name) // Make sure we ignore if reply happens to be from same as sender
+                        {
+                            reply.MasterIPEndPoint = ipEndPoint;
 
-                        // Keep using only this broadcast address for subsequent broadcasts
-                        broadcastAddresses.Clear();
-                        broadcastAddresses.Add(broadcastAddress);
-                        return true;
+                            // Keep using only this broadcast address for subsequent broadcasts
+                            broadcastAddresses.Clear();
+                            broadcastAddresses.Add(broadcastAddress);
+                            return true;
+                        }
                     }
                     catch
                     {

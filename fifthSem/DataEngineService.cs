@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ScadaCommunicationProtocol;
+using System.IO.Ports;
 
 namespace fifthSem
 {
@@ -13,29 +14,44 @@ namespace fifthSem
         public static string hostname;
         public int hostId, tempAlarmHigh, tempAlarmLow;
         public enum ScpMode { MASTER, SLAVE, WAITING };
+        public enum ComMode { MASTER, SLAVE, WAITING };
         public ScpMode ScpStatus;
+        public ComMode ComStatus;
 
-        private string logFile, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
-        private int sizeOfFile;
+        private string logFile, logFilePath, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
+        private long sizeOfFile = 0;
         private ScpHost mScpHost;
-        //private rs485host mrs485host;
+        private RS485.RS485 mRS485;
+        private FileInfo mFile;
         //private alarmhost malarmhost;
 
         public DataEngineService()
         {
-            this.ServiceName = "fifthSemDEService";
+            //service musthave's
+            this.ServiceName = "fifthSemDataEngineService";
             this.CanStop = true;
             this.CanPauseAndContinue = true;
             this.AutoLog = true;
 
+            //waiting will be default mode until protocols are initialized.
             ScpStatus = ScpMode.WAITING;
-
+            ComStatus = ComMode.WAITING;
+            
+            //logfile init
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
+            logFilePath = logFolder + logFile;
+            mFile = new FileInfo(logFilePath);
+            logFileCheck();
 
+            //creates objects of protocols
             mScpHost = new ScpHost(1);
-
+            mRS485 = new RS485.RS485(); //passing prio later.
         }
+
+        //
+        //ServiceMethods Start
+        //
 
         public static void Main()
         {
@@ -46,25 +62,62 @@ namespace fifthSem
         {
             base.OnStart(args);
 
-            if (ComConnected()) mScpHost.CanBeMaster = true;
+            //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
             mScpHost.PacketEvent += PacketHandler;
+            mRS485.TempHandler += TempEventHandler;
+            mRS485.AlarmHandler += AlarmEventHandler;
+            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+
+            //starts protocols
+            mScpHost.Start();
+            mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
+            //todo: start alarmsystem
+
+            mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
 
-            mScpHost.Start();
-            //start rs485 og alarmsystem
-        }
-
-        protected override void OnShutdown()
-        {
-            base.OnShutdown();
-            this.OnStop(); //?
+            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
 
         protected override void OnStop()
         {
             base.OnStop();
+            mRS485.stopCom();            
         }
+
+        //
+        //ServiceMethods Stop
+        //ComEvents Start
+        //
+
+        private void TempEventHandler(object sender, RS485.TempEventArgs e)
+        { }
+
+        private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
+        { 
+        
+        }
+
+        private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
+        {
+            switch (e.status) { 
+                case RS485.ConnectionStatus.Master:
+                    mScpHost.CanBeMaster = true;
+                    break;
+                case RS485.ConnectionStatus.Slave:
+                    mScpHost.CanBeMaster = true;
+                    break;
+                case RS485.ConnectionStatus.Waiting:
+                    mScpHost.CanBeMaster = false;
+                    break;
+            }
+        }
+
+        //
+        //ComEvents Stop
+        //ScpEvents Start
+        //
 
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e) {
             string timeStamp = DateTime.Now.ToLongTimeString();
@@ -89,18 +142,9 @@ namespace fifthSem
 
         }
 
-        private void TimerTask()
-        {
-
-        }
-
-        /// <summary>
-        /// Endrer program/klassevariabler basert på om bruker har huket av boks for tilkobling til rs485 (com)
-        /// </summary>
-        private bool ComConnected()
-        {
-            return true;
-        }
+        //
+        //ScpEvents Stop
+        //
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
         /// <returns> True if the operation was a success and vice/versa. </returns>
@@ -109,14 +153,23 @@ namespace fifthSem
             bool success = true;
             try
             {
-                File.AppendText(logFolder + logFile).Write(s);
+                File.AppendText(logFilePath).Write(s);
             }
             catch (Exception e)
             {
                 success = false;
             }
             return success;
-        }        
+        }
+
+        private void logFileCheck() 
+        {
+            mFile.Refresh();
+            if (File.Exists(logFilePath))
+                sizeOfFile = mFile.Length;
+            else
+                File.Create(logFilePath);
+        }
 
     }
 }
