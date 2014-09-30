@@ -20,6 +20,7 @@ namespace fifthSem
             serialPortNames();
 
             mDataEngine = new DataEngine();
+            mDataEngine.mNewTempHandler += DataEngineNewTempHandler;
 
         }
         private void startDataEngine()
@@ -33,16 +34,16 @@ namespace fifthSem
 
         private void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e)
         {
-
+            txtTemperature.Text = e.temp.ToString();
         }
         private void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e)
-        { 
-        
+        {
+            txtTCP_IP_MS.Text = e.status;
         }
 
         private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
-        { 
-        
+        {
+            txtRS485_MS.Text = e.status;
         }
         private void btnSetLimits_Click(object sender, EventArgs e)
         {
