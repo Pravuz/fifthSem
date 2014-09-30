@@ -170,6 +170,7 @@
             this.txtTCP_IP_MS.ReadOnly = true;
             this.txtTCP_IP_MS.Size = new System.Drawing.Size(100, 20);
             this.txtTCP_IP_MS.TabIndex = 15;
+            this.txtTCP_IP_MS.TextChanged += new System.EventHandler(this.txtTCP_IP_MS_TextChanged);
             // 
             // label5
             // 
@@ -377,32 +378,23 @@
             this.lstEvent.TabIndex = 0;
             this.lstEvent.UseCompatibleStateImageBehavior = false;
             // 
-            // txtTemp
+            // cmbCOM
             // 
-            this.txtTemp.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtTemp.Location = new System.Drawing.Point(23, 40);
-            this.txtTemp.Name = "txtTemp";
-            this.txtTemp.ReadOnly = true;
-            this.txtTemp.Size = new System.Drawing.Size(100, 62);
-            this.txtTemp.TabIndex = 20;
+            this.cmbCOM.FormattingEnabled = true;
+            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
+            this.cmbCOM.Name = "cmbCOM";
+            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
+            this.cmbCOM.TabIndex = 19;
+            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
             // 
-            // groupBox6
+            // label8
             // 
-            this.groupBox6.Controls.Add(this.txtTemp);
-            this.groupBox6.Location = new System.Drawing.Point(610, 6);
-            this.groupBox6.Name = "groupBox6";
-            this.groupBox6.Size = new System.Drawing.Size(155, 216);
-            this.groupBox6.TabIndex = 21;
-            this.groupBox6.TabStop = false;
-            this.groupBox6.Text = "Current Temperature";
-            // 
-            // dataGridView1
-            // 
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Location = new System.Drawing.Point(15, 30);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(593, 146);
-            this.dataGridView1.TabIndex = 22;
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(27, 145);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(50, 13);
+            this.label8.TabIndex = 20;
+            this.label8.Text = "COMPort";
             // 
             // Form1
             // 
