@@ -165,6 +165,7 @@ namespace RS485
             // Read temp and remove unwanted data and make sure all of the data is received
             int indexStart, indexStop;
             string temp = "";
+            //tempData = tempData + Encoding.ASCII.GetString(data);
             tempData = tempData + Encoding.ASCII.GetString(data);
             if(connectionStatus == ConnectionStatus.Master & tempData.Contains("#"))
             {
@@ -182,6 +183,8 @@ namespace RS485
                     temp = tempData.Substring(2 + indexStart, indexStop - indexStart - 1);
                     fortegn = tempData.Substring(1 + indexStart,1);
                     temp = temp.TrimStart('0'); // Remove null in front of temp data
+                    temp = temp.TrimEnd('\r');
+                    temp = temp.Replace('.', ',');
                     if (null != TempHandler) TempHandler(this, new TempEventArgs(Convert.ToDouble(temp)));
                     //if (null != TempHandler) TempHandler(this, new TempEventArgs(fortegn + temp + "°C"));
                     tempData = "";
