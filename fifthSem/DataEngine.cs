@@ -44,13 +44,7 @@ namespace fifthSem
     class DataEngine
     {
         public static string hostname;
-        public int hostId, tempAlarmHigh, tempAlarmLow;
-        //public enum ScpMode { MASTER, SLAVE, WAITING };
-        //public enum ComMode { MASTER, SLAVE, WAITING };
-        //public ScpMode ScpStatus;
-        //public ComMode ComStatus;
-        //public string portNr { get; set; }
-        //public int prio { get; set; }
+        //public int tempAlarmHigh, tempAlarmLow;
 
         private string logFile, logFilePath, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
         private long sizeOfFile = 0;
@@ -107,6 +101,7 @@ namespace fifthSem
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
             mScpHost.PacketEvent += PacketHandler;
+            mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
             mRS485.TempHandler += TempEventHandler;
             mRS485.AlarmHandler += AlarmEventHandler;
             mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
@@ -168,8 +163,14 @@ namespace fifthSem
         //ScpEvents Start
         //
 
+        private void SlaveConnectionHandler(object sender, SlaveConnectionEventArgs e)
+        {
+            
+        }
+
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e)
         {
+            
             switch (e.Status)
             {
                 case ScpConnectionStatus.Master:
