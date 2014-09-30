@@ -99,7 +99,10 @@ namespace fifthSem
         //
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
-        { }
+        { 
+            //skriv til logg
+            //oppdater gui
+        }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {

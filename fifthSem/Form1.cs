@@ -27,8 +27,8 @@ namespace fifthSem
         private void btnSetPri_Click(object sender, EventArgs e)
         {
             //Program.setPrio(Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            if (cmbCOM.SelectedItem != null) Program.startDataEngine();
-            else Program.startDataEngine(cmbCOM.SelectedItem.ToString());
+            if (cmbCOM.SelectedItem != null) Program.startDataEngine(cmbCOM.SelectedItem.ToString());
+            else Program.startDataEngine();
         }
 
        
