@@ -9,7 +9,7 @@ using System.IO.Ports;
 
 namespace fifthSem
 {
-    class DataEngineService : System.ServiceProcess.ServiceBase
+    class DataEngine
     {
         public static string hostname;
         public int hostId, tempAlarmHigh, tempAlarmLow;
@@ -25,14 +25,8 @@ namespace fifthSem
         private FileInfo mFile;
         //private alarmhost malarmhost;
 
-        public DataEngineService()
+        public DataEngine()
         {
-            //service musthave's
-            this.ServiceName = "fifthSemDataEngineService";
-            this.CanStop = true;
-            this.CanPauseAndContinue = true;
-            this.AutoLog = true;
-
             //waiting will be default mode until protocols are initialized.
             ScpStatus = ScpMode.WAITING;
             ComStatus = ComMode.WAITING;
@@ -48,20 +42,8 @@ namespace fifthSem
             mScpHost = new ScpHost(1);
             mRS485 = new RS485.RS485(); //passing prio later.
         }
-
-        //
-        //ServiceMethods Start
-        //
-
-        public static void Main()
+        private void start() 
         {
-            System.ServiceProcess.ServiceBase.Run(new DataEngineService());
-        }
-
-        protected override void OnStart(string[] args)
-        {
-            base.OnStart(args);
-
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
             mScpHost.PacketEvent += PacketHandler;
@@ -71,23 +53,22 @@ namespace fifthSem
 
             //starts protocols
             mScpHost.Start();
-            mRS485.startCom("",9600,8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
+            mRS485.startCom("", 9600, 8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
             //todo: start alarmsystem
 
             mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
 
             if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+        
         }
-
-        protected override void OnStop()
+        private void stop() 
         {
-            base.OnStop();
-            mRS485.stopCom();            
+            //cleanup
+            mRS485.stopCom();    
         }
 
         //
-        //ServiceMethods Stop
         //ComEvents Start
         //
 
@@ -95,13 +76,14 @@ namespace fifthSem
         { }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
-        { 
-        
+        {
+
         }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
         {
-            switch (e.status) { 
+            switch (e.status)
+            {
                 case RS485.ConnectionStatus.Master:
                     mScpHost.CanBeMaster = true;
                     break;
@@ -119,10 +101,12 @@ namespace fifthSem
         //ScpEvents Start
         //
 
-        private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e) {
+        private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e)
+        {
             string timeStamp = DateTime.Now.ToLongTimeString();
 
-            switch (e.Status) { 
+            switch (e.Status)
+            {
                 case ScpConnectionStatus.Master:
                     ScpStatus = ScpMode.MASTER;
                     break;
@@ -162,7 +146,7 @@ namespace fifthSem
             return success;
         }
 
-        private void logFileCheck() 
+        private void logFileCheck()
         {
             mFile.Refresh();
             if (File.Exists(logFilePath))
@@ -170,6 +154,5 @@ namespace fifthSem
             else
                 File.Create(logFilePath);
         }
-
     }
 }
