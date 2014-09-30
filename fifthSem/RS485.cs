@@ -49,8 +49,8 @@ namespace RS485
     }
     public class TempEventArgs : EventArgs
     {
-        public string temp;
-        public TempEventArgs(string temp)
+        public double temp;
+        public TempEventArgs(double temp)
         {
             this.temp = temp;
         }
@@ -182,7 +182,8 @@ namespace RS485
                     temp = tempData.Substring(2 + indexStart, indexStop - indexStart - 1);
                     fortegn = tempData.Substring(1 + indexStart,1);
                     temp = temp.TrimStart('0'); // Remove null in front of temp data
-                    if (null != TempHandler) TempHandler(this, new TempEventArgs(fortegn + temp + "°C"));
+                    if (null != TempHandler) TempHandler(this, new TempEventArgs(Convert.ToDouble(temp)));
+                    //if (null != TempHandler) TempHandler(this, new TempEventArgs(fortegn + temp + "°C"));
                     tempData = "";
                 }
             }
