@@ -13,10 +13,6 @@ namespace fifthSem
 {
     public partial class Form1 : Form
     {
-
-        public string portNr { get; set; }
-        public int prio { get; set; }
-
         public Form1()
         {
             InitializeComponent();
@@ -30,7 +26,9 @@ namespace fifthSem
 
         private void btnSetPri_Click(object sender, EventArgs e)
         {
-            prio = Convert.ToInt32(cmbMPri.SelectedItem.ToString());
+            //Program.setPrio(Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
+            if (cmbCOM.SelectedItem != null) Program.startDataEngine();
+            else Program.startDataEngine(cmbCOM.SelectedItem.ToString());
         }
 
        
@@ -43,7 +41,7 @@ namespace fifthSem
 
         private void cmbCOM_SelectedIndexChanged(object sender, EventArgs e)
         {
-            portNr = cmbCOM.SelectedItem.ToString();
+            //Program.setPort(cmbCOM.SelectedItem.ToString());
         }
 
 

@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using ScadaCommunicationProtocol;
 using System.IO.Ports;
+using System.Diagnostics;
 
 namespace fifthSem
 {
@@ -17,6 +18,8 @@ namespace fifthSem
         public enum ComMode { MASTER, SLAVE, WAITING };
         public ScpMode ScpStatus;
         public ComMode ComStatus;
+        //public string portNr { get; set; }
+        //public int prio { get; set; }
 
         private string logFile, logFilePath, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
         private long sizeOfFile = 0;
@@ -30,6 +33,8 @@ namespace fifthSem
             //waiting will be default mode until protocols are initialized.
             ScpStatus = ScpMode.WAITING;
             ComStatus = ComMode.WAITING;
+
+            
             
             //logfile init
             DateTime d = DateTime.Now;
@@ -41,8 +46,30 @@ namespace fifthSem
             //creates objects of protocols
             mScpHost = new ScpHost(1);
             mRS485 = new RS485.RS485(); //passing prio later.
+
         }
-        private void start() 
+        /// <summary>
+        /// Starts the DataEngine WITHOUT com 
+        /// </summary>
+        public void Start() 
+        {
+            //subscribe to events
+            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+            mScpHost.PacketEvent += PacketHandler;
+
+            //starts protocols
+            mScpHost.Start();
+            hostname = ScpHost.Name;
+
+            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+        
+        }
+
+        /// <summary>
+        /// Starts the DataEngine WITH com
+        /// </summary>
+        /// <param name="portNr">comport to use</param>
+        public void Start(string portNr) 
         {
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
@@ -53,14 +80,13 @@ namespace fifthSem
 
             //starts protocols
             mScpHost.Start();
-            mRS485.startCom("", 9600, 8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
+            mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
             //todo: start alarmsystem
 
             mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
 
             if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
-        
         }
         private void stop() 
         {
@@ -132,27 +158,29 @@ namespace fifthSem
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
         /// <returns> True if the operation was a success and vice/versa. </returns>
-        private bool writeToFile(string s)
+        private void writeToFile(string s)
         {
-            bool success = true;
             try
             {
-                File.AppendText(logFilePath).Write(s);
+                mFile.AppendText().WriteLine(s);
             }
             catch (Exception e)
             {
-                success = false;
+                Debug.WriteLine(this, "DataEngine: " + e.ToString());
             }
-            return success;
         }
 
         private void logFileCheck()
         {
+            //Debug.WriteLine(this, "DataEngine: " + mFile.FullName);
             mFile.Refresh();
             if (File.Exists(logFilePath))
                 sizeOfFile = mFile.Length;
             else
+            {
+                Directory.CreateDirectory(logFolder);
                 File.Create(logFilePath);
+            }
         }
     }
 }
