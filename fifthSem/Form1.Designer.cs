@@ -169,7 +169,6 @@
             this.txtTCP_IP_MS.ReadOnly = true;
             this.txtTCP_IP_MS.Size = new System.Drawing.Size(100, 20);
             this.txtTCP_IP_MS.TabIndex = 15;
-            this.txtTCP_IP_MS.TextChanged += new System.EventHandler(this.txtTCP_IP_MS_TextChanged);
             // 
             // label5
             // 
