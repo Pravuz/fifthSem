@@ -16,8 +16,8 @@ namespace fifthSem
 
     public class DataEngineNewTempArgs : EventArgs
     {
-        public string temp;
-        public DataEngineNewTempArgs(string temp)
+        public double temp;
+        public DataEngineNewTempArgs(double temp)
         {
             this.temp = temp;
         }
@@ -113,7 +113,7 @@ namespace fifthSem
 
             //starts protocols
             mScpHost.Start();
-            mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.None, Handshake.None); //need real port from GUI
+            mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
             //todo: start alarmsystem
 
             mRS485.ComputerAddress = 1; //need real prio from GUI
@@ -133,8 +133,9 @@ namespace fifthSem
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
-            mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
+            if(mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(Convert.ToDouble(e.temp))); //upcoming update removes need to convert.
             writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
+            if (ScpStatus == ScpMode.MASTER) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(Convert.ToDouble(e.temp)));
             //skriv til logg
         }
 
@@ -148,12 +149,15 @@ namespace fifthSem
             switch (e.status)
             {
                 case RS485.ConnectionStatus.Master:
+                    if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Slave:
+                    if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Waiting:
+                    if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     mScpHost.CanBeMaster = false;
                     break;
             }
@@ -169,12 +173,15 @@ namespace fifthSem
             switch (e.Status)
             {
                 case ScpConnectionStatus.Master:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
                     ScpStatus = ScpMode.MASTER;
                     break;
                 case ScpConnectionStatus.Slave:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
                     ScpStatus = ScpMode.SLAVE;
                     break;
                 case ScpConnectionStatus.Waiting:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
                     ScpStatus = ScpMode.WAITING;
                     break;
                 default:
@@ -184,7 +191,16 @@ namespace fifthSem
 
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
-
+            switch (ScpStatus)
+            { 
+                case ScpMode.MASTER:
+                    break;
+                case ScpMode.SLAVE:
+                    
+                    break;
+                case ScpMode.WAITING:
+                    break;
+            }
         }
 
         //
