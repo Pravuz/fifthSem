@@ -13,12 +13,37 @@ namespace fifthSem
 {
     public partial class Form1 : Form
     {
+        private DataEngine mDataEngine;
         public Form1()
-        {
+        {            
             InitializeComponent();
             serialPortNames();
+
+            mDataEngine = new DataEngine();
+
+        }
+        private void startDataEngine()
+        {
+            mDataEngine.Start();
+        }
+        private void startDataEngine(string s)
+        {
+            mDataEngine.Start(s);
         }
 
+        private void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e)
+        {
+
+        }
+        private void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e)
+        { 
+        
+        }
+
+        private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
+        { 
+        
+        }
         private void btnSetLimits_Click(object sender, EventArgs e)
         {
             double hHTemp, hTemp, lTemp, lLTemp;
@@ -33,8 +58,8 @@ namespace fifthSem
         private void btnSetPri_Click(object sender, EventArgs e)
         {
             //Program.setPrio(Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            if (cmbCOM.SelectedItem != null) Program.startDataEngine(cmbCOM.SelectedItem.ToString());
-            else Program.startDataEngine();
+            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString());
+            else startDataEngine();
         }
 
        

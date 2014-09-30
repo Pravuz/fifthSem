@@ -45,10 +45,10 @@ namespace fifthSem
     {
         public static string hostname;
         public int hostId, tempAlarmHigh, tempAlarmLow;
-        public enum ScpMode { MASTER, SLAVE, WAITING };
-        public enum ComMode { MASTER, SLAVE, WAITING };
-        public ScpMode ScpStatus;
-        public ComMode ComStatus;
+        //public enum ScpMode { MASTER, SLAVE, WAITING };
+        //public enum ComMode { MASTER, SLAVE, WAITING };
+        //public ScpMode ScpStatus;
+        //public ComMode ComStatus;
         //public string portNr { get; set; }
         //public int prio { get; set; }
 
@@ -66,8 +66,8 @@ namespace fifthSem
         public DataEngine()
         {
             //waiting will be default mode until protocols are initialized.
-            ScpStatus = ScpMode.WAITING;
-            ComStatus = ComMode.WAITING;
+            //ScpStatus = ScpMode.WAITING;
+            //ComStatus = ComMode.WAITING;
 
             //logfile init
             DateTime d = DateTime.Now;
@@ -94,7 +94,7 @@ namespace fifthSem
             mScpHost.Start();
             hostname = ScpHost.Name;
 
-            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+            if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         
         }
 
@@ -119,7 +119,7 @@ namespace fifthSem
             mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
 
-            if (ComStatus != ComMode.WAITING) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+            if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
         private void stop() 
         {
@@ -135,7 +135,7 @@ namespace fifthSem
         {
             if(mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(Convert.ToDouble(e.temp))); //upcoming update removes need to convert.
             writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
-            if (ScpStatus == ScpMode.MASTER) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(Convert.ToDouble(e.temp)));
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(Convert.ToDouble(e.temp)));
             //skriv til logg
         }
 
@@ -174,15 +174,15 @@ namespace fifthSem
             {
                 case ScpConnectionStatus.Master:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
-                    ScpStatus = ScpMode.MASTER;
+                    
                     break;
                 case ScpConnectionStatus.Slave:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
-                    ScpStatus = ScpMode.SLAVE;
+                    
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
-                    ScpStatus = ScpMode.WAITING;
+                    
                     break;
                 default:
                     break;
@@ -191,14 +191,14 @@ namespace fifthSem
 
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
-            switch (ScpStatus)
+            switch (mScpHost.ScpConnectionStatus)
             { 
-                case ScpMode.MASTER:
+                case ScpConnectionStatus.Master:
                     break;
-                case ScpMode.SLAVE:
+                case ScpConnectionStatus.Slave:
                     
                     break;
-                case ScpMode.WAITING:
+                case ScpConnectionStatus.Waiting:
                     break;
             }
         }
