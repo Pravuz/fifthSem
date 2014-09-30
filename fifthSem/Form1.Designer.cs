@@ -60,9 +60,8 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lstEvent = new System.Windows.Forms.ListView();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.txtTemp = new System.Windows.Forms.TextBox();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.cmbCOM = new System.Windows.Forms.ComboBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             this.groupBox5.SuspendLayout();
