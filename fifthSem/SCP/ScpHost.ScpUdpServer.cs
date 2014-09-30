@@ -44,7 +44,7 @@ namespace ScadaCommunicationProtocol
             {
                 try
                 {
-                    while (true)
+                    while (enabled)
                     {
                         UdpReceiveResult result = await udpMasterServer.ReceiveAsync();
                         if (result.Buffer.Length > 0)

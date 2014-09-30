@@ -106,6 +106,10 @@ namespace ScadaCommunicationProtocol
                 return response;
             }
 
+            /// <summary>
+            /// Waits for new packets to be added to outgoing packetqueue, then sends them
+            /// </summary>
+            /// <returns></returns>
             private async Task WriterAsync()
             {
                 writeBuffer = new BufferBlock<byte[]>();

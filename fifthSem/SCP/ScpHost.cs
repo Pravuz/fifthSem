@@ -223,6 +223,7 @@ namespace ScadaCommunicationProtocol
             while (true)
             {
                 OnMessageEvent(this, new MessageEventArgs("Trying to discover master...."));
+                await Task.Delay(Priority * 100);
                 if (scpUdpClient.DiscoverMaster(out reply))
                 {
                     // Take slave role and connect to master
@@ -273,7 +274,7 @@ namespace ScadaCommunicationProtocol
                 }
                 else
                 {
-                    await Task.Delay(5000);// Make sure we wait some seconds before trying another connection...
+                    await Task.Delay(1000);// Make sure we wait some seconds before trying another connection...
                 }
             }
         }
