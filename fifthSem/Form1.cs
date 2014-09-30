@@ -43,8 +43,6 @@ namespace fifthSem
         {
             //Program.setPort(cmbCOM.SelectedItem.ToString());
         }
-
-
-     
+             
     }
 }

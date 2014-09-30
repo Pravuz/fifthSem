@@ -10,6 +10,37 @@ using System.Diagnostics;
 
 namespace fifthSem
 {
+    public delegate void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e);
+    public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
+    public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
+
+    public class DataEngineNewTempArgs : EventArgs
+    {
+        public string temp;
+        public DataEngineNewTempArgs(string temp)
+        {
+            this.temp = temp;
+        }
+    }
+
+    public class DataEngineNewTcpStatusArgs : EventArgs
+    {
+        public string status;
+        public DataEngineNewTcpStatusArgs(string status)
+        {
+            this.status = status;
+        }
+    }
+
+    public class DataEngineNewComStatusArgs : EventArgs
+    {
+        public string status;
+        public DataEngineNewComStatusArgs(string status)
+        {
+            this.status = status;
+        }
+    }
+
     class DataEngine
     {
         public static string hostname;
@@ -28,14 +59,16 @@ namespace fifthSem
         private FileInfo mFile;
         //private alarmhost malarmhost;
 
+        public event DataEngineNewTempHandler mNewTempHandler;
+        public event DataEngineNewComStatusHandler mNewComStatusHandler;
+        public event DataEngineNewTcpStatusHandler mNewTcpStatusHandler;
+
         public DataEngine()
         {
             //waiting will be default mode until protocols are initialized.
             ScpStatus = ScpMode.WAITING;
             ComStatus = ComMode.WAITING;
 
-            
-            
             //logfile init
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
@@ -99,9 +132,10 @@ namespace fifthSem
         //
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
-        { 
+        {
+            mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
+            writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
             //skriv til logg
-            //oppdater gui
         }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
@@ -132,8 +166,6 @@ namespace fifthSem
 
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e)
         {
-            string timeStamp = DateTime.Now.ToLongTimeString();
-
             switch (e.Status)
             {
                 case ScpConnectionStatus.Master:
