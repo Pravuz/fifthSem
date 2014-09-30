@@ -32,7 +32,6 @@
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
-            this.label8 = new System.Windows.Forms.Label();
             this.cmbCOM = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
@@ -58,10 +57,11 @@
             this.lstAlarm = new System.Windows.Forms.ListView();
             this.tabPageEL = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.lstEvent = new System.Windows.Forms.ListView();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.cmbCOM = new System.Windows.Forms.ComboBox();
             this.label8 = new System.Windows.Forms.Label();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -117,24 +117,6 @@
             this.groupBox5.TabIndex = 19;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Setup";
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(27, 145);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(50, 13);
-            this.label8.TabIndex = 20;
-            this.label8.Text = "COMPort";
-            // 
-            // cmbCOM
-            // 
-            this.cmbCOM.FormattingEnabled = true;
-            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
-            this.cmbCOM.Name = "cmbCOM";
-            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
-            this.cmbCOM.TabIndex = 19;
-            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
             // 
             // label7
             // 
@@ -393,6 +375,7 @@
             this.label8.Size = new System.Drawing.Size(50, 13);
             this.label8.TabIndex = 20;
             this.label8.Text = "COMPort";
+
             // 
             // Form1
             // 
