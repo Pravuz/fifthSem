@@ -32,15 +32,16 @@
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label8 = new System.Windows.Forms.Label();
+            this.cmbCOM = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
             this.txtRS485_MS = new System.Windows.Forms.TextBox();
             this.txtTCP_IP_MS = new System.Windows.Forms.TextBox();
             this.label5 = new System.Windows.Forms.Label();
             this.cmbMPri = new System.Windows.Forms.ComboBox();
-            this.btnSetPri = new System.Windows.Forms.Button();
+            this.btnApply = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.txtAlrmAck = new System.Windows.Forms.TextBox();
             this.btnAck = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -59,8 +60,9 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lstEvent = new System.Windows.Forms.ListView();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.cmbCOM = new System.Windows.Forms.ComboBox();
-            this.label8 = new System.Windows.Forms.Label();
+            this.txtTemp = new System.Windows.Forms.TextBox();
+            this.groupBox6 = new System.Windows.Forms.GroupBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             this.groupBox5.SuspendLayout();
@@ -70,6 +72,8 @@
             this.groupBox3.SuspendLayout();
             this.tabPageEL.SuspendLayout();
             this.groupBox4.SuspendLayout();
+            this.groupBox6.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCCALEL
@@ -85,6 +89,7 @@
             // 
             // tabPageCC
             // 
+            this.tabPageCC.Controls.Add(this.groupBox6);
             this.tabPageCC.Controls.Add(this.groupBox5);
             this.tabPageCC.Controls.Add(this.groupBox2);
             this.tabPageCC.Controls.Add(this.groupBox1);
@@ -106,13 +111,31 @@
             this.groupBox5.Controls.Add(this.txtTCP_IP_MS);
             this.groupBox5.Controls.Add(this.label5);
             this.groupBox5.Controls.Add(this.cmbMPri);
-            this.groupBox5.Controls.Add(this.btnSetPri);
+            this.groupBox5.Controls.Add(this.btnApply);
             this.groupBox5.Location = new System.Drawing.Point(282, 6);
             this.groupBox5.Name = "groupBox5";
             this.groupBox5.Size = new System.Drawing.Size(302, 217);
             this.groupBox5.TabIndex = 19;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Setup";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(27, 145);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(50, 13);
+            this.label8.TabIndex = 20;
+            this.label8.Text = "COMPort";
+            // 
+            // cmbCOM
+            // 
+            this.cmbCOM.FormattingEnabled = true;
+            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
+            this.cmbCOM.Name = "cmbCOM";
+            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
+            this.cmbCOM.TabIndex = 19;
+            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
             // 
             // label7
             // 
@@ -170,40 +193,32 @@
             this.cmbMPri.Size = new System.Drawing.Size(121, 21);
             this.cmbMPri.TabIndex = 14;
             // 
-            // btnSetPri
+            // btnApply
             // 
-            this.btnSetPri.Location = new System.Drawing.Point(195, 38);
-            this.btnSetPri.Name = "btnSetPri";
-            this.btnSetPri.Size = new System.Drawing.Size(75, 23);
-            this.btnSetPri.TabIndex = 13;
-            this.btnSetPri.Text = "Set Priority";
-            this.toolTipAck.SetToolTip(this.btnSetPri, "This button Set the priority of the PC. Check the other pc\'s so you don\'t get con" +
+            this.btnApply.Location = new System.Drawing.Point(193, 161);
+            this.btnApply.Name = "btnApply";
+            this.btnApply.Size = new System.Drawing.Size(75, 23);
+            this.btnApply.TabIndex = 13;
+            this.btnApply.Text = "Apply";
+            this.toolTipAck.SetToolTip(this.btnApply, "This button Set the priority of the PC. Check the other pc\'s so you don\'t get con" +
         "flicts.");
-            this.btnSetPri.UseVisualStyleBackColor = true;
-            this.btnSetPri.Click += new System.EventHandler(this.btnSetPri_Click);
+            this.btnApply.UseVisualStyleBackColor = true;
+            this.btnApply.Click += new System.EventHandler(this.btnSetPri_Click);
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.txtAlrmAck);
+            this.groupBox2.Controls.Add(this.dataGridView1);
             this.groupBox2.Controls.Add(this.btnAck);
             this.groupBox2.Location = new System.Drawing.Point(20, 251);
             this.groupBox2.Name = "groupBox2";
-            this.groupBox2.Size = new System.Drawing.Size(565, 81);
+            this.groupBox2.Size = new System.Drawing.Size(745, 195);
             this.groupBox2.TabIndex = 12;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Alarm";
             // 
-            // txtAlrmAck
-            // 
-            this.txtAlrmAck.Location = new System.Drawing.Point(22, 33);
-            this.txtAlrmAck.Name = "txtAlrmAck";
-            this.txtAlrmAck.ReadOnly = true;
-            this.txtAlrmAck.Size = new System.Drawing.Size(416, 20);
-            this.txtAlrmAck.TabIndex = 11;
-            // 
             // btnAck
             // 
-            this.btnAck.Location = new System.Drawing.Point(444, 30);
+            this.btnAck.Location = new System.Drawing.Point(614, 30);
             this.btnAck.Name = "btnAck";
             this.btnAck.Size = new System.Drawing.Size(99, 23);
             this.btnAck.TabIndex = 10;
@@ -362,23 +377,32 @@
             this.lstEvent.TabIndex = 0;
             this.lstEvent.UseCompatibleStateImageBehavior = false;
             // 
-            // cmbCOM
+            // txtTemp
             // 
-            this.cmbCOM.FormattingEnabled = true;
-            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
-            this.cmbCOM.Name = "cmbCOM";
-            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
-            this.cmbCOM.TabIndex = 19;
-            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
+            this.txtTemp.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTemp.Location = new System.Drawing.Point(23, 40);
+            this.txtTemp.Name = "txtTemp";
+            this.txtTemp.ReadOnly = true;
+            this.txtTemp.Size = new System.Drawing.Size(100, 62);
+            this.txtTemp.TabIndex = 20;
             // 
-            // label8
+            // groupBox6
             // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(27, 145);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(50, 13);
-            this.label8.TabIndex = 20;
-            this.label8.Text = "COMPort";
+            this.groupBox6.Controls.Add(this.txtTemp);
+            this.groupBox6.Location = new System.Drawing.Point(610, 6);
+            this.groupBox6.Name = "groupBox6";
+            this.groupBox6.Size = new System.Drawing.Size(155, 216);
+            this.groupBox6.TabIndex = 21;
+            this.groupBox6.TabStop = false;
+            this.groupBox6.Text = "Current Temperature";
+            // 
+            // dataGridView1
+            // 
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Location = new System.Drawing.Point(15, 30);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(593, 146);
+            this.dataGridView1.TabIndex = 22;
             // 
             // Form1
             // 
@@ -393,13 +417,15 @@
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.groupBox2.ResumeLayout(false);
-            this.groupBox2.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabPageAL.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.tabPageEL.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
+            this.groupBox6.ResumeLayout(false);
+            this.groupBox6.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -422,7 +448,6 @@
         private System.Windows.Forms.Button btnAck;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.GroupBox groupBox2;
-        private System.Windows.Forms.TextBox txtAlrmAck;
         private System.Windows.Forms.ToolTip toolTipAck;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.ListView lstAlarm;
@@ -435,9 +460,12 @@
         private System.Windows.Forms.TextBox txtTCP_IP_MS;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.ComboBox cmbMPri;
-        private System.Windows.Forms.Button btnSetPri;
+        private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox cmbCOM;
+        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.TextBox txtTemp;
+        private System.Windows.Forms.DataGridView dataGridView1;
     }
 }
 

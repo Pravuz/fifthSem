@@ -21,7 +21,13 @@ namespace fifthSem
 
         private void btnSetLimits_Click(object sender, EventArgs e)
         {
-
+            double hHTemp, hTemp, lTemp, lLTemp;
+            if ((Double.TryParse(txtHHLvl.Text, out hHTemp)) & (Double.TryParse(txtHLvl.Text, out hTemp)) & (Double.TryParse(txtLLvl.Text, out lTemp)) & (Double.TryParse(txtLLLvl.Text, out lLTemp)))
+            { }
+            else
+            {
+                MessageBox.Show("Incorrect Values!","" ,MessageBoxButtons.OK);
+            }
         }
 
         private void btnSetPri_Click(object sender, EventArgs e)
