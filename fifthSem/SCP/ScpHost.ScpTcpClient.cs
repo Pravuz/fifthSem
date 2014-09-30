@@ -234,6 +234,11 @@ namespace ScadaCommunicationProtocol
                         connected = true;
                         keepAliveTask = KeepAlive();
                     }
+                    else if (response != null && response is ScpRegResponse && !((ScpRegResponse)response).Ok)
+                    {
+                        OnMessageEvent(new MessageEventArgs("Not allowed to connect to Master!"));
+                        Disconnect();
+                    }
                     else
                     {
                         Disconnect();

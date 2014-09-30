@@ -215,11 +215,30 @@ namespace ScadaCommunicationProtocol
             checkTask = checkScpConnection();
         }
         /// <summary>
+        /// Checks whether a host is connected. Only available when running in Master mode.
+        /// </summary>
+        /// <param name="Hostname"></param>
+        /// <returns>True if hostname is connected</returns>
+        public bool IsHostConnected(string Hostname)
+        {
+            return scpTcpServer.IsHostConnected(Hostname);
+        }
+
+        /// <summary>
+        /// Allowed hostnames must be added here.
+        /// </summary>
+        /// <param name="Hostname"></param>
+        public void AddHost(string Hostname)
+        {
+            scpTcpServer.Hosts.Add(Hostname);
+        }
+        /// <summary>
         /// Detects master/slave role of this host on the network
         /// </summary>
         private async Task checkScpConnection()
         {
             ScpMasterDiscoverReply reply;
+            int delay = 1000;
             while (true)
             {
                 OnMessageEvent(this, new MessageEventArgs("Trying to discover master...."));
@@ -235,6 +254,7 @@ namespace ScadaCommunicationProtocol
                     bool connected = await scpTcpClient.Connect(reply.MasterIPEndPoint.Address, ScpHost.TcpServerPort, ScpHost.Name);
                     if (connected)
                     {
+                        delay = 0;
                         setConnectionStatus(ScpConnectionStatus.Slave);
                         await scpTcpClient.ReaderTask;
                         OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
@@ -244,6 +264,8 @@ namespace ScadaCommunicationProtocol
                     else
                     {
                         OnMessageEvent(this, new MessageEventArgs("Failure connecting to master."));
+                        await Task.Delay(delay);
+                        delay *= 2;
                     }
 
                 }
