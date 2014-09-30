@@ -31,7 +31,9 @@
             this.components = new System.ComponentModel.Container();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.Temperature = new System.Windows.Forms.GroupBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label8 = new System.Windows.Forms.Label();
             this.cmbCOM = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
             this.label6 = new System.Windows.Forms.Label();
@@ -41,6 +43,7 @@
             this.cmbMPri = new System.Windows.Forms.ComboBox();
             this.btnApply = new System.Windows.Forms.Button();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.btnAck = new System.Windows.Forms.Button();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.label4 = new System.Windows.Forms.Label();
@@ -57,22 +60,20 @@
             this.lstAlarm = new System.Windows.Forms.ListView();
             this.tabPageEL = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.groupBox6 = new System.Windows.Forms.GroupBox();
             this.lstEvent = new System.Windows.Forms.ListView();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.label8 = new System.Windows.Forms.Label();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.txtTemperature = new System.Windows.Forms.TextBox();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
+            this.Temperature.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tabPageAL.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.tabPageEL.SuspendLayout();
             this.groupBox4.SuspendLayout();
-            this.groupBox6.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCCALEL
@@ -88,7 +89,7 @@
             // 
             // tabPageCC
             // 
-            this.tabPageCC.Controls.Add(this.groupBox6);
+            this.tabPageCC.Controls.Add(this.Temperature);
             this.tabPageCC.Controls.Add(this.groupBox5);
             this.tabPageCC.Controls.Add(this.groupBox2);
             this.tabPageCC.Controls.Add(this.groupBox1);
@@ -99,6 +100,16 @@
             this.tabPageCC.TabIndex = 0;
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
+            // 
+            // Temperature
+            // 
+            this.Temperature.Controls.Add(this.txtTemperature);
+            this.Temperature.Location = new System.Drawing.Point(609, 6);
+            this.Temperature.Name = "Temperature";
+            this.Temperature.Size = new System.Drawing.Size(156, 217);
+            this.Temperature.TabIndex = 0;
+            this.Temperature.TabStop = false;
+            this.Temperature.Text = "Temperature";
             // 
             // groupBox5
             // 
@@ -117,6 +128,24 @@
             this.groupBox5.TabIndex = 19;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Setup";
+            // 
+            // label8
+            // 
+            this.label8.AutoSize = true;
+            this.label8.Location = new System.Drawing.Point(27, 145);
+            this.label8.Name = "label8";
+            this.label8.Size = new System.Drawing.Size(50, 13);
+            this.label8.TabIndex = 20;
+            this.label8.Text = "COMPort";
+            // 
+            // cmbCOM
+            // 
+            this.cmbCOM.FormattingEnabled = true;
+            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
+            this.cmbCOM.Name = "cmbCOM";
+            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
+            this.cmbCOM.TabIndex = 19;
+            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
             // 
             // label7
             // 
@@ -196,6 +225,13 @@
             this.groupBox2.TabIndex = 12;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Alarm";
+            // 
+            // dataGridView1
+            // 
+            this.dataGridView1.Location = new System.Drawing.Point(18, 30);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.Size = new System.Drawing.Size(590, 139);
+            this.dataGridView1.TabIndex = 0;
             // 
             // btnAck
             // 
@@ -358,24 +394,13 @@
             this.lstEvent.TabIndex = 0;
             this.lstEvent.UseCompatibleStateImageBehavior = false;
             // 
-            // cmbCOM
+            // txtTemperature
             // 
-            this.cmbCOM.FormattingEnabled = true;
-            this.cmbCOM.Location = new System.Drawing.Point(30, 161);
-            this.cmbCOM.Name = "cmbCOM";
-            this.cmbCOM.Size = new System.Drawing.Size(121, 21);
-            this.cmbCOM.TabIndex = 19;
-            this.cmbCOM.SelectedIndexChanged += new System.EventHandler(this.cmbCOM_SelectedIndexChanged);
-            // 
-            // label8
-            // 
-            this.label8.AutoSize = true;
-            this.label8.Location = new System.Drawing.Point(27, 145);
-            this.label8.Name = "label8";
-            this.label8.Size = new System.Drawing.Size(50, 13);
-            this.label8.TabIndex = 20;
-            this.label8.Text = "COMPort";
-
+            this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTemperature.Location = new System.Drawing.Point(24, 34);
+            this.txtTemperature.Name = "txtTemperature";
+            this.txtTemperature.Size = new System.Drawing.Size(100, 62);
+            this.txtTemperature.TabIndex = 0;
             // 
             // Form1
             // 
@@ -387,18 +412,18 @@
             this.Text = "Skadd";
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
+            this.Temperature.ResumeLayout(false);
+            this.Temperature.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.groupBox2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
             this.tabPageAL.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             this.tabPageEL.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
-            this.groupBox6.ResumeLayout(false);
-            this.groupBox6.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -436,9 +461,10 @@
         private System.Windows.Forms.Button btnApply;
         private System.Windows.Forms.Label label8;
         private System.Windows.Forms.ComboBox cmbCOM;
-        private System.Windows.Forms.GroupBox groupBox6;
+        private System.Windows.Forms.GroupBox Temperature;
         private System.Windows.Forms.TextBox txtTemp;
         private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.TextBox txtTemperature;
     }
 }
 
