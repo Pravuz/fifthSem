@@ -23,7 +23,7 @@ using System.Timers;
 
 namespace RS485
 {
-    public enum ConnectionStatus {Waiting, Master, Slave};
+    public enum ConnectionStatus {Stop, Waiting, Master, Slave};
 
     public delegate void TempEventHandler(object sender, TempEventArgs e);
     public delegate void ConnectionStatusEventHandler(object sender, ConnectionStatusEventArgs e);
@@ -49,10 +49,17 @@ namespace RS485
     }
     public class TempEventArgs : EventArgs
     {
-        public double temp;
-        public TempEventArgs(double temp)
+        public double temp = 0.0;
+        private string fortegn = "";
+        public TempEventArgs(double temp, string fortegn)
         {
             this.temp = temp;
+            this.fortegn = fortegn;
+        }
+
+        public override string ToString() //ToString() method gives complete formated temperature
+        {
+            return String.Format("{0}{1}°C", fortegn, temp);
         }
     }
 
@@ -65,12 +72,14 @@ namespace RS485
 
         // Private varables for class
         private int computerAddress;
-        private int getTempTimeout = 0; // Flagger alarm dersom ConnectionStatus = Master og det ikke er blitt mottatt noen temp i løpet av 5 forespørsler.
+        private int getTempTimeout = 0; // Flagg alarm when ConnectionStatus = Master and no temp has been received after 5 requests.
+        private int getTempTimeoutCounter = 0; //
         private bool threadEnabled;
         private string tempData = "";
 
-        // Property on Waiting-Master-Slave status
-        public ConnectionStatus connectionStatus = ConnectionStatus.Waiting;
+        // Property on Stop-Waiting-Master-Slave status
+        public ConnectionStatus connectionStatus_extern;
+        private ConnectionStatus connectionStatus_intern;
 
         // Public eventhandlers for new temp, new connection status and new alarm
         public event TempEventHandler TempHandler;
@@ -90,7 +99,7 @@ namespace RS485
         // Private function ReadTimout. Depending on computeraddress, the time before before connectionstatus becomes master. 
         private int ReadTimeout(int ComputerAddress)
         {
-            return (1 + ComputerAddress)*1000;
+            return (1 + ComputerAddress)*500;
         }
 
         // Private method for com-port connection
@@ -124,7 +133,11 @@ namespace RS485
             {
                 if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(e.Message));
             }
-
+            // Set connectionStatus
+            connectionStatus_intern = ConnectionStatus.Slave;
+            connectionStatus_extern = ConnectionStatus.Waiting;
+            if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+            
             // Start thread
             threadEnabled = true;
             getTempThread.Start();
@@ -136,41 +149,52 @@ namespace RS485
 
         }
 
-        // Function to close down the com port and sett connection status = Waiting. Flags a ConnectionStatusHandler event
+        // Function to close down the com port and set connection status = Waiting. Flags a ConnectionStatusHandler event
         public void stopCom()
         {
-            timeout.Stop();
-            threadEnabled = false;
-            serialPort.Close();
-            connectionStatus = ConnectionStatus.Waiting;
-            if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus));
+            if (connectionStatus_extern != ConnectionStatus.Stop) // Com port must be opened before closed
+            {
+                timeout.Stop();
+                threadEnabled = false;
+                serialPort.Close();
+                connectionStatus_intern = ConnectionStatus.Slave;
+                connectionStatus_extern = ConnectionStatus.Stop;
+                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+            }
         }
 
         // Event for new serialport data received
         private void serialPortDataReceived(object sender, SerialDataReceivedEventArgs e)
         {
-            // Sets ConnectionStatus = Slave if not allready a Master
-            if ((connectionStatus != ConnectionStatus.Slave) & (connectionStatus != ConnectionStatus.Master))
+            if (connectionStatus_intern == ConnectionStatus.Master)
             {
-                connectionStatus = ConnectionStatus.Slave;
+                connectionStatus_extern = ConnectionStatus.Master;
+                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+            }
+
+              //Sets ConnectionStatus = Slave if not allready a Master
+            if (connectionStatus_intern != ConnectionStatus.Master)
+            {
+                connectionStatus_intern = ConnectionStatus.Slave;
+                connectionStatus_extern = ConnectionStatus.Slave;
                 // Flags a ConnectionStatusHandler event
-                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus));
+                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
             }
             
             // Read data from port
             int dataLength = serialPort.BytesToRead;
             byte[] data = new byte[dataLength];
-            int nbrDataRead = serialPort.Read(data, 0, dataLength);
+            serialPort.Read(data, 0, dataLength);
 
             // Read temp and remove unwanted data and make sure all of the data is received
             int indexStart, indexStop;
             string temp = "";
-            //tempData = tempData + Encoding.ASCII.GetString(data);
             tempData = tempData + Encoding.ASCII.GetString(data);
-            if(connectionStatus == ConnectionStatus.Master & tempData.Contains("#"))
+            if(connectionStatus_intern == ConnectionStatus.Master & tempData.Contains("#"))
             {
-                connectionStatus = ConnectionStatus.Slave;
-                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus));
+                connectionStatus_intern = ConnectionStatus.Slave;
+                connectionStatus_extern = ConnectionStatus.Slave;
+                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
             }
 
             if (tempData.Contains(">") & tempData.Contains("\r"))
@@ -185,14 +209,15 @@ namespace RS485
                     temp = temp.TrimStart('0'); // Remove null in front of temp data
                     temp = temp.TrimEnd('\r');
                     temp = temp.Replace('.', ',');
-                    if (null != TempHandler) TempHandler(this, new TempEventArgs(Convert.ToDouble(temp)));
                     //if (null != TempHandler) TempHandler(this, new TempEventArgs(fortegn + temp + "°C"));
+                    if (null != TempHandler) TempHandler(this, new TempEventArgs(Convert.ToDouble(fortegn + temp), fortegn));
                     tempData = "";
                 }
             }
 
-            // Reset getTempTimout
+            // Reset getTempTimeout and getTempTimeoutCounter
             getTempTimeout = 0;
+            getTempTimeoutCounter = 0;
 
             // Restart master-slave timer
             timeout.Stop();
@@ -202,9 +227,7 @@ namespace RS485
         // If a Slave has not received new temp, it automatically becomes Master. An event is flagged for connection status changed.
         private void OnTimedEvent(Object source, ElapsedEventArgs e)
         {
-            connectionStatus = ConnectionStatus.Master;
-            if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus));
-
+            connectionStatus_intern = ConnectionStatus.Master;
         }
 
         // Threaded function. As a Master, request new temp from RS485.
@@ -212,7 +235,7 @@ namespace RS485
         {
             while(threadEnabled == true)
             {
-                if (connectionStatus == ConnectionStatus.Master)
+                if (connectionStatus_intern == ConnectionStatus.Master)
                 {
                     // Com port surveillance. If com port is disconnected, an alarm event is flagged and a message i sent out of the class.
                     try
@@ -224,11 +247,17 @@ namespace RS485
                         if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(e.Message));
                         stopCom();
                     }
-                    // Com port surveillance. If Master does not receive temp after 5 request, an alarm event is flagged.
-                    if (getTempTimeout++ == 5)
+                    // Com port surveillance. If Master does not receive temp after 3 request, an alarm event is flagged.
+                    if (getTempTimeout++ == 3)
                     {
-                        if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs("Timout: Temperatur ikke mottatt i løpet av 5 forespørsler."));
-                        stopCom();
+                        if (connectionStatus_extern != ConnectionStatus.Waiting)
+                        {
+                            connectionStatus_extern = ConnectionStatus.Waiting;
+                            if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+                            getTempTimeoutCounter++;
+                            if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs("Nr: " + getTempTimeoutCounter + " - Timout"));
+                            getTempTimeout = 0; // Reset timeout, allowing new alarms be flagged
+                        }
                     }
                 }
                 Thread.Sleep(1000);
