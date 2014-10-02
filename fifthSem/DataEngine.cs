@@ -46,11 +46,11 @@ namespace fifthSem
         public static string hostname;
         //public int tempAlarmHigh, tempAlarmLow;
 
-        private string logFile, logFilePath, logFolder = @"%USERPROFILE%\My Documents\Loggs\";
+        private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long sizeOfFile = 0;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
-        private FileInfo mFile;
+        private DateTime lastLog;
         //private alarmhost malarmhost;
 
         public event DataEngineNewTempHandler mNewTempHandler;
@@ -59,15 +59,11 @@ namespace fifthSem
 
         public DataEngine()
         {
-            //waiting will be default mode until protocols are initialized.
-            //ScpStatus = ScpMode.WAITING;
-            //ComStatus = ComMode.WAITING;
-
             //logfile init
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
             logFilePath = logFolder + logFile;
-            mFile = new FileInfo(logFilePath);
+            //mFile = new FileInfo(logFilePath);
             logFileCheck();
 
             //creates objects of protocols
@@ -128,10 +124,20 @@ namespace fifthSem
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
-            if(mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(Convert.ToDouble(e.temp))); //upcoming update removes need to convert.
-            writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
-            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(Convert.ToDouble(e.temp)));
-            //skriv til logg
+            //Debug.WriteLine("DataEngine: lest av temp, skriver til event. temp: " + e.temp);
+            if(mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); //upcoming update removes need to convert.
+            if(mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+            DateTime now = DateTime.Now;
+            if (lastLog != null)
+            {
+                if (lastLog.AddSeconds(10) < now)
+                {
+                    Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
+                    writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
+                }
+            }
+            else writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
+            lastLog = now;
         }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
@@ -197,7 +203,6 @@ namespace fifthSem
                 case ScpConnectionStatus.Master:
                     break;
                 case ScpConnectionStatus.Slave:
-                    
                     break;
                 case ScpConnectionStatus.Waiting:
                     break;
@@ -214,7 +219,11 @@ namespace fifthSem
         {
             try
             {
-                mFile.AppendText().WriteLine(s);
+                using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write))
+                    using (StreamWriter sw = new StreamWriter(fs))
+                    {
+                        sw.WriteLine(s);
+                    }
             }
             catch (Exception e)
             {
@@ -225,14 +234,18 @@ namespace fifthSem
         private void logFileCheck()
         {
             //Debug.WriteLine(this, "DataEngine: " + mFile.FullName);
-            mFile.Refresh();
+            //mFile.Refresh();
+            FileInfo fi;
             if (File.Exists(logFilePath))
-                sizeOfFile = mFile.Length;
-            else
+            {
+                fi = new FileInfo(logFilePath);
+                sizeOfFile = fi.Length;
+            }
+            else if (!Directory.Exists(logFolder))
             {
                 Directory.CreateDirectory(logFolder);
-                File.Create(logFilePath);
             }
+            
         }
     }
 }

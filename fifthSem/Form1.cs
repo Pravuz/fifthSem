@@ -21,6 +21,8 @@ namespace fifthSem
 
             mDataEngine = new DataEngine();
             mDataEngine.mNewTempHandler += DataEngineNewTempHandler;
+            mDataEngine.mNewTcpStatusHandler += DataEngineNewTcpStatusHandler;
+            mDataEngine.mNewComStatusHandler += DataEngineNewComStatusHandler;
 
         }
         private void startDataEngine()
@@ -34,15 +36,40 @@ namespace fifthSem
 
         private void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e)
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DataEngineNewTempHandler(sender, e);
+                });
+                return;
+            }
             txtTemperature.Text = e.temp.ToString();
+            //System.Diagnostics.Debug.WriteLine("form1: " + e.temp);
         }
         private void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e)
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DataEngineNewTcpStatusHandler(sender, e);
+                });
+                return;
+            }
             txtTCP_IP_MS.Text = e.status;
         }
 
         private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
         {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    DataEngineNewComStatusHandler(sender, e);
+                });
+                return;
+            }
             txtRS485_MS.Text = e.status;
         }
         private void btnSetLimits_Click(object sender, EventArgs e)
