@@ -23,7 +23,7 @@ namespace ScadaCommunicationProtocol
             {
                 udpClient = new UdpClient();
                 udpClient.EnableBroadcast = true;
-                udpClient.Client.ReceiveTimeout = 100;
+                udpClient.Client.ReceiveTimeout = 500;
                 broadcastAddresses = new List<IPAddress>();
                 
                 findBroadcastAddresses();

@@ -25,6 +25,7 @@ namespace ScadaCommunicationProtocol
             private List<ScpTcpClient> scpClients = new List<ScpTcpClient>();
             private TcpListener tcpListener;
 
+            public List<String> Hosts = new List<String>();
             public event MessageEventHandler MessageEvent;
             public event ScpInternalPacketEventHandler PacketEvent;
             public event SlaveConnectionEventHandler SlaveConnectionEvent;
@@ -59,6 +60,11 @@ namespace ScadaCommunicationProtocol
             public ScpTcpServer()
             {
                 _lock = new object();
+            }
+
+            public bool IsHostConnected(string Hostname)
+            {
+                return scpClients.Exists(client => client.Hostname == Hostname);
             }
 
             public void Start()
@@ -149,10 +155,14 @@ namespace ScadaCommunicationProtocol
                 if (e.Packet is ScpRegRequest)
                 {
                     ScpRegRequest request = (ScpRegRequest)e.Packet;
-                    byte[] test = request.GetBytes();
-                    ScpPacket packet = new ScpRegResponse(true);
+                    //byte[] test = request.GetBytes();
+                    bool allowConnection = Hosts.Exists(host => host == request.Hostname);
+                    ScpPacket packet = new ScpRegResponse(allowConnection);
                     packet.Id = request.Id;
-                    ((ScpTcpClient)sender).Hostname = request.Hostname;
+                    if (allowConnection)
+                    {
+                        ((ScpTcpClient)sender).Hostname = request.Hostname;
+                    }
                     try
                     {
                         await ((ScpTcpClient)sender).SendAsync(packet).ConfigureAwait(false);
