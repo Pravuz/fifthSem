@@ -95,6 +95,13 @@ namespace ScadaCommunicationProtocol
                 return scpConnectionStatus;
             }
         }
+        public List<string> Hosts
+        {
+            get
+            {
+                return scpTcpServer.Hosts;
+            }
+        }
         /// <summary>
         /// Used to control if this host can be SCP master or not.
         /// Default: true
@@ -212,7 +219,7 @@ namespace ScadaCommunicationProtocol
         }
         public void Start()
         {
-            checkTask = checkScpConnection();
+            checkTask = Task.Run(() => checkScpConnection());
         }
         /// <summary>
         /// Checks whether a host is connected. Only available when running in Master mode.

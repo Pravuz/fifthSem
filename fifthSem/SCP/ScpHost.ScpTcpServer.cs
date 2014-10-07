@@ -64,7 +64,7 @@ namespace ScadaCommunicationProtocol
 
             public bool IsHostConnected(string Hostname)
             {
-                return scpClients.Exists(client => client.Hostname == Hostname);
+                return scpClients.Exists(client => client.Hostname == Hostname) || (Hostname == ScpHost.Name);
             }
 
             public void Start()
@@ -73,6 +73,7 @@ namespace ScadaCommunicationProtocol
                 {
                     enabled = true;
                     Task listenerTask = listener();
+                    //Task listenerTask = Task.Run(() => listener());
                 }
             }
 
@@ -104,12 +105,20 @@ namespace ScadaCommunicationProtocol
 
             private async Task listener()
             {
-                tcpListener = new TcpListener(IPAddress.Any, ScpHost.TcpServerPort);
-                tcpListener.Start();
-                while (enabled)
+                try
                 {
-                    TcpClient client = await tcpListener.AcceptTcpClientAsync();
-                    Task connector = connectClientAsync(client);
+                    tcpListener = new TcpListener(IPAddress.Any, ScpHost.TcpServerPort);
+                    tcpListener.Start();
+                    while (enabled)
+                    {
+                        TcpClient client = await tcpListener.AcceptTcpClientAsync();
+                        Task connector = connectClientAsync(client);
+                        //Task connector = Task.Run(() => connectClientAsync(client));
+                    }
+
+                }
+                catch
+                {
                 }
             }
 
@@ -123,30 +132,44 @@ namespace ScadaCommunicationProtocol
                 scpClient.PacketEvent += scpClient_PacketEvent;
                 scpClient.MessageEvent += MessageEvent;
                 Task scpClientTask = scpClient.Connect(client);
+                try
+                {
+                    //Task scpClientTask = Task.Run(() => scpClient.Connect(client));
 
-                await Task.Delay(1000);
-                if (scpClient.Hostname == "") // No response from master, so disconnect
-                {
-                    scpClient.Disconnect();
-                }
-                else
-                {
-                    scpClient.PacketEvent -= scpClient_PacketEvent;
-                    scpClient.PacketEvent += OnPacketEvent;
-                    scpClients.Add(scpClient);
-                    // Slave connected event
-                    OnMessageEvent(new MessageEventArgs("Slave connected: " + scpClient.Hostname));
-                    OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
-                    await scpClientTask;
-                    // Slave disconnected event
-                    OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(false, scpClient.Hostname));
-                    OnMessageEvent(new MessageEventArgs("Slave disconnected: " + scpClient.Hostname));
-                    scpClients.Remove(scpClient);
-                }
+                    await Task.Delay(1000);
+                    if (scpClient.Hostname == "") // No response from master, so disconnect
+                    {
+                        scpClient.Disconnect();
+                    }
+                    else
+                    {
+                        scpClient.PacketEvent -= scpClient_PacketEvent;
+                        scpClient.PacketEvent += OnPacketEvent;
+                        scpClients.Add(scpClient);
+                        // Slave connected event
+                        OnMessageEvent(new MessageEventArgs("Slave connected: " + scpClient.Hostname));
+                        OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
+                        try
+                        {
+                            await scpClientTask.ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                        }
+                        // Slave disconnected event
+                        OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(false, scpClient.Hostname));
+                        OnMessageEvent(new MessageEventArgs("Slave disconnected: " + scpClient.Hostname));
+                        scpClients.Remove(scpClient);
+                    }
 
-                lock (_lock)
+                    lock (_lock)
+                    {
+                        clientsConnected--;
+                    }
+                }
+                catch
                 {
-                    clientsConnected--;
+
                 }
             }
 

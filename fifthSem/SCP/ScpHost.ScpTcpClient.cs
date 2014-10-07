@@ -18,7 +18,6 @@ namespace ScadaCommunicationProtocol
         private class ScpTcpClient
         {
             public TcpClient tcpClient;
-            public AutoResetEvent ClientDisconnectedEvent;
             public event MessageEventHandler MessageEvent;
             public event ScpInternalPacketEventHandler PacketEvent;
             public Task ReaderTask;
@@ -62,7 +61,6 @@ namespace ScadaCommunicationProtocol
             public ScpTcpClient()
             {
                 Hostname = "";
-                ClientDisconnectedEvent = new AutoResetEvent(false);
             }
             /// <summary>
             /// Sends a packet asyncronously to the network.
@@ -198,10 +196,6 @@ namespace ScadaCommunicationProtocol
                 catch
                 {
                 }
-                finally
-                {
-                    ClientDisconnectedEvent.Set();
-                }
             }
 
             private async Task KeepAlive()
@@ -232,7 +226,7 @@ namespace ScadaCommunicationProtocol
                     if (response != null && response is ScpRegResponse && ((ScpRegResponse)response).Ok)
                     {
                         connected = true;
-                        keepAliveTask = KeepAlive();
+                        keepAliveTask = Task.Run(() => KeepAlive());
                     }
                     else if (response != null && response is ScpRegResponse && !((ScpRegResponse)response).Ok)
                     {
@@ -241,6 +235,7 @@ namespace ScadaCommunicationProtocol
                     }
                     else
                     {
+                        OnMessageEvent(new MessageEventArgs("RegResponse: " + (response == null ? "NULL" : "NOT NULL")));
                         Disconnect();
                     }
                 }
@@ -257,7 +252,7 @@ namespace ScadaCommunicationProtocol
                 enabled = true;
                 tcpClient = client;
                 writerTask = WriterAsync();
-                keepAliveTask = KeepAlive();
+                keepAliveTask = Task.Run(() => KeepAlive());
                 await ReaderAsync();
             }
 

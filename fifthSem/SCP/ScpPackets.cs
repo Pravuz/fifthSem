@@ -22,7 +22,7 @@ namespace ScadaCommunicationProtocol
     }
     public abstract class ScpPacket
     {
-        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
+        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, AlarmRequest = 3, AlarmResponse = 53, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
         private static int newId = 0;
         public static int GetId()
         {
@@ -99,6 +99,12 @@ namespace ScadaCommunicationProtocol
                             break;
                         case ScpPacketTypes.TempBroadcast:
                             packet = new ScpTempBroadcast(bytes, length);
+                            break;
+                        case ScpPacketTypes.AlarmRequest:
+                            packet = new ScpAlarmRequest(bytes, length);
+                            break;
+                        case ScpPacketTypes.AlarmResponse:
+                            packet = new ScpAlarmResponse(bytes, length);
                             break;
                     }
                 }
@@ -264,6 +270,82 @@ namespace ScadaCommunicationProtocol
             }
         }
     }
+
+    public class ScpAlarmRequest : ScpPacket
+    {
+        private fifthSem.AlarmTypes alarmType;
+        private fifthSem.AlarmCommand alarmCommand;
+        public fifthSem.AlarmCommand AlarmCommand
+        {
+            get
+            {
+                return alarmCommand;
+            }
+        }
+        public fifthSem.AlarmTypes AlarmType
+        {
+            get
+            {
+                return alarmType;
+            }
+        }
+        public ScpAlarmRequest(fifthSem.AlarmTypes Type, fifthSem.AlarmCommand Command)
+            : base()
+        {
+            this.alarmType = Type;
+            this.alarmCommand = Command;
+            type = (byte)ScpPacketTypes.AlarmRequest;
+        }
+        public ScpAlarmRequest(byte[] bytes, int length)
+            : base(bytes)
+        {
+            alarmCommand = (fifthSem.AlarmCommand)bytes[10];
+            alarmType = (fifthSem.AlarmTypes)bytes[11];
+        }
+        protected override byte[] GetPayload()
+        {
+            byte[] bytes = new byte[2];
+            bytes[0] = (byte)alarmCommand;
+            bytes[1] = (byte)alarmType;
+            return bytes;
+        }
+        public override string ToString()
+        {
+            return "ScpAlarmRequest - Command: " + alarmCommand.ToString() + " Alarmtype: " + alarmType.ToString();
+        }
+    }
+    public class ScpAlarmResponse : ScpPacket
+    {
+        private bool ok;
+        public bool Ok
+        {
+            get
+            {
+                return ok;
+            }
+        }
+        public ScpAlarmResponse(bool ok)
+        {
+            this.ok = ok;
+            type = (byte)ScpPacketTypes.AlarmResponse;
+        }
+        public ScpAlarmResponse(byte[] bytes, int length)
+            : base(bytes)
+        {
+            ok = (bytes[10] == 1);
+        }
+        protected override byte[] GetPayload()
+        {
+            byte[] bytes = new byte[1];
+            bytes[0] = (ok) ? (byte)1 : (byte)0;
+            return bytes;
+        }
+        public override string ToString()
+        {
+            return "ScpAlarmResponse - " + (ok ? "OK" : "Not OK");
+        }
+    }
+
 
     public class ScpTempBroadcast : ScpPacket
     {
