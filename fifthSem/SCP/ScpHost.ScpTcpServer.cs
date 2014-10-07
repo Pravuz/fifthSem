@@ -72,8 +72,8 @@ namespace ScadaCommunicationProtocol
                 if (!enabled)
                 {
                     enabled = true;
-                    Task listenerTask = listener();
-                    //Task listenerTask = Task.Run(() => listener());
+                    //Task listenerTask = listener();
+                    Task listenerTask = Task.Run(() => listener());
                 }
             }
 
@@ -151,7 +151,7 @@ namespace ScadaCommunicationProtocol
                         OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
                         try
                         {
-                            await scpClientTask.ConfigureAwait(false);
+                            await scpClientTask;
                         }
                         catch
                         {

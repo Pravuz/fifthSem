@@ -275,6 +275,7 @@ namespace ScadaCommunicationProtocol
     {
         private fifthSem.AlarmTypes alarmType;
         private fifthSem.AlarmCommand alarmCommand;
+        private string alarmSource;
         public fifthSem.AlarmCommand AlarmCommand
         {
             get
@@ -289,11 +290,19 @@ namespace ScadaCommunicationProtocol
                 return alarmType;
             }
         }
-        public ScpAlarmRequest(fifthSem.AlarmTypes Type, fifthSem.AlarmCommand Command)
+        public string AlarmSource
+        {
+            get
+            {
+                return alarmSource;
+            }
+        }
+        public ScpAlarmRequest(fifthSem.AlarmTypes Type, fifthSem.AlarmCommand Command, string source)
             : base()
         {
             this.alarmType = Type;
             this.alarmCommand = Command;
+            this.alarmSource = source;
             type = (byte)ScpPacketTypes.AlarmRequest;
         }
         public ScpAlarmRequest(byte[] bytes, int length)
@@ -301,13 +310,14 @@ namespace ScadaCommunicationProtocol
         {
             alarmCommand = (fifthSem.AlarmCommand)bytes[10];
             alarmType = (fifthSem.AlarmTypes)bytes[11];
+            alarmSource = Encoding.ASCII.GetString(bytes, 12, length - 12);
         }
         protected override byte[] GetPayload()
         {
             byte[] bytes = new byte[2];
             bytes[0] = (byte)alarmCommand;
             bytes[1] = (byte)alarmType;
-            return bytes;
+            return bytes.Concat(Encoding.ASCII.GetBytes(alarmSource)).ToArray();
         }
         public override string ToString()
         {
