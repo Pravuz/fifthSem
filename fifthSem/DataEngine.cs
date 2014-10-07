@@ -208,6 +208,9 @@ namespace fifthSem
             switch (mScpHost.ScpConnectionStatus)
             {
                 case ScpConnectionStatus.Master:
+                    if(e.Packet is ScpLogFileRequest)
+                        if (sizeOfFile > ((ScpLogFileRequest)e.Packet).FileSize)
+                            e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
                     break;
                 case ScpConnectionStatus.Slave:
                     break;
