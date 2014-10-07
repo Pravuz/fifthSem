@@ -13,6 +13,7 @@ namespace fifthSem
     public delegate void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e);
     public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
     public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
+    public delegate void DataEngineMessageHandler(object sender, DataEngineMessageArgs e);
 
     public class DataEngineNewTempArgs : EventArgs
     {
@@ -41,6 +42,15 @@ namespace fifthSem
         }
     }
 
+    public class DataEngineMessageArgs : EventArgs
+    {
+        public string message;
+        public DataEngineMessageArgs(string message)
+        {
+            this.message = message;
+        }
+    }
+
     class DataEngine
     {
         public static string hostname;
@@ -56,6 +66,7 @@ namespace fifthSem
         public event DataEngineNewTempHandler mNewTempHandler;
         public event DataEngineNewComStatusHandler mNewComStatusHandler;
         public event DataEngineNewTcpStatusHandler mNewTcpStatusHandler;
+        public event DataEngineMessageHandler mMessageHandler;
 
         public DataEngine()
         {
@@ -74,7 +85,7 @@ namespace fifthSem
         /// <summary>
         /// Starts the DataEngine WITHOUT com 
         /// </summary>
-        public void Start() 
+        public void Start()
         {
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
@@ -84,15 +95,15 @@ namespace fifthSem
             mScpHost.Start();
             hostname = ScpHost.Name;
 
-            if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
-        
+            //if (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+
         }
 
         /// <summary>
         /// Starts the DataEngine WITH com
         /// </summary>
         /// <param name="portNr">comport to use</param>
-        public void Start(string portNr) 
+        public void Start(string portNr)
         {
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
@@ -110,12 +121,12 @@ namespace fifthSem
             mRS485.ComputerAddress = 1; //need real prio from GUI
             hostname = ScpHost.Name;
 
-            if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
+            //if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
-        private void stop() 
+        private void stop()
         {
             //cleanup
-            mRS485.stopCom();    
+            mRS485.stopCom();
         }
 
         //
@@ -125,8 +136,8 @@ namespace fifthSem
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
             //Debug.WriteLine("DataEngine: lest av temp, skriver til event. temp: " + e.temp);
-            if(mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); //upcoming update removes need to convert.
-            if(mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); //upcoming update removes need to convert.
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
             DateTime now = DateTime.Now;
             if (lastLog != null)
             {
@@ -142,7 +153,7 @@ namespace fifthSem
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
-
+            
         }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
@@ -171,25 +182,21 @@ namespace fifthSem
 
         private void SlaveConnectionHandler(object sender, SlaveConnectionEventArgs e)
         {
-            
+            if (mMessageHandler != null) mMessageHandler(this, new DataEngineMessageArgs("Slave " + e.Name + " Disconnected."));
         }
 
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e)
         {
-            
             switch (e.Status)
             {
                 case ScpConnectionStatus.Master:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
-                    
                     break;
                 case ScpConnectionStatus.Slave:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
-                    
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
-                    
                     break;
                 default:
                     break;
@@ -199,7 +206,7 @@ namespace fifthSem
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
             switch (mScpHost.ScpConnectionStatus)
-            { 
+            {
                 case ScpConnectionStatus.Master:
                     break;
                 case ScpConnectionStatus.Slave:
@@ -214,16 +221,15 @@ namespace fifthSem
         //
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
-        /// <returns> True if the operation was a success and vice/versa. </returns>
         private void writeToFile(string s)
         {
             try
             {
                 using (FileStream fs = new FileStream(logFilePath, FileMode.Append, FileAccess.Write))
-                    using (StreamWriter sw = new StreamWriter(fs))
-                    {
-                        sw.WriteLine(s);
-                    }
+                using (StreamWriter sw = new StreamWriter(fs))
+                {
+                    sw.WriteLine(s);
+                }
             }
             catch (Exception e)
             {
@@ -245,7 +251,7 @@ namespace fifthSem
             {
                 Directory.CreateDirectory(logFolder);
             }
-            
+
         }
     }
 }
