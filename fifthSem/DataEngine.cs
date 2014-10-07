@@ -136,19 +136,9 @@ namespace fifthSem
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
             //Debug.WriteLine("DataEngine: lest av temp, skriver til event. temp: " + e.temp);
-            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); //upcoming update removes need to convert.
+            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); 
             if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
-            DateTime now = DateTime.Now;
-            if (lastLog != null)
-            {
-                if (lastLog.AddSeconds(10) < now)
-                {
-                    Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
-                    writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
-                }
-            }
-            else writeToFile("Temperature reading " + DateTime.Now + ": " + e.temp);
-            lastLog = now;
+            writeTempToLog(e.temp);
         }
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
@@ -209,12 +199,43 @@ namespace fifthSem
             {
                 case ScpConnectionStatus.Master:
                     if(e.Packet is ScpLogFileRequest)
+                    {
                         if (sizeOfFile > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
+                    }
+                    else if(e.Packet is ScpAlarmLimitBroadcast)
+                    {
+                    //endring av alarmgrenser
+                    }
                     break;
                 case ScpConnectionStatus.Slave:
+                    if (e.Packet is ScpLogFileResponse)
+                    {
+                        try
+                        {
+                            File.Move(logFilePath, logFilePath + "BACKUP");
+                            File.WriteAllBytes(logFilePath, e.Packet.GetBytes());
+                        }
+                        catch (Exception ex)
+                        {
+                            //fikk ikke utført synkronisering av logg. 
+                            //messagebox med prøv igjen kanskje?
+                        }
+                    }
+                    else if (e.Packet is ScpTempBroadcast && 
+                        (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
+                        mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
+                    {
+                        writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
+                    }
+                    //motta logfil
+                    //motta endring i alarmgrenser
+                    //motta alarm
+                    //motta infomelding
+                    //motta temp
                     break;
                 case ScpConnectionStatus.Waiting:
+                    //kommer vel aldri til å skje? 
                     break;
             }
         }
@@ -222,6 +243,21 @@ namespace fifthSem
         //
         //ScpEvents Stop
         //
+
+        private void writeTempToLog(double s)
+        {
+            DateTime now = DateTime.Now;
+            if (lastLog != null)
+            {
+                if (lastLog.AddSeconds(10) < now)
+                {
+                    Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
+                    writeToFile("Temperature reading " + DateTime.Now + ": " + s);
+                }
+            }
+            else writeToFile("Temperature reading " + DateTime.Now + ": " + s);
+            lastLog = now;
+        }
 
         /// <summary> Method for writing logg/alarm/information etc to file </summary>
         private void writeToFile(string s)
