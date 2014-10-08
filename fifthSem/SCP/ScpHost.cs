@@ -261,7 +261,7 @@ namespace ScadaCommunicationProtocol
                     bool connected = await scpTcpClient.Connect(reply.MasterIPEndPoint.Address, ScpHost.TcpServerPort, ScpHost.Name);
                     if (connected)
                     {
-                        delay = 0;
+                        delay = 1000;
                         setConnectionStatus(ScpConnectionStatus.Slave);
                         try
                         {
