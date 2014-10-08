@@ -21,7 +21,6 @@ namespace ScadaCommunicationProtocol
             private int clientsConnected = 0;
             private object _lock;
 
-            private List<Task> connections = new List<Task>();
             private List<ScpTcpClient> scpClients = new List<ScpTcpClient>();
             private TcpListener tcpListener;
 
@@ -83,7 +82,7 @@ namespace ScadaCommunicationProtocol
                 {
                     tcpListener.Stop();
                     // Disconnect all slaves
-                    foreach (ScpTcpClient scpTcpClient in scpClients)
+                    foreach (ScpTcpClient scpTcpClient in scpClients.ToList())
                     {
                         scpTcpClient.Disconnect();
                     }

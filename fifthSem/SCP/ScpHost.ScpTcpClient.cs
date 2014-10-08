@@ -158,6 +158,11 @@ namespace ScadaCommunicationProtocol
                                 }
                                 if (totalbytesread >= (packetLength)) // Complete packet received
                                 {
+                                    // DEBUG!
+                                    if (packetLength != 4)
+                                    {
+                                        OnMessageEvent(new MessageEventArgs("Bytes received: " + packetLength.ToString()));
+                                    }
                                     ScpPacket packet = ScpPacket.Create(buffer,packetLength);//new ScpTcpPacket(buffer, packetLength);
                                     if (packet != null)
                                     {
@@ -201,10 +206,16 @@ namespace ScadaCommunicationProtocol
             private async Task KeepAlive()
             {
                 byte[] keepAlivepacket = BitConverter.GetBytes(4);
-                while (enabled)
+                try
                 {
-                    await writeBuffer.SendAsync(keepAlivepacket);
-                    await Task.Delay(1000);
+                    while (enabled)
+                    {
+                        await writeBuffer.SendAsync(keepAlivepacket);
+                        await Task.Delay(1000);
+                    }
+                }
+                catch
+                {
                 }
             }
 
@@ -261,6 +272,7 @@ namespace ScadaCommunicationProtocol
                 try
                 {
                     enabled = false;
+                    tcpClient.Client.Close();
                     tcpClient.Close();
                 }
                 finally

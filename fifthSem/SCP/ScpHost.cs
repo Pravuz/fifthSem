@@ -263,7 +263,13 @@ namespace ScadaCommunicationProtocol
                     {
                         delay = 0;
                         setConnectionStatus(ScpConnectionStatus.Slave);
-                        await scpTcpClient.ReaderTask;
+                        try
+                        {
+                            await scpTcpClient.ReaderTask;
+                        }
+                        catch
+                        {
+                        }
                         OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
                         setConnectionStatus(ScpConnectionStatus.Waiting);
                         scpTcpClient.Disconnect();
