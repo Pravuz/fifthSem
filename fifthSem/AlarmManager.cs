@@ -35,7 +35,9 @@ namespace fifthSem
         public Alarm(AlarmTypes Type, string Source)
         {
             this.Type = Type;
+            this.Source = Source;
             timestamp = DateTime.Now;
+            this.High = true;
         }
 
         public double PV;
@@ -59,19 +61,19 @@ namespace fifthSem
             alarms = new List<Alarm>();
         }
 
-        public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string hostname = "", double pv = 0.0)
+        public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource = "", double pv = 0.0)
         {
             bool result = false;
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
-                setMasterAlarmStatus(Type, Command, hostname, pv);
+                setMasterAlarmStatus(Type, Command, alarmsource, pv);
                 result = true;
             }
             else if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Slave) // Send command to master
             {
                 try
                 {
-                    ScpAlarmRequest scpPacket = new ScpAlarmRequest(Type, Command);
+                    ScpAlarmRequest scpPacket = new ScpAlarmRequest(Type, Command, alarmsource);
                     ScpPacket response = await scpHost.SendRequestAsync(scpPacket);
                     if (response != null && response is ScpAlarmResponse)
                     {
