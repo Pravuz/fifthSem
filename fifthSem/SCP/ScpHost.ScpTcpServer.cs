@@ -157,9 +157,9 @@ namespace ScadaCommunicationProtocol
                         {
                         }
                         // Slave disconnected event
-                        OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(false, scpClient.Hostname));
                         OnMessageEvent(new MessageEventArgs("Slave disconnected: " + scpClient.Hostname));
                         scpClients.Remove(scpClient);
+                        OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(false, scpClient.Hostname));
                     }
 
                     lock (_lock)

@@ -74,7 +74,7 @@ namespace ScadaCommunicationProtocol
                 ScpPacket response = null;
 
                 // Send packet
-                OnMessageEvent(new MessageEventArgs("SCP packet sent! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                OnMessageEvent(new MessageEventArgs("SCP packet sent to: "+Hostname+"! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
 
                 await writeBuffer.SendAsync(packetbuffer);
                 if (packet.IsRequest())
