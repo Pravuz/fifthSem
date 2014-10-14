@@ -199,15 +199,15 @@ namespace ScadaCommunicationProtocol
     }
     public class ScpLogFileRequest : ScpPacket
     {
-        private int fileSize;
-        public int FileSize
+        private long fileSize;
+        public long FileSize
         {
             get
             {
                 return fileSize;
             }
         }
-        public ScpLogFileRequest(int fileSize) : base()
+        public ScpLogFileRequest(long fileSize) : base()
         {
             this.fileSize = fileSize;
             type = (byte)ScpPacketTypes.LogFileRequest;
