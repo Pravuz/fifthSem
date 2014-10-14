@@ -113,7 +113,7 @@ namespace fifthSem
         /// Starts the DataEngine WITH com
         /// </summary>
         /// <param name="portNr">comport to use</param>
-        public void Start(string portNr)
+        public void Start(string portNr, int ComputerAdress)
         {
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
@@ -128,7 +128,7 @@ namespace fifthSem
             mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
             //todo: start alarmsystem
 
-            mRS485.ComputerAddress = 1; //need real prio from GUI
+            mRS485.ComputerAddress = ComputerAdress; //need real prio from GUI
             hostname = ScpHost.Name;
 
             //if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
@@ -137,13 +137,16 @@ namespace fifthSem
         private void stop()
         {
             //cleanup
+            mTimer.Stop();
+            mTimer.Dispose();
             mRS485.stopCom();
         }
 
-        void mTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timerAlarmHigh = true;
             mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
+            Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
         //
@@ -160,8 +163,19 @@ namespace fifthSem
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
-            //if(e.alarm is RS485.)
-            //mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error)   
+            switch (e.alarm)
+            { 
+                case RS485.AlarmStatus.ComportFailure:
+                    mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name); 
+                    break;
+                case RS485.AlarmStatus.RS485Failure:
+                    mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name); 
+                    break;
+                case RS485.AlarmStatus.None:
+                    mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                    mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    break;
+            }  
         }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
@@ -169,17 +183,17 @@ namespace fifthSem
             switch (e.status)
             {
                 case RS485.ConnectionStatus.Master:
-                    mTimer.Enabled = true;
+                    mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Slave:
-                    mTimer.Enabled = false;
+                    mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Waiting:
-                    mTimer.Enabled = false;
+                    mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     mScpHost.CanBeMaster = false;
                     break;
@@ -229,6 +243,7 @@ namespace fifthSem
                     }
                     catch (Exception ex)
                     {
+                        Debug.WriteLine(this, "DataEngine: " + ex.ToString());
                         //fikk ikke utført synkronisering av logg. 
                         //messagebox med prøv igjen kanskje?
                     }
