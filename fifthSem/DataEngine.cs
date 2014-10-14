@@ -55,8 +55,6 @@ namespace fifthSem
     class DataEngine
     {
         public static string hostname;
-        //public int tempAlarmHigh, tempAlarmLow;
-
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long sizeOfFile = 0;
         private ScpHost mScpHost;
@@ -65,7 +63,6 @@ namespace fifthSem
         private Timer mTimer;
         private bool timerAlarmHigh;
         private AlarmManager mAlarmManager;
-        //private alarmhost malarmhost;
 
         public event DataEngineNewTempHandler mNewTempHandler;
         public event DataEngineNewComStatusHandler mNewComStatusHandler;
@@ -78,7 +75,6 @@ namespace fifthSem
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
             logFilePath = logFolder + logFile;
-            //mFile = new FileInfo(logFilePath);
             logFileCheck();
 
             mTimer = new Timer(3000);
@@ -104,9 +100,6 @@ namespace fifthSem
             //starts protocols
             mScpHost.Start();
             hostname = ScpHost.Name;
-
-            //if (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
-
         }
 
         /// <summary>
@@ -126,17 +119,13 @@ namespace fifthSem
             //starts protocols
             mScpHost.Start();
             mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
-            //todo: start alarmsystem
 
-            mRS485.ComputerAddress = ComputerAdress; //need real prio from GUI
+            mRS485.ComputerAddress = ComputerAdress;
             hostname = ScpHost.Name;
-
-            //if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
 
         private void stop()
         {
-            //cleanup
             mTimer.Stop();
             mTimer.Dispose();
             mRS485.stopCom();
@@ -155,7 +144,6 @@ namespace fifthSem
 
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
-            //Debug.WriteLine("DataEngine: lest av temp, skriver til event. temp: " + e.temp);
             if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); 
             if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
             writeTempToLog(e.temp);
