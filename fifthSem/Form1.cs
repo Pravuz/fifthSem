@@ -29,9 +29,9 @@ namespace fifthSem
         {
             mDataEngine.Start();
         }
-        private void startDataEngine(string s)
+        private void startDataEngine(string s,int p)
         {
-            mDataEngine.Start(s);
+            mDataEngine.Start(s,p);
         }
 
         private void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e)
@@ -86,7 +86,7 @@ namespace fifthSem
         private void btnSetPri_Click(object sender, EventArgs e)
         {
             //Program.setPrio(Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString());
+            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString(),Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
             else startDataEngine();
         }
 
