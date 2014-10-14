@@ -90,10 +90,11 @@ namespace fifthSem
             else startDataEngine();
         }
 
-       
+    
         public void serialPortNames()
         {
             // Get a list of serial port names. 
+
             string[] ports = SerialPort.GetPortNames();
             cmbCOM.DataSource = ports;
         }
