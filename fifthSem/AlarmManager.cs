@@ -19,7 +19,7 @@ namespace fifthSem
             this.Alarms = alarms;
         }
     }
-    public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8 }
+    public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8, TempMissing = 9 }
     public enum AlarmCommand { High=1, Low=2, Ack=3 }
 
     [Serializable]
