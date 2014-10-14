@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using ScadaCommunicationProtocol;
 using System.IO.Ports;
 using System.Diagnostics;
+using System.Timers;
 
 namespace fifthSem
 {
@@ -61,6 +62,9 @@ namespace fifthSem
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
+        private Timer mTimer;
+        private bool timerAlarmHigh;
+        private AlarmManager mAlarmManager;
         //private alarmhost malarmhost;
 
         public event DataEngineNewTempHandler mNewTempHandler;
@@ -77,11 +81,17 @@ namespace fifthSem
             //mFile = new FileInfo(logFilePath);
             logFileCheck();
 
+            mTimer = new Timer(3000);
+            mTimer.Elapsed += mTimer_Elapsed;
+            mTimer.Enabled = false;
+
             //creates objects of protocols
             mScpHost = new ScpHost(1);
+            mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later.
 
         }
+
         /// <summary>
         /// Starts the DataEngine WITHOUT com 
         /// </summary>
@@ -123,10 +133,17 @@ namespace fifthSem
 
             //if (mRS485.connectionStatus != RS485.ConnectionStatus.Waiting) mScpHost.CanBeMaster = true; //this if-test will most likely never be true, but event will handle this later.
         }
+
         private void stop()
         {
             //cleanup
             mRS485.stopCom();
+        }
+
+        void mTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            timerAlarmHigh = true;
+            mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
         }
 
         //
@@ -143,7 +160,8 @@ namespace fifthSem
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
-            
+            //if(e.alarm is RS485.)
+            //mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error)   
         }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
@@ -151,14 +169,17 @@ namespace fifthSem
             switch (e.status)
             {
                 case RS485.ConnectionStatus.Master:
+                    mTimer.Enabled = true;
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Slave:
+                    mTimer.Enabled = false;
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Waiting:
+                    mTimer.Enabled = false;
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     mScpHost.CanBeMaster = false;
                     break;
@@ -184,6 +205,7 @@ namespace fifthSem
                     break;
                 case ScpConnectionStatus.Slave:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
+                    logSync();
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
@@ -191,6 +213,27 @@ namespace fifthSem
                 default:
                     break;
             }
+        }
+
+        private async void logSync()
+        {
+            ScpPacket response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(sizeOfFile));
+            if ((response != null) && (response is ScpLogFileResponse)) 
+            {
+                if (((ScpLogFileResponse)response).File != null)
+                {
+                    try
+                    {
+                        File.Move(logFilePath, logFilePath + "BACKUP");
+                        File.WriteAllBytes(logFilePath, ((ScpLogFileResponse)response).File);
+                    }
+                    catch (Exception ex)
+                    {
+                        //fikk ikke utført synkronisering av logg. 
+                        //messagebox med prøv igjen kanskje?
+                    }
+                }   
+            }   
         }
 
         private void PacketHandler(object sender, ScpPacketEventArgs e)
@@ -209,30 +252,16 @@ namespace fifthSem
                     }
                     break;
                 case ScpConnectionStatus.Slave:
-                    if (e.Packet is ScpLogFileResponse)
-                    {
-                        try
-                        {
-                            File.Move(logFilePath, logFilePath + "BACKUP");
-                            File.WriteAllBytes(logFilePath, e.Packet.GetBytes());
-                        }
-                        catch (Exception ex)
-                        {
-                            //fikk ikke utført synkronisering av logg. 
-                            //messagebox med prøv igjen kanskje?
-                        }
-                    }
-                    else if (e.Packet is ScpTempBroadcast && 
+                    if (e.Packet is ScpTempBroadcast && 
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
                         mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
                     {
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
                     }
-                    //motta logfil
-                    //motta endring i alarmgrenser
-                    //motta alarm
-                    //motta infomelding
-                    //motta temp
+                    else if (e.Packet is ScpAlarmLimitBroadcast)
+                    {
+                        //endring av alarmgrenser
+                    }
                     break;
                 case ScpConnectionStatus.Waiting:
                     //kommer vel aldri til å skje? 
@@ -247,6 +276,14 @@ namespace fifthSem
         private void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
+            mTimer.Stop();
+            mTimer.Start();
+            if (timerAlarmHigh)
+            {
+                mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
+                timerAlarmHigh = false;
+            }
+            
             if (lastLog != null)
             {
                 if (lastLog.AddSeconds(10) < now)
@@ -259,7 +296,6 @@ namespace fifthSem
             lastLog = now;
         }
 
-        /// <summary> Method for writing logg/alarm/information etc to file </summary>
         private void writeToFile(string s)
         {
             try
@@ -278,8 +314,6 @@ namespace fifthSem
 
         private void logFileCheck()
         {
-            //Debug.WriteLine(this, "DataEngine: " + mFile.FullName);
-            //mFile.Refresh();
             FileInfo fi;
             if (File.Exists(logFilePath))
             {
