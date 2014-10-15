@@ -175,8 +175,12 @@ namespace fifthSem
         #region ComEvents
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
-            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); 
-            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+                mAlarmManager.SetTemp(e.temp);
+            }
             writeTempToLog(e.temp);
         }
 
