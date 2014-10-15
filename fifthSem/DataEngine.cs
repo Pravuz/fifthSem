@@ -15,8 +15,7 @@ namespace fifthSem
     public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
     public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
     public delegate void DataEngineMessageHandler(object sender, DataEngineMessageArgs e);
-    public delegate void DataEngineAlarmEventHandler(object sender, DataEngineAlarmEventArgs e);
-
+    
     public class DataEngineNewTempArgs : EventArgs
     {
         public double temp;
@@ -53,18 +52,6 @@ namespace fifthSem
         }
     }
 
-    public class DataEngineAlarmEventArgs : EventArgs
-    {
-        public string alarmType, alarmCommand, alarmSender;
-
-        public DataEngineAlarmEventArgs(string alarmType, string alarmCommand, string alarmSender)
-        {
-            this.alarmType = alarmType;
-            this.alarmCommand = alarmCommand;
-            this.alarmSender = alarmSender;
-        }
-    }
-
     class DataEngine
     {
         public static string hostname;
@@ -75,13 +62,13 @@ namespace fifthSem
         private DateTime lastLog;
         private Timer mTimer;
         private bool timerAlarmHigh;
-        private AlarmManager mAlarmManager;
+
+        public AlarmManager mAlarmManager;
 
         public event DataEngineNewTempHandler mNewTempHandler;
         public event DataEngineNewComStatusHandler mNewComStatusHandler;
         public event DataEngineNewTcpStatusHandler mNewTcpStatusHandler;
         public event DataEngineMessageHandler mMessageHandler;
-        public event DataEngineAlarmEventHandler mAlarmEventHandler;
 
         public DataEngine()
         {
@@ -149,7 +136,6 @@ namespace fifthSem
         {
             timerAlarmHigh = true;
             mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
-            if (mAlarmEventHandler != null) mAlarmEventHandler(this, new DataEngineAlarmEventArgs("Type: TempMissing - ", "Command: High - ", "Sender: " + ScpHost.Name));
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
@@ -170,11 +156,9 @@ namespace fifthSem
             { 
                 case RS485.AlarmStatus.ComportFailure:
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
-                    if (mAlarmEventHandler != null) mAlarmEventHandler(this, new DataEngineAlarmEventArgs("Type: SerialPortError - ", "Command: High - ", "Sender: " + ScpHost.Name));
                     break;
                 case RS485.AlarmStatus.RS485Failure:
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
-                    if (mAlarmEventHandler != null) mAlarmEventHandler(this, new DataEngineAlarmEventArgs("Type: RS485Error - ", "Command: High - ", "Sender: " + ScpHost.Name));
                     break;
                 case RS485.AlarmStatus.None:
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
@@ -301,7 +285,6 @@ namespace fifthSem
             if (timerAlarmHigh)
             {
                 mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
-                if (mAlarmEventHandler != null) mAlarmEventHandler(this, new DataEngineAlarmEventArgs("Type: TempMissing - ", "Command: Low - ", "Sender: " + ScpHost.Name));
                 timerAlarmHigh = false;
             }
             
