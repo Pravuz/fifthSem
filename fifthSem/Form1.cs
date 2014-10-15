@@ -226,6 +226,30 @@ namespace fifthSem
                 mDataEngine.deAlarmManager.TempLimitLoLo = lolo;
             }
         }
+
+        private void btnAck_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dGFilteredAlarms.SelectedRows)
+            {
+                if (row.Index != -1)
+                {
+                    Alarm alarm = (Alarm)row.DataBoundItem;
+                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
+                }
+            }
+        }
+
+        private void Acknowledge2_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dGAllAlarms.SelectedRows)
+            {
+                if (row.Index != -1)
+                {
+                    Alarm alarm = (Alarm)row.DataBoundItem;
+                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
+                }
+            }
+        }
              
     }
 }
