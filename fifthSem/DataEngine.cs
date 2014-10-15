@@ -90,6 +90,7 @@ namespace fifthSem
 
             //creates objects of protocols
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
+            mScpHost.CanBeMaster = false;
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
 
@@ -203,6 +204,11 @@ namespace fifthSem
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     mScpHost.CanBeMaster = false;
                     break;
+                case RS485.ConnectionStatus.Stop:
+                    mTimer.Stop();
+                    mScpHost.CanBeMaster = false;
+                    if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
+                    break;
             }
         }
         #endregion
@@ -274,7 +280,7 @@ namespace fifthSem
             }
             catch (Exception e)
             {
-                //timeout?
+                Debug.WriteLine("DataEngine: LogfileSync, timeout eller ikke nødvendig med sync.");
             }
             if ((response != null) && (response is ScpLogFileResponse))
             {
