@@ -59,7 +59,7 @@ namespace fifthSem
     {
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private bool timerAlarmHigh;
+        private bool timerAlarmHigh, deStarted;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
@@ -92,6 +92,7 @@ namespace fifthSem
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
+            mScpHost.CanBeMaster = false;
 
             //Add hosts allowed to connect to the network. 
             //Hardcoded temporarily. 
@@ -101,6 +102,8 @@ namespace fifthSem
             mScpHost.AddHost("ANDERS");
             mScpHost.AddHost("HILDE-PC");
             mScpHost.AddHost("FREDRIK");
+
+            deStarted = false;
         }
 
         /// <summary>
@@ -108,12 +111,17 @@ namespace fifthSem
         /// </summary>
         public void Start()
         {
-            //subscribe to events
-            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-            mScpHost.PacketEvent += PacketHandler;
+            if (!deStarted)
+            {
+                //subscribe to events
+                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                mScpHost.PacketEvent += PacketHandler;
+                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-            //starts protocols
-            mScpHost.Start();
+                //starts protocols
+                mScpHost.Start();
+                deStarted = true;
+            }
         }
 
         /// <summary>
@@ -122,21 +130,25 @@ namespace fifthSem
         /// <param name="portNr">comport to use</param>
         public void Start(string portNr, int ComputerPriority)
         {
-            //subscribe to events
-            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-            mScpHost.PacketEvent += PacketHandler;
-            mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
-            mRS485.TempHandler += TempEventHandler;
-            mRS485.AlarmHandler += AlarmEventHandler;
-            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+            if (!deStarted)
+            {
+                //subscribe to events
+                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                mScpHost.PacketEvent += PacketHandler;
+                mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
+                mRS485.TempHandler += TempEventHandler;
+                mRS485.AlarmHandler += AlarmEventHandler;
+                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-            //starts protocols
-            mScpHost.Start();
-            mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
+                //starts protocols
+                mScpHost.Start();
+                mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
 
-            //passing priority to protocols. 
-            mRS485.ComputerAddress = ComputerPriority;
-            ScpHost.Priority = ComputerPriority;
+                //passing priority to protocols. 
+                mRS485.ComputerAddress = ComputerPriority;
+                ScpHost.Priority = ComputerPriority;
+                deStarted = true;
+            }
         }
 
         /// <summary>
@@ -144,6 +156,7 @@ namespace fifthSem
         /// </summary>
         private void stop()
         {
+            deStarted = false;
             mTimer.Stop();
             mTimer.Dispose();
             mRS485.stopCom();
@@ -162,8 +175,12 @@ namespace fifthSem
         #region ComEvents
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
-            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); 
-            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+            if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+                mAlarmManager.SetTemp(e.temp);
+            }
             writeTempToLog(e.temp);
         }
 
@@ -203,6 +220,11 @@ namespace fifthSem
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     mScpHost.CanBeMaster = false;
                     break;
+                case RS485.ConnectionStatus.Stop:
+                    mTimer.Stop();
+                    if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
+                    mScpHost.CanBeMaster = false;
+                    break;
             }
         }
         #endregion
@@ -240,6 +262,8 @@ namespace fifthSem
                     {
                         if (logFileSize > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
+                        else
+                            e.Response = new ScpLogFileResponse(null);
                     }
                     else if(e.Packet is ScpAlarmLimitBroadcast)
                     {
@@ -251,6 +275,7 @@ namespace fifthSem
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
                         mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
                     {
+                        if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
                     }
                     else if (e.Packet is ScpAlarmLimitBroadcast)
@@ -274,7 +299,8 @@ namespace fifthSem
             }
             catch (Exception e)
             {
-                //timeout?
+                Debug.WriteLine("DataEngine: LogfileSync, timeout eller ikke nødvendig med sync.");
+                Debug.WriteLine("DataEngine: " + e.ToString());
             }
             if ((response != null) && (response is ScpLogFileResponse))
             {
@@ -282,7 +308,7 @@ namespace fifthSem
                 {
                     try
                     {
-                        File.Move(logFilePath, logFilePath + "BACKUP");
+                        //File.Move(logFilePath, logFilePath + "BACKUP");
                         File.WriteAllBytes(logFilePath, ((ScpLogFileResponse)response).File);
                     }
                     catch (Exception ex)

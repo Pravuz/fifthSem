@@ -74,7 +74,10 @@ namespace ScadaCommunicationProtocol
                 ScpPacket response = null;
 
                 // Send packet
-                OnMessageEvent(new MessageEventArgs("SCP packet sent to: "+Hostname+"! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                if (!packet.ToString().Contains("Temp"))
+                {
+                    OnMessageEvent(new MessageEventArgs("SCP packet sent to: " + Hostname + "! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                }
 
                 await writeBuffer.SendAsync(packetbuffer);
                 if (packet.IsRequest())
@@ -85,7 +88,8 @@ namespace ScadaCommunicationProtocol
                     responsePacket = null;
                     try
                     {
-                        await Task.Delay(1000, requestCancelToken.Token);
+//                        await Task.Delay(5000, requestCancelToken.Token);
+                        await Task.Delay(5000);
                     }
                     catch
                     {
@@ -158,16 +162,14 @@ namespace ScadaCommunicationProtocol
                                 }
                                 if (totalbytesread >= (packetLength)) // Complete packet received
                                 {
-                                    // DEBUG!
-                                    if (packetLength != 4)
-                                    {
-                                        OnMessageEvent(new MessageEventArgs("Bytes received: " + packetLength.ToString()));
-                                    }
                                     ScpPacket packet = ScpPacket.Create(buffer,packetLength);//new ScpTcpPacket(buffer, packetLength);
                                     if (packet != null)
                                     {
                                         packet.Source = Hostname;
-                                        OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                                        if (!packet.ToString().Contains("Temp"))
+                                        {
+                                            OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
+                                        }
                                         if (pendingRequest && packet.IsResponse() && pendingRequestID == packet.Id)
                                         {
                                             responsePacket = packet;

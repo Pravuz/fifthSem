@@ -156,30 +156,30 @@ namespace fifthSem
             {
                 if (temp > TempLimitHiHi)
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
+                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
                 }
                 else if (temp > TempLimitHi)
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
 
-                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
+                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLoLo)
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
+                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLo)
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
 
-                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
+                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
                 }
                 else
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
-                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
-                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
-                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
+                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
                 }
             }
         }
@@ -237,6 +237,7 @@ namespace fifthSem
         private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="")
         {
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
+            bool changed = false;
             switch (Command)
             {
                 case AlarmCommand.High:
@@ -245,36 +246,52 @@ namespace fifthSem
                         alarm = new Alarm(Type, alarmsource);
                         alarm.Filtered = filteredAlarms.Contains(Type);
                         alarms.Add(alarm);
+                        changed = true;
                     }
                     else
                     {
-                        alarm.Filtered = filteredAlarms.Contains(Type);
-                        alarm.High = true;
+                        if (!alarm.High)
+                        {
+                            alarm.Filtered = filteredAlarms.Contains(Type);
+                            alarm.High = true;
+                            changed = true;
+                        }
                     }
                     break;
                 case AlarmCommand.Low:
                     if (alarm != null)
                     {
-                        alarm.High = false;
-                        if (alarm.Acked) // If Alarm already acked we can remove it
+                        if (alarm.High)
                         {
-                            alarms.Remove(alarm);
+                            alarm.High = false;
+                            if (alarm.Acked) // If Alarm already acked we can remove it
+                            {
+                                alarms.Remove(alarm);
+                            }
+                            changed = true;
                         }
                     }
                     break;
                 case AlarmCommand.Ack:
                     if (alarm != null)
                     {
-                        alarm.Acked = true;
-                        if (!alarm.High)
+                        if (!alarm.Acked)
                         {
-                            alarms.Remove(alarm);
+                            alarm.Acked = true;
+                            if (!alarm.High)
+                            {
+                                alarms.Remove(alarm);
+                            }
+                            changed = true;
                         }
                     }
                     break;
             }
             updateNeeded = true;
-            OnAlarmsChanged();
+            if (changed)
+            {
+                OnAlarmsChanged();
+            }
         }
 
         private void SendAlarmUpdate()
