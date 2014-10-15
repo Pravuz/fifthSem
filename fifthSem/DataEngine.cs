@@ -257,6 +257,7 @@ namespace fifthSem
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
                         mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
                     {
+                        if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
                     }
                     else if (e.Packet is ScpAlarmLimitBroadcast)
