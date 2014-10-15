@@ -273,7 +273,7 @@ namespace fifthSem
             }
             catch (Exception e)
             {
-                
+                //timeout?
             }
             if ((response != null) && (response is ScpLogFileResponse))
             {
