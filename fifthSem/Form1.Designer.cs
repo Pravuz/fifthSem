@@ -71,6 +71,7 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
@@ -98,6 +99,7 @@
             // 
             // tabPageCC
             // 
+            this.tabPageCC.Controls.Add(this.txtDebug);
             this.tabPageCC.Controls.Add(this.chrtTemp);
             this.tabPageCC.Controls.Add(this.groupBox2);
             this.tabPageCC.Location = new System.Drawing.Point(4, 22);
@@ -494,6 +496,14 @@
             this.toolTipAck.SetToolTip(this.btnSetLimits, "This button will set the alarm levels you have written in the textboxes.");
             this.btnSetLimits.UseVisualStyleBackColor = true;
             // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(760, 7);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(303, 455);
+            this.txtDebug.TabIndex = 14;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -504,6 +514,7 @@
             this.Text = "Skadd";
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
+            this.tabPageCC.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
@@ -564,6 +575,7 @@
         private System.Windows.Forms.TextBox txtHLvl;
         private System.Windows.Forms.TextBox txtHHLvl;
         private System.Windows.Forms.Button btnSetLimits;
+        private System.Windows.Forms.TextBox txtDebug;
     }
 }
 
