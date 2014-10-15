@@ -11,6 +11,8 @@ using System.Timers;
 
 namespace fifthSem
 {
+    #region DataEngine Events 
+    //... Used by GUI
     public delegate void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e);
     public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
     public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
@@ -51,19 +53,21 @@ namespace fifthSem
             this.message = message;
         }
     }
+    #endregion
 
     class DataEngine
     {
-        public static string hostname;
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
-        private long sizeOfFile = 0;
+        private long logFileSize = 0;
+        private bool timerAlarmHigh;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
         private Timer mTimer;
-        private bool timerAlarmHigh;
         private AlarmManager mAlarmManager;
 
+        //this AlarmManager object is used in the GUI. 
+        //Since it's created here, it needs to be available for the GUI 
         public AlarmManager deAlarmManager { get{return mAlarmManager; } }
 
         public event DataEngineNewTempHandler mNewTempHandler;
@@ -79,12 +83,13 @@ namespace fifthSem
             logFilePath = logFolder + logFile;
             logFileCheck();
 
+            //timer init, used to detect missing temperaturereading
             mTimer = new Timer(3000);
             mTimer.Elapsed += mTimer_Elapsed;
             mTimer.Enabled = false;
 
             //creates objects of protocols
-            mScpHost = new ScpHost(1);
+            mScpHost = new ScpHost(0);
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later.
 
@@ -101,7 +106,6 @@ namespace fifthSem
 
             //starts protocols
             mScpHost.Start();
-            hostname = ScpHost.Name;
         }
 
         /// <summary>
@@ -122,10 +126,14 @@ namespace fifthSem
             mScpHost.Start();
             mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
 
+            //passing priority to protocols. 
             mRS485.ComputerAddress = ComputerAdress;
-            hostname = ScpHost.Name;
+            ScpHost.Priority = ComputerAdress;
         }
 
+        /// <summary>
+        /// Making sure everything stops when told. 
+        /// </summary>
         private void stop()
         {
             mTimer.Stop();
@@ -133,6 +141,9 @@ namespace fifthSem
             mRS485.stopCom();
         }
 
+        /// <summary>
+        /// This event is triggered when DataEngine does not recieve a new temperaturereading after a given timeinterval. 
+        /// </summary>
         private void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timerAlarmHigh = true;
@@ -140,10 +151,7 @@ namespace fifthSem
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
-        //
-        //ComEvents Start
-        //
-
+        #region ComEvents
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
             if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp)); 
@@ -189,12 +197,8 @@ namespace fifthSem
                     break;
             }
         }
-
-        //
-        //ComEvents Stop
-        //ScpEvents Start
-        //
-
+        #endregion
+        #region ScpEvents
         private void SlaveConnectionHandler(object sender, SlaveConnectionEventArgs e)
         {
             if (mMessageHandler != null) mMessageHandler(this, new DataEngineMessageArgs("Slave " + e.Name + " Disconnected."));
@@ -219,28 +223,6 @@ namespace fifthSem
             }
         }
 
-        private async void logSync()
-        {
-            ScpPacket response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(sizeOfFile));
-            if ((response != null) && (response is ScpLogFileResponse)) 
-            {
-                if (((ScpLogFileResponse)response).File != null)
-                {
-                    try
-                    {
-                        File.Move(logFilePath, logFilePath + "BACKUP");
-                        File.WriteAllBytes(logFilePath, ((ScpLogFileResponse)response).File);
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.WriteLine(this, "DataEngine: " + ex.ToString());
-                        //fikk ikke utført synkronisering av logg. 
-                        //messagebox med prøv igjen kanskje?
-                    }
-                }   
-            }   
-        }
-
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
             switch (mScpHost.ScpConnectionStatus)
@@ -248,7 +230,7 @@ namespace fifthSem
                 case ScpConnectionStatus.Master:
                     if(e.Packet is ScpLogFileRequest)
                     {
-                        if (sizeOfFile > ((ScpLogFileRequest)e.Packet).FileSize)
+                        if (logFileSize > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
                     }
                     else if(e.Packet is ScpAlarmLimitBroadcast)
@@ -273,10 +255,29 @@ namespace fifthSem
                     break;
             }
         }
-
-        //
-        //ScpEvents Stop
-        //
+        #endregion
+        #region Logfile Methods
+        private async void logSync()
+        {
+            ScpPacket response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(logFileSize));
+            if ((response != null) && (response is ScpLogFileResponse))
+            {
+                if (((ScpLogFileResponse)response).File != null)
+                {
+                    try
+                    {
+                        File.Move(logFilePath, logFilePath + "BACKUP");
+                        File.WriteAllBytes(logFilePath, ((ScpLogFileResponse)response).File);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine(this, "DataEngine: " + ex.ToString());
+                        //fikk ikke utført synkronisering av logg. 
+                        //messagebox med prøv igjen kanskje?
+                    }
+                }
+            }
+        }
 
         private void writeTempToLog(double s)
         {
@@ -323,12 +324,13 @@ namespace fifthSem
             if (File.Exists(logFilePath))
             {
                 fi = new FileInfo(logFilePath);
-                sizeOfFile = fi.Length;
+                logFileSize = fi.Length;
             }
             else if (!Directory.Exists(logFolder))
             {
                 Directory.CreateDirectory(logFolder);
             }
         }
+        #endregion
     }
 }

@@ -14,9 +14,11 @@ namespace fifthSem
     public class AlarmsChangedEventArgs : EventArgs
     {
         public List<Alarm> Alarms;
-        public AlarmsChangedEventArgs(List<Alarm> alarms)
+        public List<Alarm> FilteredAlarms;
+        public AlarmsChangedEventArgs(List<Alarm> Alarms, List<Alarm> FilteredAlarms)
         {
-            this.Alarms = alarms;
+            this.Alarms = Alarms;
+            this.FilteredAlarms = FilteredAlarms;
         }
     }
     public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8, TempMissing = 9 }
@@ -31,6 +33,7 @@ namespace fifthSem
         public bool High { get; set; }
         public bool Acked { get; set; }
         public DateTime Timestamp { get { return timestamp; } }
+        public bool Filtered { get; set; }
         public Alarm(AlarmTypes Type, string Source)
         {
             this.Type = Type;
@@ -51,15 +54,30 @@ namespace fifthSem
         private ScadaCommunicationProtocol.ScpHost scpHost;
         private System.Timers.Timer timer;
         private bool updateNeeded = false;
+        private List<AlarmTypes> filteredAlarms;
         public double TempLimitLoLo { get; set; }
         public double TempLimitLo { get; set; }
         public double TempLimitHi { get; set; }
         public double TempLimitHiHi { get; set; }
+        public List<Alarm> AllAlarms
+        {
+            get
+            {
+                return alarms.ToList();
+            }
+        }
+        public List<Alarm> FilteredAlarms
+        {
+            get
+            {
+                return alarms.Where(al => al.Filtered == false).ToList();
+            }
+        }
         private void OnAlarmsChanged()
         {
             if (AlarmsChangedEvent != null)
             {
-                AlarmsChangedEvent(this, new AlarmsChangedEventArgs(alarms));
+                AlarmsChangedEvent(this, new AlarmsChangedEventArgs(AllAlarms, FilteredAlarms));
             }
         }
         public event AlarmsChangedEventHandler AlarmsChangedEvent;
@@ -73,6 +91,25 @@ namespace fifthSem
             scpHost.SlaveConnectionEvent += SlaveConnectionEvent;
             scpHost.ScpConnectionStatusEvent += ScpConnectionStatusEvent;
             alarms = new List<Alarm>();
+            filteredAlarms = new List<AlarmTypes>();
+        }
+
+        public void SetAlarmFilter(AlarmTypes type, bool filter)
+        {
+            if (filter)
+            {
+                if (!filteredAlarms.Exists(at => at == type))
+                {
+                    filteredAlarms.Add(type);
+                }
+            }
+            else
+            {
+                if (filteredAlarms.Exists(at => at == type))
+                {
+                    filteredAlarms.Remove(type);
+                }
+            }
         }
 
         void timer_Elapsed(object sender, System.Timers.ElapsedEventArgs e)
@@ -206,10 +243,12 @@ namespace fifthSem
                     if (alarm == null)
                     {
                         alarm = new Alarm(Type, alarmsource);
+                        alarm.Filtered = filteredAlarms.Contains(Type);
                         alarms.Add(alarm);
                     }
                     else
                     {
+                        alarm.Filtered = filteredAlarms.Contains(Type);
                         alarm.High = true;
                     }
                     break;
