@@ -62,8 +62,9 @@ namespace fifthSem
         private DateTime lastLog;
         private Timer mTimer;
         private bool timerAlarmHigh;
+        private AlarmManager mAlarmManager;
 
-        public AlarmManager mAlarmManager;
+        public AlarmManager deAlarmManager { get{return mAlarmManager; } }
 
         public event DataEngineNewTempHandler mNewTempHandler;
         public event DataEngineNewComStatusHandler mNewComStatusHandler;
