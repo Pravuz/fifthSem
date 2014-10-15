@@ -59,7 +59,7 @@ namespace fifthSem
     {
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private bool timerAlarmHigh;
+        private bool timerAlarmHigh, deStarted;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
@@ -90,9 +90,9 @@ namespace fifthSem
 
             //creates objects of protocols
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
-            mScpHost.CanBeMaster = false;
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
+            mScpHost.CanBeMaster = false;
 
             //Add hosts allowed to connect to the network. 
             //Hardcoded temporarily. 
@@ -102,6 +102,8 @@ namespace fifthSem
             mScpHost.AddHost("ANDERS");
             mScpHost.AddHost("HILDE-PC");
             mScpHost.AddHost("FREDRIK");
+
+            deStarted = false;
         }
 
         /// <summary>
@@ -109,13 +111,17 @@ namespace fifthSem
         /// </summary>
         public void Start()
         {
-            //subscribe to events
-            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-            mScpHost.PacketEvent += PacketHandler;
-            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+            if (!deStarted)
+            {
+                //subscribe to events
+                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                mScpHost.PacketEvent += PacketHandler;
+                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-            //starts protocols
-            mScpHost.Start();
+                //starts protocols
+                mScpHost.Start();
+                deStarted = true;
+            }
         }
 
         /// <summary>
@@ -124,21 +130,25 @@ namespace fifthSem
         /// <param name="portNr">comport to use</param>
         public void Start(string portNr, int ComputerPriority)
         {
-            //subscribe to events
-            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-            mScpHost.PacketEvent += PacketHandler;
-            mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
-            mRS485.TempHandler += TempEventHandler;
-            mRS485.AlarmHandler += AlarmEventHandler;
-            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+            if (!deStarted)
+            {
+                //subscribe to events
+                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                mScpHost.PacketEvent += PacketHandler;
+                mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
+                mRS485.TempHandler += TempEventHandler;
+                mRS485.AlarmHandler += AlarmEventHandler;
+                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-            //starts protocols
-            mScpHost.Start();
-            mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
+                //starts protocols
+                mScpHost.Start();
+                mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
 
-            //passing priority to protocols. 
-            mRS485.ComputerAddress = ComputerPriority;
-            ScpHost.Priority = ComputerPriority;
+                //passing priority to protocols. 
+                mRS485.ComputerAddress = ComputerPriority;
+                ScpHost.Priority = ComputerPriority;
+                deStarted = true;
+            }
         }
 
         /// <summary>
@@ -146,6 +156,7 @@ namespace fifthSem
         /// </summary>
         private void stop()
         {
+            deStarted = false;
             mTimer.Stop();
             mTimer.Dispose();
             mRS485.stopCom();
@@ -277,7 +288,6 @@ namespace fifthSem
         #region Logfile Methods
         private async void logSync()
         {
-            System.Threading.Thread.Sleep(2000);
             ScpPacket response = null; 
             try
             {
@@ -294,7 +304,7 @@ namespace fifthSem
                 {
                     try
                     {
-                        File.Move(logFilePath, logFilePath + "BACKUP");
+                        //File.Move(logFilePath, logFilePath + "BACKUP");
                         File.WriteAllBytes(logFilePath, ((ScpLogFileResponse)response).File);
                     }
                     catch (Exception ex)
