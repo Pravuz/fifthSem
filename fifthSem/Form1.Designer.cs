@@ -29,24 +29,25 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.checkBox5 = new System.Windows.Forms.CheckBox();
-            this.checkBox4 = new System.Windows.Forms.CheckBox();
-            this.checkBox3 = new System.Windows.Forms.CheckBox();
-            this.checkBox2 = new System.Windows.Forms.CheckBox();
-            this.checkBox1 = new System.Windows.Forms.CheckBox();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.chkTempMissingAlarm = new System.Windows.Forms.CheckBox();
+            this.chkCOMAlarms = new System.Windows.Forms.CheckBox();
+            this.chkHostMissingAlarms = new System.Windows.Forms.CheckBox();
+            this.chkRS485Alarms = new System.Windows.Forms.CheckBox();
+            this.chkTempAlarms = new System.Windows.Forms.CheckBox();
+            this.dGFilteredAlarms = new System.Windows.Forms.DataGridView();
             this.btnAck = new System.Windows.Forms.Button();
             this.tabPageAL = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.Acknowledge2 = new System.Windows.Forms.Button();
             this.dGAllAlarms = new System.Windows.Forms.DataGridView();
             this.tabPageCF = new System.Windows.Forms.TabPage();
-            this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
             this.Temperature = new System.Windows.Forms.GroupBox();
             this.txtTemperature = new System.Windows.Forms.TextBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
@@ -69,12 +70,12 @@
             this.txtHLvl = new System.Windows.Forms.TextBox();
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
-            this.Acknowledge2 = new System.Windows.Forms.Button();
+            this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.groupBox2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dGFilteredAlarms)).BeginInit();
             this.tabPageAL.SuspendLayout();
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dGAllAlarms)).BeginInit();
@@ -82,7 +83,6 @@
             this.Temperature.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
             this.SuspendLayout();
             // 
             // tabCCALEL
@@ -108,14 +108,31 @@
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
             // 
+            // chart1
+            // 
+            chartArea5.Name = "ChartArea1";
+            this.chart1.ChartAreas.Add(chartArea5);
+            legend5.Name = "Legend1";
+            this.chart1.Legends.Add(legend5);
+            this.chart1.Location = new System.Drawing.Point(8, 244);
+            this.chart1.Name = "chart1";
+            series5.ChartArea = "ChartArea1";
+            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series5.Legend = "Legend1";
+            series5.Name = "Series1";
+            this.chart1.Series.Add(series5);
+            this.chart1.Size = new System.Drawing.Size(745, 218);
+            this.chart1.TabIndex = 13;
+            this.chart1.Text = "chart1";
+            // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.checkBox5);
-            this.groupBox2.Controls.Add(this.checkBox4);
-            this.groupBox2.Controls.Add(this.checkBox3);
-            this.groupBox2.Controls.Add(this.checkBox2);
-            this.groupBox2.Controls.Add(this.checkBox1);
-            this.groupBox2.Controls.Add(this.dataGridView1);
+            this.groupBox2.Controls.Add(this.chkTempMissingAlarm);
+            this.groupBox2.Controls.Add(this.chkCOMAlarms);
+            this.groupBox2.Controls.Add(this.chkHostMissingAlarms);
+            this.groupBox2.Controls.Add(this.chkRS485Alarms);
+            this.groupBox2.Controls.Add(this.chkTempAlarms);
+            this.groupBox2.Controls.Add(this.dGFilteredAlarms);
             this.groupBox2.Controls.Add(this.btnAck);
             this.groupBox2.Location = new System.Drawing.Point(8, 6);
             this.groupBox2.Name = "groupBox2";
@@ -124,73 +141,78 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Alarm";
             // 
-            // checkBox5
+            // chkTempMissingAlarm
             // 
-            this.checkBox5.AutoSize = true;
-            this.checkBox5.Checked = true;
-            this.checkBox5.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox5.Location = new System.Drawing.Point(614, 151);
-            this.checkBox5.Name = "checkBox5";
-            this.checkBox5.Size = new System.Drawing.Size(114, 17);
-            this.checkBox5.TabIndex = 16;
-            this.checkBox5.Text = "TempMissingAlarm";
-            this.checkBox5.UseVisualStyleBackColor = true;
+            this.chkTempMissingAlarm.AutoSize = true;
+            this.chkTempMissingAlarm.Checked = true;
+            this.chkTempMissingAlarm.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkTempMissingAlarm.Location = new System.Drawing.Point(614, 151);
+            this.chkTempMissingAlarm.Name = "chkTempMissingAlarm";
+            this.chkTempMissingAlarm.Size = new System.Drawing.Size(114, 17);
+            this.chkTempMissingAlarm.TabIndex = 16;
+            this.chkTempMissingAlarm.Text = "TempMissingAlarm";
+            this.chkTempMissingAlarm.UseVisualStyleBackColor = true;
+            this.chkTempMissingAlarm.CheckedChanged += new System.EventHandler(this.chkTempMissingAlarm_CheckedChanged);
             // 
-            // checkBox4
+            // chkCOMAlarms
             // 
-            this.checkBox4.AutoSize = true;
-            this.checkBox4.Checked = true;
-            this.checkBox4.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox4.Location = new System.Drawing.Point(614, 128);
-            this.checkBox4.Name = "checkBox4";
-            this.checkBox4.Size = new System.Drawing.Size(76, 17);
-            this.checkBox4.TabIndex = 15;
-            this.checkBox4.Text = "COMAlarm";
-            this.checkBox4.UseVisualStyleBackColor = true;
+            this.chkCOMAlarms.AutoSize = true;
+            this.chkCOMAlarms.Checked = true;
+            this.chkCOMAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkCOMAlarms.Location = new System.Drawing.Point(614, 128);
+            this.chkCOMAlarms.Name = "chkCOMAlarms";
+            this.chkCOMAlarms.Size = new System.Drawing.Size(76, 17);
+            this.chkCOMAlarms.TabIndex = 15;
+            this.chkCOMAlarms.Text = "COMAlarm";
+            this.chkCOMAlarms.UseVisualStyleBackColor = true;
+            this.chkCOMAlarms.CheckedChanged += new System.EventHandler(this.chkCOMAlarms_CheckedChanged);
             // 
-            // checkBox3
+            // chkHostMissingAlarms
             // 
-            this.checkBox3.AutoSize = true;
-            this.checkBox3.Checked = true;
-            this.checkBox3.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox3.Location = new System.Drawing.Point(614, 105);
-            this.checkBox3.Name = "checkBox3";
-            this.checkBox3.Size = new System.Drawing.Size(109, 17);
-            this.checkBox3.TabIndex = 14;
-            this.checkBox3.Text = "HostMissingAlarm";
-            this.checkBox3.UseVisualStyleBackColor = true;
+            this.chkHostMissingAlarms.AutoSize = true;
+            this.chkHostMissingAlarms.Checked = true;
+            this.chkHostMissingAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkHostMissingAlarms.Location = new System.Drawing.Point(614, 105);
+            this.chkHostMissingAlarms.Name = "chkHostMissingAlarms";
+            this.chkHostMissingAlarms.Size = new System.Drawing.Size(109, 17);
+            this.chkHostMissingAlarms.TabIndex = 14;
+            this.chkHostMissingAlarms.Text = "HostMissingAlarm";
+            this.chkHostMissingAlarms.UseVisualStyleBackColor = true;
+            this.chkHostMissingAlarms.CheckedChanged += new System.EventHandler(this.chkHostMissingAlarms_CheckedChanged);
             // 
-            // checkBox2
+            // chkRS485Alarms
             // 
-            this.checkBox2.AutoSize = true;
-            this.checkBox2.Checked = true;
-            this.checkBox2.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox2.Location = new System.Drawing.Point(614, 82);
-            this.checkBox2.Name = "checkBox2";
-            this.checkBox2.Size = new System.Drawing.Size(85, 17);
-            this.checkBox2.TabIndex = 13;
-            this.checkBox2.Text = "RS485Alarm";
-            this.checkBox2.UseVisualStyleBackColor = true;
+            this.chkRS485Alarms.AutoSize = true;
+            this.chkRS485Alarms.Checked = true;
+            this.chkRS485Alarms.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkRS485Alarms.Location = new System.Drawing.Point(614, 82);
+            this.chkRS485Alarms.Name = "chkRS485Alarms";
+            this.chkRS485Alarms.Size = new System.Drawing.Size(85, 17);
+            this.chkRS485Alarms.TabIndex = 13;
+            this.chkRS485Alarms.Text = "RS485Alarm";
+            this.chkRS485Alarms.UseVisualStyleBackColor = true;
+            this.chkRS485Alarms.CheckedChanged += new System.EventHandler(this.chkRS485Alarms_CheckedChanged);
             // 
-            // checkBox1
+            // chkTempAlarms
             // 
-            this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.checkBox1.Location = new System.Drawing.Point(614, 59);
-            this.checkBox1.Name = "checkBox1";
-            this.checkBox1.Size = new System.Drawing.Size(112, 17);
-            this.checkBox1.TabIndex = 12;
-            this.checkBox1.Text = "TemperatureAlarm";
-            this.checkBox1.UseVisualStyleBackColor = true;
+            this.chkTempAlarms.AutoSize = true;
+            this.chkTempAlarms.Checked = true;
+            this.chkTempAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.chkTempAlarms.Location = new System.Drawing.Point(614, 59);
+            this.chkTempAlarms.Name = "chkTempAlarms";
+            this.chkTempAlarms.Size = new System.Drawing.Size(112, 17);
+            this.chkTempAlarms.TabIndex = 12;
+            this.chkTempAlarms.Text = "TemperatureAlarm";
+            this.chkTempAlarms.UseVisualStyleBackColor = true;
+            this.chkTempAlarms.CheckedChanged += new System.EventHandler(this.chkTempAlarms_CheckedChanged);
             // 
-            // dataGridView1
+            // dGFilteredAlarms
             // 
-            this.dataGridView1.Location = new System.Drawing.Point(18, 30);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.Size = new System.Drawing.Size(590, 196);
-            this.dataGridView1.TabIndex = 0;
-            this.dataGridView1.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
+            this.dGFilteredAlarms.Location = new System.Drawing.Point(18, 30);
+            this.dGFilteredAlarms.Name = "dGFilteredAlarms";
+            this.dGFilteredAlarms.Size = new System.Drawing.Size(590, 196);
+            this.dGFilteredAlarms.TabIndex = 0;
+            this.dGFilteredAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
             // 
             // btnAck
             // 
@@ -224,6 +246,15 @@
             this.groupBox3.TabIndex = 1;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "AlarmList";
+            // 
+            // Acknowledge2
+            // 
+            this.Acknowledge2.Location = new System.Drawing.Point(930, 19);
+            this.Acknowledge2.Name = "Acknowledge2";
+            this.Acknowledge2.Size = new System.Drawing.Size(107, 23);
+            this.Acknowledge2.TabIndex = 1;
+            this.Acknowledge2.Text = "Acknowledge";
+            this.Acknowledge2.UseVisualStyleBackColor = true;
             // 
             // dGAllAlarms
             // 
@@ -462,32 +493,6 @@
             this.toolTipAck.SetToolTip(this.btnSetLimits, "This button will set the alarm levels you have written in the textboxes.");
             this.btnSetLimits.UseVisualStyleBackColor = true;
             // 
-            // chart1
-            // 
-            chartArea2.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chart1.Legends.Add(legend2);
-            this.chart1.Location = new System.Drawing.Point(8, 244);
-            this.chart1.Name = "chart1";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.Legend = "Legend1";
-            series2.Name = "Series1";
-            this.chart1.Series.Add(series2);
-            this.chart1.Size = new System.Drawing.Size(745, 218);
-            this.chart1.TabIndex = 13;
-            this.chart1.Text = "chart1";
-            // 
-            // Acknowledge2
-            // 
-            this.Acknowledge2.Location = new System.Drawing.Point(930, 19);
-            this.Acknowledge2.Name = "Acknowledge2";
-            this.Acknowledge2.Size = new System.Drawing.Size(107, 23);
-            this.Acknowledge2.TabIndex = 1;
-            this.Acknowledge2.Text = "Acknowledge";
-            this.Acknowledge2.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -498,9 +503,10 @@
             this.Text = "Skadd";
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.dGFilteredAlarms)).EndInit();
             this.tabPageAL.ResumeLayout(false);
             this.groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dGAllAlarms)).EndInit();
@@ -511,7 +517,6 @@
             this.groupBox5.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
             this.ResumeLayout(false);
 
         }
@@ -527,13 +532,13 @@
         private System.Windows.Forms.ToolTip toolTipAck;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.TextBox txtTemp;
-        private System.Windows.Forms.DataGridView dataGridView1;
+        private System.Windows.Forms.DataGridView dGFilteredAlarms;
         private System.Windows.Forms.DataGridView dGAllAlarms;
-        private System.Windows.Forms.CheckBox checkBox5;
-        private System.Windows.Forms.CheckBox checkBox4;
-        private System.Windows.Forms.CheckBox checkBox3;
-        private System.Windows.Forms.CheckBox checkBox2;
-        private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.CheckBox chkTempMissingAlarm;
+        private System.Windows.Forms.CheckBox chkCOMAlarms;
+        private System.Windows.Forms.CheckBox chkHostMissingAlarms;
+        private System.Windows.Forms.CheckBox chkRS485Alarms;
+        private System.Windows.Forms.CheckBox chkTempAlarms;
         private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
         private System.Windows.Forms.Button Acknowledge2;
         private System.Windows.Forms.GroupBox Temperature;

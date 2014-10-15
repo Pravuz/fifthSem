@@ -38,7 +38,8 @@ namespace fifthSem
                 });
                 return;
             }
-            dGAllAlarms.DataSource = e.Alarms.ToList();
+            dGAllAlarms.DataSource = e.Alarms;
+            dGFilteredAlarms.DataSource = e.FilteredAlarms;
         }
         private void startDataEngine()
         {
@@ -160,6 +161,34 @@ namespace fifthSem
                     }
                 } 
             }
+        }
+
+        private void chkTempAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHi, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHiHi, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLo, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLoLo, !chkTempAlarms.Checked);
+        }
+
+        private void chkRS485Alarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.RS485Error, !chkRS485Alarms.Checked);
+        }
+
+        private void chkHostMissingAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.HostMissing, !chkHostMissingAlarms.Checked);
+        }
+
+        private void chkCOMAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.SerialPortError, !chkCOMAlarms.Checked);
+        }
+
+        private void chkTempMissingAlarm_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempMissing, !chkTempMissingAlarm.Checked);
         }
              
     }
