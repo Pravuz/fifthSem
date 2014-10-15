@@ -214,6 +214,18 @@ namespace fifthSem
             if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString(), Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
             else startDataEngine();
         }
+
+        private void btnSetLimits_Click_1(object sender, EventArgs e)
+        {
+            double hi,hihi,lo,lolo;
+            if (Double.TryParse(txtHLvl.Text, out hi) && Double.TryParse(txtHHLvl.Text, out hihi) && Double.TryParse(txtLLvl.Text, out lo) && Double.TryParse(txtLLLvl.Text, out lolo))
+            {
+                mDataEngine.deAlarmManager.TempLimitHi = hi;
+                mDataEngine.deAlarmManager.TempLimitHiHi = hihi;
+                mDataEngine.deAlarmManager.TempLimitLo = lo;
+                mDataEngine.deAlarmManager.TempLimitLoLo = lolo;
+            }
+        }
              
     }
 }

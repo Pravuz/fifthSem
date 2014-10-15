@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
             this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
@@ -112,17 +112,19 @@
             // 
             // chrtTemp
             // 
-            chartArea1.Name = "ChartArea1";
-            this.chrtTemp.ChartAreas.Add(chartArea1);
-            legend1.Name = "Legend1";
-            this.chrtTemp.Legends.Add(legend1);
+            chartArea2.AxisX.LabelStyle.Format = "HH:mm:ss";
+            chartArea2.Name = "ChartArea1";
+            this.chrtTemp.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chrtTemp.Legends.Add(legend2);
             this.chrtTemp.Location = new System.Drawing.Point(8, 244);
             this.chrtTemp.Name = "chrtTemp";
-            series1.ChartArea = "ChartArea1";
-            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series1.Legend = "Legend1";
-            series1.Name = "SerTemp";
-            this.chrtTemp.Series.Add(series1);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.Legend = "Legend1";
+            series2.Name = "SerTemp";
+            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            this.chrtTemp.Series.Add(series2);
             this.chrtTemp.Size = new System.Drawing.Size(745, 218);
             this.chrtTemp.TabIndex = 13;
             this.chrtTemp.Text = "chrtTemp";
@@ -210,8 +212,12 @@
             // 
             // dGFilteredAlarms
             // 
+            this.dGFilteredAlarms.AllowUserToAddRows = false;
+            this.dGFilteredAlarms.AllowUserToDeleteRows = false;
+            this.dGFilteredAlarms.AllowUserToResizeRows = false;
             this.dGFilteredAlarms.Location = new System.Drawing.Point(18, 30);
             this.dGFilteredAlarms.Name = "dGFilteredAlarms";
+            this.dGFilteredAlarms.ReadOnly = true;
             this.dGFilteredAlarms.Size = new System.Drawing.Size(590, 196);
             this.dGFilteredAlarms.TabIndex = 0;
             this.dGFilteredAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
@@ -495,6 +501,7 @@
             this.btnSetLimits.Text = "Set Limits";
             this.toolTipAck.SetToolTip(this.btnSetLimits, "This button will set the alarm levels you have written in the textboxes.");
             this.btnSetLimits.UseVisualStyleBackColor = true;
+            this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
             // txtDebug
             // 
