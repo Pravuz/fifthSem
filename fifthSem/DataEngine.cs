@@ -96,6 +96,7 @@ namespace fifthSem
             //Hardcoded temporarily. 
             mScpHost.AddHost("OUROBORUS-PC");
             mScpHost.AddHost("WIN-9S0NTTTKCR6");
+            mScpHost.AddHost("WALDEJER-PC");
             mScpHost.AddHost("ANDERS");
             mScpHost.AddHost("HILDE-PC");
             mScpHost.AddHost("FREDRIK");
