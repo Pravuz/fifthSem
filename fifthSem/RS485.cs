@@ -24,7 +24,7 @@ using System.Timers;
 namespace RS485
 {
     public enum ConnectionStatus {Stop, Waiting, Master, Slave};
-    public enum AlarmStatus {None, ComPortFailure, RS485Failure};
+    public enum AlarmStatus {None, ComportFailure, RS485Failure};
 
     public delegate void TempEventHandler(object sender, TempEventArgs e);
     public delegate void ConnectionStatusEventHandler(object sender, ConnectionStatusEventArgs e);
@@ -139,7 +139,7 @@ namespace RS485
             }
             catch
             {
-                alarmStatus = AlarmStatus.ComPortFailure;
+                alarmStatus = AlarmStatus.ComportFailure;
                 if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
             }
             // Set connectionStatus
@@ -259,7 +259,7 @@ namespace RS485
                     }
                     catch(Exception e)
                     {
-                        alarmStatus = AlarmStatus.ComPortFailure;
+                        alarmStatus = AlarmStatus.ComportFailure;
                         if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
                         stopCom();
                     }
