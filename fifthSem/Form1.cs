@@ -191,6 +191,12 @@ namespace fifthSem
         {
             mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempMissing, !chkTempMissingAlarm.Checked);
         }
+
+        private void btnApply_Click(object sender, EventArgs e)
+        {
+            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString(), Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
+            else startDataEngine();
+        }
              
     }
 }
