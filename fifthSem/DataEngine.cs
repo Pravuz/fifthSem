@@ -267,7 +267,15 @@ namespace fifthSem
         #region Logfile Methods
         private async void logSync()
         {
-            ScpPacket response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(logFileSize));
+            ScpPacket response = null; 
+            try
+            {
+                response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(logFileSize));
+            }
+            catch (Exception e)
+            {
+                
+            }
             if ((response != null) && (response is ScpLogFileResponse))
             {
                 if (((ScpLogFileResponse)response).File != null)
