@@ -112,6 +112,7 @@ namespace fifthSem
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
             mScpHost.PacketEvent += PacketHandler;
+            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
             //starts protocols
             mScpHost.Start();
@@ -206,8 +207,8 @@ namespace fifthSem
                     break;
                 case RS485.ConnectionStatus.Stop:
                     mTimer.Stop();
-                    mScpHost.CanBeMaster = false;
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
+                    mScpHost.CanBeMaster = false;
                     break;
             }
         }
@@ -246,6 +247,8 @@ namespace fifthSem
                     {
                         if (logFileSize > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
+                        else
+                            e.Response = new ScpLogFileResponse(null);
                     }
                     else if(e.Packet is ScpAlarmLimitBroadcast)
                     {
@@ -274,6 +277,7 @@ namespace fifthSem
         #region Logfile Methods
         private async void logSync()
         {
+            System.Threading.Thread.Sleep(2000);
             ScpPacket response = null; 
             try
             {
@@ -282,6 +286,7 @@ namespace fifthSem
             catch (Exception e)
             {
                 Debug.WriteLine("DataEngine: LogfileSync, timeout eller ikke nødvendig med sync.");
+                Debug.WriteLine("DataEngine: " + e.ToString());
             }
             if ((response != null) && (response is ScpLogFileResponse))
             {
