@@ -68,6 +68,7 @@ namespace fifthSem
         //this AlarmManager object is used in the GUI. 
         //Since it's created here, it needs to be available for the GUI via this GET
         public AlarmManager deAlarmManager { get{return mAlarmManager; } }
+        public ScpHost deScpHost { get { return mScpHost; } }
 
         public event DataEngineNewTempHandler mNewTempHandler;
         public event DataEngineNewComStatusHandler mNewComStatusHandler;
