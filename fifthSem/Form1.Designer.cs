@@ -32,6 +32,7 @@
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
             this.Temperature = new System.Windows.Forms.GroupBox();
+            this.txtTemperature = new System.Windows.Forms.TextBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label8 = new System.Windows.Forms.Label();
             this.cmbCOM = new System.Windows.Forms.ComboBox();
@@ -62,7 +63,6 @@
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.lstEvent = new System.Windows.Forms.ListView();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.txtTemperature = new System.Windows.Forms.TextBox();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             this.Temperature.SuspendLayout();
@@ -110,6 +110,14 @@
             this.Temperature.TabIndex = 0;
             this.Temperature.TabStop = false;
             this.Temperature.Text = "Temperature";
+            // 
+            // txtTemperature
+            // 
+            this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTemperature.Location = new System.Drawing.Point(24, 34);
+            this.txtTemperature.Name = "txtTemperature";
+            this.txtTemperature.Size = new System.Drawing.Size(100, 62);
+            this.txtTemperature.TabIndex = 0;
             // 
             // groupBox5
             // 
@@ -393,14 +401,6 @@
             this.lstEvent.Size = new System.Drawing.Size(920, 400);
             this.lstEvent.TabIndex = 0;
             this.lstEvent.UseCompatibleStateImageBehavior = false;
-            // 
-            // txtTemperature
-            // 
-            this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtTemperature.Location = new System.Drawing.Point(24, 34);
-            this.txtTemperature.Name = "txtTemperature";
-            this.txtTemperature.Size = new System.Drawing.Size(100, 62);
-            this.txtTemperature.TabIndex = 0;
             // 
             // Form1
             // 
