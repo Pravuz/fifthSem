@@ -29,12 +29,12 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
-            this.chart1 = new System.Windows.Forms.DataVisualization.Charting.Chart();
+            this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.chkTempMissingAlarm = new System.Windows.Forms.CheckBox();
             this.chkCOMAlarms = new System.Windows.Forms.CheckBox();
@@ -73,7 +73,7 @@
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dGFilteredAlarms)).BeginInit();
             this.tabPageAL.SuspendLayout();
@@ -98,7 +98,7 @@
             // 
             // tabPageCC
             // 
-            this.tabPageCC.Controls.Add(this.chart1);
+            this.tabPageCC.Controls.Add(this.chrtTemp);
             this.tabPageCC.Controls.Add(this.groupBox2);
             this.tabPageCC.Location = new System.Drawing.Point(4, 22);
             this.tabPageCC.Name = "tabPageCC";
@@ -108,22 +108,22 @@
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
             // 
-            // chart1
+            // chrtTemp
             // 
-            chartArea5.Name = "ChartArea1";
-            this.chart1.ChartAreas.Add(chartArea5);
-            legend5.Name = "Legend1";
-            this.chart1.Legends.Add(legend5);
-            this.chart1.Location = new System.Drawing.Point(8, 244);
-            this.chart1.Name = "chart1";
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series5.Legend = "Legend1";
-            series5.Name = "Series1";
-            this.chart1.Series.Add(series5);
-            this.chart1.Size = new System.Drawing.Size(745, 218);
-            this.chart1.TabIndex = 13;
-            this.chart1.Text = "chart1";
+            chartArea1.Name = "ChartArea1";
+            this.chrtTemp.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chrtTemp.Legends.Add(legend1);
+            this.chrtTemp.Location = new System.Drawing.Point(8, 244);
+            this.chrtTemp.Name = "chrtTemp";
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Legend = "Legend1";
+            series1.Name = "SerTemp";
+            this.chrtTemp.Series.Add(series1);
+            this.chrtTemp.Size = new System.Drawing.Size(745, 218);
+            this.chrtTemp.TabIndex = 13;
+            this.chrtTemp.Text = "chrtTemp";
             // 
             // groupBox2
             // 
@@ -503,7 +503,7 @@
             this.Text = "Skadd";
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.chart1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dGFilteredAlarms)).EndInit();
@@ -539,7 +539,7 @@
         private System.Windows.Forms.CheckBox chkHostMissingAlarms;
         private System.Windows.Forms.CheckBox chkRS485Alarms;
         private System.Windows.Forms.CheckBox chkTempAlarms;
-        private System.Windows.Forms.DataVisualization.Charting.Chart chart1;
+        private System.Windows.Forms.DataVisualization.Charting.Chart chrtTemp;
         private System.Windows.Forms.Button Acknowledge2;
         private System.Windows.Forms.GroupBox Temperature;
         private System.Windows.Forms.TextBox txtTemperature;

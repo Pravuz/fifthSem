@@ -61,6 +61,7 @@ namespace fifthSem
                 return;
             }
             txtTemperature.Text = e.temp.ToString();
+            chrtTemp.Series["SerTemp"].Points.AddXY(DateTime.Now,e.temp);
             //System.Diagnostics.Debug.WriteLine("form1: " + e.temp);
         }
         private void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e)
