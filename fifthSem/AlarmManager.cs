@@ -142,6 +142,7 @@ namespace fifthSem
             if (e.Connected)
             {
                 setMasterAlarmStatus(AlarmTypes.HostMissing, AlarmCommand.Low, e.Name);
+                updateNeeded = true;
             }
             else
             {
@@ -236,6 +237,11 @@ namespace fifthSem
 
         private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="")
         {
+            // Failsafe to makesure only alarms are set when master
+            if (scpHost.ScpConnectionStatus != ScpConnectionStatus.Master)
+            {
+                return;
+            }
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
             bool changed = false;
             switch (Command)
@@ -287,9 +293,9 @@ namespace fifthSem
                     }
                     break;
             }
-            updateNeeded = true;
             if (changed)
             {
+                updateNeeded = true;
                 OnAlarmsChanged();
             }
         }

@@ -22,10 +22,11 @@ namespace ScadaCommunicationProtocol
     }
     public abstract class ScpPacket
     {
-        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, AlarmRequest = 3, AlarmResponse = 53, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
+        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, AlarmRequest = 3, AlarmResponse = 53, MasterRequest = 4, MasterResponse = 54, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102 };
         private static int newId = 0;
         public static int GetId()
         {
+            // Makes sure each packets gets a unique ID
             return Interlocked.Increment(ref newId);
         }
         protected int id;
@@ -105,6 +106,12 @@ namespace ScadaCommunicationProtocol
                             break;
                         case ScpPacketTypes.AlarmResponse:
                             packet = new ScpAlarmResponse(bytes, length);
+                            break;
+                        case ScpPacketTypes.MasterRequest:
+                            packet = new ScpMasterRequest(bytes, length);
+                            break;
+                        case ScpPacketTypes.MasterResponse:
+                            packet = new ScpMasterResponse(bytes, length);
                             break;
                     }
                 }
@@ -463,6 +470,59 @@ namespace ScadaCommunicationProtocol
                    " HiHi: " + hiHiLimit.ToString();
         }
     }
+
+    public class ScpMasterRequest : ScpPacket
+    {
+        public ScpMasterRequest()
+            : base()
+        {
+            type = (byte)ScpPacketTypes.MasterRequest;
+        }
+        public ScpMasterRequest(byte[] bytes, int length)
+            : base(bytes)
+        {
+        }
+        protected override byte[] GetPayload()
+        {
+            return new byte[0];
+        }
+        public override string ToString()
+        {
+            return "ScpMasterRequest";
+        }
+    }
+    public class ScpMasterResponse : ScpPacket
+    {
+        private bool ok;
+        public bool Ok
+        {
+            get
+            {
+                return ok;
+            }
+        }
+        public ScpMasterResponse(bool ok)
+        {
+            this.ok = ok;
+            type = (byte)ScpPacketTypes.MasterResponse;
+        }
+        public ScpMasterResponse(byte[] bytes, int length)
+            : base(bytes)
+        {
+            ok = bytes[10] == 1;
+        }
+        protected override byte[] GetPayload()
+        {
+            byte[] payload = new byte[1];
+            payload[0] = (byte)(ok ? 1 : 0);
+            return payload;
+        }
+        public override string ToString()
+        {
+            return "ScpMasterResponse - OK: " + ok.ToString();
+        }
+    }
+
 
     public partial class ScpHost
     {

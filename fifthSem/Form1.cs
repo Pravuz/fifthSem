@@ -92,6 +92,14 @@ namespace fifthSem
                 return;
             }
             txtTCP_IP_MS.Text = e.status;
+            if (e.status == "Slave")
+            {
+                button1.Enabled = true;
+            }
+            else
+            {
+                button1.Enabled = false;
+            }
         }
 
         //private void DataEngineAlarmEventHandler(object sender, DataEngineAlarmEventArgs e)
@@ -249,6 +257,11 @@ namespace fifthSem
                     mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
                 }
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            mDataEngine.deScpHost.RequestSwitchToMaster();
         }
              
     }

@@ -92,7 +92,7 @@ namespace fifthSem
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
-            mScpHost.CanBeMaster = false;
+            //mScpHost.CanBeMaster = false;
 
             //Add hosts allowed to connect to the network. 
             //Hardcoded temporarily. 
@@ -139,6 +139,8 @@ namespace fifthSem
                 mRS485.TempHandler += TempEventHandler;
                 mRS485.AlarmHandler += AlarmEventHandler;
                 mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+
+                mScpHost.CanBeMaster = true;
 
                 //starts protocols
                 mScpHost.Start();
@@ -208,22 +210,22 @@ namespace fifthSem
                 case RS485.ConnectionStatus.Master:
                     mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
-                    mScpHost.CanBeMaster = true;
+                    //mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Slave:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
-                    mScpHost.CanBeMaster = true;
+                    //mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Waiting:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
-                    mScpHost.CanBeMaster = false;
+                    //mScpHost.CanBeMaster = false;
                     break;
                 case RS485.ConnectionStatus.Stop:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
-                    mScpHost.CanBeMaster = false;
+                    //mScpHost.CanBeMaster = false;
                     break;
             }
         }
@@ -268,6 +270,10 @@ namespace fifthSem
                     else if(e.Packet is ScpAlarmLimitBroadcast)
                     {
                     //endring av alarmgrenser
+                    }
+                    else if (e.Packet is ScpMasterRequest)
+                    {
+                        e.Response = new ScpMasterResponse(true);
                     }
                     break;
                 case ScpConnectionStatus.Slave:

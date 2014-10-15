@@ -13,6 +13,21 @@ namespace ScadaCommunicationProtocol
     public partial class ScpHost
     {
         /// <summary>
+        ///  Private class used to keep track of any pending requests sent while waiting for the response
+        /// </summary>
+        private class PendingRequest
+        {
+            public int ID { get; set; }
+            public ScpPacket Response { get; set; }
+            public CancellationTokenSource RequestCancellationToken { get; set; }
+            public PendingRequest(int ID)
+            {
+                this.RequestCancellationToken = new CancellationTokenSource();
+                this.ID = ID;
+                Response = null;
+            }
+        }
+        /// <summary>
         /// Used internally by ScpHost. Handles TCP sessions and communication.
         /// </summary>
         private class ScpTcpClient
@@ -29,16 +44,13 @@ namespace ScadaCommunicationProtocol
             private IPAddress address;
             private int port;
             private NetworkStream ns;
-            private int pendingRequestID;
-            private bool pendingRequest = false;
+            private List<PendingRequest> pendingRequests;
             private bool enabled = false;
-            private CancellationTokenSource requestCancelToken = new CancellationTokenSource();
-            private CancellationTokenSource clientCancelToken = new CancellationTokenSource();
-            private ScpPacket requestPacket;
-            private ScpPacket responsePacket;
+            public CancellationTokenSource requestCancelToken = new CancellationTokenSource();
             private Object _lock = new Object();
             private BufferBlock<byte[]> writeBuffer;
             private Task writerTask;
+            private ScpHost scpHost;
             private void OnMessageEvent(MessageEventArgs e)
             {
                 if (MessageEvent != null)
@@ -55,12 +67,20 @@ namespace ScadaCommunicationProtocol
                     {
                         e.Response.Id = e.Packet.Id;
                         SendAsync(e.Response).Wait();
+                        if ((e.Response is ScpMasterResponse) && (((ScpMasterResponse)e.Response).Ok)) 
+                        {
+                            // In this case the master has agreed to let another master take over
+                            Task.Delay(1000).Wait();
+                            scpHost.cancelMaster.Cancel();
+                        }
                     }
                 }
             }
-            public ScpTcpClient()
+            public ScpTcpClient(ScpHost scpHost)
             {
+                this.scpHost = scpHost;
                 Hostname = "";
+                pendingRequests = new List<PendingRequest>();
             }
             /// <summary>
             /// Sends a packet asyncronously to the network.
@@ -78,32 +98,39 @@ namespace ScadaCommunicationProtocol
                 {
                     OnMessageEvent(new MessageEventArgs("SCP packet sent to: " + Hostname + "! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
                 }
-
-                await writeBuffer.SendAsync(packetbuffer);
                 if (packet.IsRequest())
                 {
-                    pendingRequestID = packet.Id;
-                    pendingRequest = true;
-                    requestPacket = packet;
-                    responsePacket = null;
+                    PendingRequest pendingRequest = new PendingRequest(packet.Id);
+                    lock (pendingRequests)
+                    {
+                        pendingRequests.Add(pendingRequest);
+                    }
+                    await writeBuffer.SendAsync(packetbuffer);
                     try
                     {
-//                        await Task.Delay(5000, requestCancelToken.Token);
-                        await Task.Delay(5000);
+                        // Wait for up to 5 seconds for the response.
+                        // When/if response is received (in ReaderAsync()), this dealy is cancelled using the cancellationtoken.
+                        await Task.Delay(5000, pendingRequest.RequestCancellationToken.Token);
                     }
                     catch
                     {
-
                     }
-                    if (responsePacket != null)
+                    lock (pendingRequests)
                     {
-                        response = responsePacket;
+                        pendingRequests.Remove(pendingRequest);
+                    }
+                    if (pendingRequest.Response != null)
+                    {
+                        response = pendingRequest.Response;
                     }
                     else
                     {
                         throw new Exception("Timeout!");
                     }
-                    pendingRequest = false;
+                }
+                else
+                {
+                    await writeBuffer.SendAsync(packetbuffer);
                 }
                 return response;
             }
@@ -170,11 +197,18 @@ namespace ScadaCommunicationProtocol
                                         {
                                             OnMessageEvent(new MessageEventArgs("SCP packet received! From: " + Hostname + " ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
                                         }
-                                        if (pendingRequest && packet.IsResponse() && pendingRequestID == packet.Id)
+                                        if (packet.IsResponse())
                                         {
-                                            responsePacket = packet;
-                                            requestCancelToken.Cancel(); // Response is recevied, stop the SendAsync method from waiting any longer
-                                            requestCancelToken = new CancellationTokenSource();
+                                            PendingRequest pendingRequest = null;
+                                            lock (pendingRequests)
+                                            {
+                                                pendingRequest = pendingRequests.FirstOrDefault(req => req.ID == packet.Id);
+                                            }
+                                            if (pendingRequest != null)
+                                            {
+                                                pendingRequest.Response = packet;
+                                                pendingRequest.RequestCancellationToken.Cancel();
+                                            }
                                         }
                                         else if (!packet.IsResponse())
                                         {
