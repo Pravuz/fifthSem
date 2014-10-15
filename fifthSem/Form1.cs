@@ -23,7 +23,23 @@ namespace fifthSem
             mDataEngine.mNewTempHandler += DataEngineNewTempHandler;
             mDataEngine.mNewTcpStatusHandler += DataEngineNewTcpStatusHandler;
             mDataEngine.mNewComStatusHandler += DataEngineNewComStatusHandler;
+            //mDataEngine.mAlarmEventHandler += DataEngineAlarmEventHandler;
+            mDataEngine.deAlarmManager.AlarmsChangedEvent += deAlarmManager_AlarmsChangedEvent;
 
+        }
+
+        void deAlarmManager_AlarmsChangedEvent(object sender, AlarmsChangedEventArgs e)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    deAlarmManager_AlarmsChangedEvent(sender, e);
+                });
+                return;
+            }
+            dGAllAlarms.DataSource = e.Alarms;
+            dGFilteredAlarms.DataSource = e.FilteredAlarms;
         }
         private void startDataEngine()
         {
@@ -45,6 +61,7 @@ namespace fifthSem
                 return;
             }
             txtTemperature.Text = e.temp.ToString();
+            chrtTemp.Series["SerTemp"].Points.AddXY(DateTime.Now,e.temp);
             //System.Diagnostics.Debug.WriteLine("form1: " + e.temp);
         }
         private void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e)
@@ -60,6 +77,19 @@ namespace fifthSem
             txtTCP_IP_MS.Text = e.status;
         }
 
+        //private void DataEngineAlarmEventHandler(object sender, DataEngineAlarmEventArgs e)
+        //{
+        //    if (this.InvokeRequired)
+        //    {
+        //        this.BeginInvoke((MethodInvoker)delegate
+        //        {
+        //            DataEngineAlarmEventHandler(sender, e);
+        //        });
+        //        return;
+        //    }
+        //    txtAlarmList.AppendText(DateTime.Now + e.alarmType + e.alarmCommand + e.alarmSender + "\n");
+        //}
+
         private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
         {
             if (this.InvokeRequired)
@@ -72,6 +102,9 @@ namespace fifthSem
             }
             txtRS485_MS.Text = e.status;
         }
+
+
+
         private void btnSetLimits_Click(object sender, EventArgs e)
         {
             double hHTemp, hTemp, lTemp, lLTemp;
@@ -102,6 +135,61 @@ namespace fifthSem
         private void cmbCOM_SelectedIndexChanged(object sender, EventArgs e)
         {
             //Program.setPort(cmbCOM.SelectedItem.ToString());
+        }
+
+        private void dGAllAlarms_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
+        {
+            DataGridView dg = (DataGridView)sender;
+            if (e.RowIndex < dg.RowCount)
+            {
+                if (e.RowIndex < dg.RowCount)
+                {
+                    fifthSem.Alarm alarm = (fifthSem.Alarm)dg.Rows[e.RowIndex].DataBoundItem;
+                    if (alarm.Type == fifthSem.AlarmTypes.TempHiHi || alarm.Type == fifthSem.AlarmTypes.TempLoLo)
+                    {
+                        dg.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Red;
+                        dg.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.White;
+                    }
+                    else if (alarm.Type == fifthSem.AlarmTypes.TempHi || alarm.Type == fifthSem.AlarmTypes.TempLo)
+                    {
+                        dg.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Yellow;
+                        dg.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.Black;
+                    }
+                    else
+                    {
+                        dg.Rows[e.RowIndex].DefaultCellStyle.BackColor = Color.Black;
+                        dg.Rows[e.RowIndex].DefaultCellStyle.ForeColor = Color.White;
+                    }
+                } 
+            }
+        }
+
+        private void chkTempAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHi, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHiHi, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLo, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLoLo, !chkTempAlarms.Checked);
+        }
+
+        private void chkRS485Alarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.RS485Error, !chkRS485Alarms.Checked);
+        }
+
+        private void chkHostMissingAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.HostMissing, !chkHostMissingAlarms.Checked);
+        }
+
+        private void chkCOMAlarms_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.SerialPortError, !chkCOMAlarms.Checked);
+        }
+
+        private void chkTempMissingAlarm_CheckedChanged(object sender, EventArgs e)
+        {
+            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempMissing, !chkTempMissingAlarm.Checked);
         }
              
     }
