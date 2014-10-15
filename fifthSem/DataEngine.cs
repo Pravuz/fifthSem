@@ -65,9 +65,8 @@ namespace fifthSem
         private DateTime lastLog;
         private Timer mTimer;
         private AlarmManager mAlarmManager;
-
         //this AlarmManager object is used in the GUI. 
-        //Since it's created here, it needs to be available for the GUI 
+        //Since it's created here, it needs to be available for the GUI via this GET
         public AlarmManager deAlarmManager { get{return mAlarmManager; } }
 
         public event DataEngineNewTempHandler mNewTempHandler;
@@ -89,10 +88,17 @@ namespace fifthSem
             mTimer.Enabled = false;
 
             //creates objects of protocols
-            mScpHost = new ScpHost(0);
+            mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
             mAlarmManager = new AlarmManager(mScpHost);
-            mRS485 = new RS485.RS485(); //passing prio later.
+            mRS485 = new RS485.RS485(); //passing prio later here aswell.
 
+            //Add hosts allowed to connect to the network. 
+            //Hardcoded temporarily. 
+            mScpHost.AddHost("OUROBORUS-PC");
+            mScpHost.AddHost("WIN-9S0NTTTKCR6");
+            mScpHost.AddHost("ANDERS");
+            mScpHost.AddHost("HILDE-PC");
+            mScpHost.AddHost("FREDRIK");
         }
 
         /// <summary>
@@ -112,7 +118,7 @@ namespace fifthSem
         /// Starts the DataEngine WITH com
         /// </summary>
         /// <param name="portNr">comport to use</param>
-        public void Start(string portNr, int ComputerAdress)
+        public void Start(string portNr, int ComputerPriority)
         {
             //subscribe to events
             mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
@@ -127,8 +133,8 @@ namespace fifthSem
             mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
 
             //passing priority to protocols. 
-            mRS485.ComputerAddress = ComputerAdress;
-            ScpHost.Priority = ComputerAdress;
+            mRS485.ComputerAddress = ComputerPriority;
+            ScpHost.Priority = ComputerPriority;
         }
 
         /// <summary>
