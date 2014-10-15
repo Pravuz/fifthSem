@@ -38,7 +38,6 @@ namespace fifthSem
             this.High = true;
             this.Source = Source;
         }
-        public double PV;
     }
     /// <summary>
     /// Pass the SCP host object to the constructor when creating AlarmManager object.
@@ -52,6 +51,10 @@ namespace fifthSem
         private ScadaCommunicationProtocol.ScpHost scpHost;
         private System.Timers.Timer timer;
         private bool updateNeeded = false;
+        public double TempLimitLoLo { get; set; }
+        public double TempLimitLo { get; set; }
+        public double TempLimitHi { get; set; }
+        public double TempLimitHiHi { get; set; }
         private void OnAlarmsChanged()
         {
             if (AlarmsChangedEvent != null)
@@ -110,7 +113,41 @@ namespace fifthSem
             SendAlarmUpdate();
         }
 
-        public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource = "", double pv = 0.0)
+        public void SetTemp(double temp)
+        {
+            if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                if (temp > TempLimitHiHi)
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
+                }
+                else if (temp > TempLimitHi)
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
+                }
+                else if (temp < TempLimitLoLo)
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
+                }
+                else if (temp < TempLimitLo)
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
+                }
+                else
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                }
+            }
+        }
+
+        public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource = "")
         {
             bool result = false;
             if (Type.ToString().Contains("Temp"))
@@ -119,7 +156,7 @@ namespace fifthSem
             }
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
-                setMasterAlarmStatus(Type, Command, alarmsource, pv);
+                setMasterAlarmStatus(Type, Command, alarmsource);
                 SendAlarmUpdate();
                 result = true;
             }
@@ -140,7 +177,7 @@ namespace fifthSem
             }
             return result;
         }
-        private byte[] serializeAlarms()
+        public byte[] serializeAlarms()
         {
             byte[] bytes;
             MemoryStream ms = new MemoryStream();
@@ -160,7 +197,7 @@ namespace fifthSem
             ms.Close();
         }
 
-        private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="", double pv=0.0)
+        private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="")
         {
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
             switch (Command)
@@ -169,7 +206,6 @@ namespace fifthSem
                     if (alarm == null)
                     {
                         alarm = new Alarm(Type, alarmsource);
-                        alarm.PV = pv;
                         alarms.Add(alarm);
                     }
                     else
