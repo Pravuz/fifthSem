@@ -190,7 +190,7 @@ namespace ScadaCommunicationProtocol
                         if (allowConnection)
                         {
                             ((ScpTcpClient)sender).Hostname = request.Hostname;
-                            await ((ScpTcpClient)sender).SendAsync(packet).ConfigureAwait(false);
+                            await ((ScpTcpClient)sender).SendAsync(packet);//.ConfigureAwait(false);
                             ((ScpTcpClient)sender).requestCancelToken.Cancel();
                         }
                     }
