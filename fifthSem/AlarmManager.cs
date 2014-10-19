@@ -157,31 +157,32 @@ namespace fifthSem
             {
                 if (temp > TempLimitHiHi)
                 {
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
                 }
                 else if (temp > TempLimitHi)
                 {
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
 
-                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLoLo)
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLo)
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
 
-                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
                 }
                 else
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
                 }
+                SendAlarmUpdate();
             }
         }
 

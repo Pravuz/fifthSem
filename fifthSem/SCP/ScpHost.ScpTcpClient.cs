@@ -48,9 +48,6 @@ namespace ScadaCommunicationProtocol
             private bool enabled = false;
             public CancellationTokenSource requestCancelToken = new CancellationTokenSource();
             private Object _lock = new Object();
-            /*private BufferBlock<byte[]> writeBuffer = new BufferBlock<byte[]>();
-            private ConcurrentQueue<byte[]> qwriteBuffer;*/
-            private Task writerTask;
             private ScpHost scpHost;
             private void OnMessageEvent(MessageEventArgs e)
             {
@@ -71,7 +68,6 @@ namespace ScadaCommunicationProtocol
                         if ((e.Response is ScpMasterResponse) && (((ScpMasterResponse)e.Response).Ok)) 
                         {
                             // In this case the master has agreed to let another master take over
-                            Task.Delay(1000).Wait();
                             scpHost.cancelMaster.Cancel();
                         }
                     }
@@ -94,7 +90,6 @@ namespace ScadaCommunicationProtocol
                 byte[] packetbuffer = packet.GetBytes();
                 ScpPacket response = null;
 
-                // Send packet
                 if (!packet.ToString().Contains("Temp"))
                 {
                     OnMessageEvent(new MessageEventArgs("SCP packet sent to: " + Hostname + "! ID: " + packet.Id.ToString() + " Type: " + packet.ToString()));
@@ -106,7 +101,6 @@ namespace ScadaCommunicationProtocol
                     {
                         pendingRequests.Add(pendingRequest);
                     }
-                    //await writeBuffer.SendAsync(packetbuffer);
                     WritePacket(packetbuffer);
                     try
                     {
@@ -246,7 +240,6 @@ namespace ScadaCommunicationProtocol
                 {
                     while (enabled)
                     {
-                        //await writeBuffer.SendAsync(keepAlivepacket);
                         WritePacket(keepAlivepacket);
                         await Task.Delay(1000);
                     }
@@ -267,14 +260,12 @@ namespace ScadaCommunicationProtocol
                 try
                 {
                     await tcpClient.ConnectAsync(address, port);
-                    //writerTask = WriterAsync();
                     ReaderTask = ReaderAsync();
                     ScpPacket request = new ScpRegRequest(hostname);
                     ScpPacket response = await SendAsync(request);
                     if (response != null && response is ScpRegResponse && ((ScpRegResponse)response).Ok)
                     {
                         connected = true;
-                        //keepAliveTask = Task.Run(() => KeepAlive());
                         keepAliveTask = KeepAlive();
                     }
                     else if (response != null && response is ScpRegResponse && !((ScpRegResponse)response).Ok)
