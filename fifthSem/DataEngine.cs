@@ -11,8 +11,8 @@ using System.Timers;
 
 namespace fifthSem
 {
-    #region DataEngine Events 
-    //... Used by GUI
+    //These events are only used by the programs GUI
+    #region DataEngine Events
     public delegate void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e);
     public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
     public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
@@ -92,7 +92,6 @@ namespace fifthSem
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
-            //mScpHost.CanBeMaster = false;
 
             //Add hosts allowed to connect to the network. 
             //Hardcoded temporarily. 
@@ -122,6 +121,7 @@ namespace fifthSem
                 //starts protocols
                 mScpHost.Start();
                 deStarted = true;
+                mScpHost.CanBeMaster = false;
             }
         }
 
@@ -141,8 +141,6 @@ namespace fifthSem
                 mRS485.AlarmHandler += AlarmEventHandler;
                 mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-                mScpHost.CanBeMaster = true;
-
                 //starts protocols
                 mScpHost.Start();
                 mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
@@ -151,7 +149,7 @@ namespace fifthSem
                 mRS485.ComputerAddress = ComputerPriority;
                 ScpHost.Priority = ComputerPriority;
                 deStarted = true;
-                mScpHost.CanBeMaster = true;
+                mScpHost.CanBeMaster = true; //Is by default true, just making sure.
             }
         }
 
@@ -273,10 +271,6 @@ namespace fifthSem
                         else
                             e.Response = new ScpLogFileResponse(null);
                     }
-                    else if(e.Packet is ScpAlarmLimitBroadcast)
-                    {
-                    //endring av alarmgrenser
-                    }
                     else if (e.Packet is ScpMasterRequest && comTrouble)
                     {
                         e.Response = new ScpMasterResponse(true);
@@ -290,10 +284,6 @@ namespace fifthSem
                     {
                         if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
-                    }
-                    else if (e.Packet is ScpAlarmLimitBroadcast)
-                    {
-                        //endring av alarmgrenser
                     }
                     break;
                 case ScpConnectionStatus.Waiting:
