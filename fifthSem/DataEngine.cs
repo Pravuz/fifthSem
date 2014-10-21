@@ -55,11 +55,17 @@ namespace fifthSem
     }
     #endregion
 
+    /// <summary>
+    /// The DataEngine handles and manages datalogging, status, 
+    /// synchronization of loggs and some alarms.
+    /// Creates a folder for logging on C:/Loggs/ 
+    /// Provides events for GUI updates. 
+    /// </summary>
     class DataEngine
     {
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private bool timerAlarmHigh, deStarted, comTrouble;
+        private bool timerAlarmHigh, deStarted, comTrouble, comErr;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
@@ -77,7 +83,7 @@ namespace fifthSem
 
         public DataEngine()
         {
-            //logfile init
+            //logfile init. uses month and year for filename
             DateTime d = DateTime.Now;
             logFile = d.Month.ToString() + d.Year.ToString() + ".txt";
             logFilePath = logFolder + logFile;
@@ -88,7 +94,7 @@ namespace fifthSem
             mTimer.Elapsed += mTimer_Elapsed;
             mTimer.Enabled = false;
 
-            //creates objects of protocols
+            //creates objects of communication protocols
             mScpHost = new ScpHost(0); //default prio is 0, if this pc wants another prio, it'll be passed on later. 
             mAlarmManager = new AlarmManager(mScpHost);
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
@@ -102,8 +108,10 @@ namespace fifthSem
             mScpHost.AddHost("HILDE-PC");
             mScpHost.AddHost("FREDRIK");
 
+            //initial booleans used to avoid multiple startups and masters.
             deStarted = false;
             comTrouble = false;
+            comErr = false;
         }
 
         /// <summary>
@@ -128,7 +136,8 @@ namespace fifthSem
         /// <summary>
         /// Starts the DataEngine WITH com
         /// </summary>
-        /// <param name="portNr">comport to use</param>
+        /// <param name="portNr">Comport to use</param>
+        /// <param name="ComputerPriority">Computers priority</param>
         public void Start(string portNr, int ComputerPriority)
         {
             if (!deStarted)
@@ -166,6 +175,7 @@ namespace fifthSem
 
         /// <summary>
         /// This event is triggered when DataEngine does not recieve a new temperaturereading after a given timeinterval. 
+        /// Initiates a RequestSwitchToMaster, which will only be completed if the computer is currently a Slave.
         /// </summary>
         private void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
@@ -176,6 +186,11 @@ namespace fifthSem
         }
 
         #region ComEvents
+        /// <summary>
+        /// Handles new temperaturereadings from Com-port. 
+        /// If this computer is master, a broadcast will be sent with the temperature
+        /// Writes data to log.
+        /// </summary>
         private void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
             if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
@@ -187,17 +202,24 @@ namespace fifthSem
             writeTempToLog(e.temp);
         }
 
+        /// <summary>
+        /// Handles alarms sent from the RS485 protocol. 
+        /// If this computer is master, comTrouble will be set to true.
+        /// This allows for a new computer with com to assume role as Master.
+        /// </summary>
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
-            bool err = false;
+            comErr = false;
             switch (e.alarm)
-            { 
+            {
                 case RS485.AlarmStatus.ComportFailure:
-                    err = true;
+                    if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
+                    comErr = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.RS485Failure:
-                    err = true;
+                    if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
+                    comErr = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.None:
@@ -205,12 +227,11 @@ namespace fifthSem
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
                     break;
             }
-            if (err && mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
-            {
-                comTrouble = true;
-            }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
         {
             switch (e.status)
@@ -235,11 +256,17 @@ namespace fifthSem
         }
         #endregion
         #region ScpEvents
+        /// <summary>
+        /// 
+        /// </summary>
         private void SlaveConnectionHandler(object sender, SlaveConnectionEventArgs e)
         {
             if (mMessageHandler != null) mMessageHandler(this, new DataEngineMessageArgs("Slave " + e.Name + " Disconnected."));
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void ConnectionStatusHandler(object sender, ScpConnectionStatusEventArgs e)
         {
             switch (e.Status)
@@ -259,6 +286,9 @@ namespace fifthSem
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
             switch (mScpHost.ScpConnectionStatus)
@@ -280,7 +310,7 @@ namespace fifthSem
                 case ScpConnectionStatus.Slave:
                     if (e.Packet is ScpTempBroadcast && 
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
-                        mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
+                        mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave || comErr))
                     {
                         if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
@@ -293,6 +323,9 @@ namespace fifthSem
         }
         #endregion
         #region Logfile Methods
+        /// <summary>
+        /// 
+        /// </summary>
         private async void logSync()
         {
             ScpPacket response = null; 
@@ -324,6 +357,10 @@ namespace fifthSem
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
         private void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
@@ -347,6 +384,10 @@ namespace fifthSem
             lastLog = now;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="s"></param>
         private void writeToFile(string s)
         {
             try
@@ -363,6 +404,9 @@ namespace fifthSem
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
         private void logFileCheck()
         {
             FileInfo fi;
