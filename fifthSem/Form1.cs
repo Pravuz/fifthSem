@@ -25,8 +25,27 @@ namespace fifthSem
             mDataEngine.mNewComStatusHandler += DataEngineNewComStatusHandler;
             //mDataEngine.mAlarmEventHandler += DataEngineAlarmEventHandler;
             mDataEngine.deAlarmManager.AlarmsChangedEvent += deAlarmManager_AlarmsChangedEvent;
+            mDataEngine.deAlarmManager.TempLimitsChangedEvent += deAlarmManager_TempLimitsChangedEvent;
             mDataEngine.deScpHost.MessageEvent += scpHost_MessageEvent;
 
+        }
+
+        void deAlarmManager_TempLimitsChangedEvent(object sender, TempLimitsChangedEventArgs e)
+        {
+            if (this.InvokeRequired) // InvokeRequired is true if event is triggered from another thread
+            {
+                // In this case trigger the event using BeginInvoke which makes sure the event is handled by the main thread
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    deAlarmManager_TempLimitsChangedEvent(sender, e);
+                });
+                return;
+            }
+            txtLLLvl.Text = e.LoLoLimit.ToString();
+            txtLLvl.Text = e.LoLimit.ToString();
+            txtHLvl.Text = e.HiLimit.ToString();
+            txtHHLvl.Text = e.HiHiLimit.ToString();
+            // Save to config
         }
 
         void scpHost_MessageEvent(object sender, ScadaCommunicationProtocol.MessageEventArgs e)
