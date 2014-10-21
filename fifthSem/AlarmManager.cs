@@ -11,6 +11,7 @@ using System.IO;
 namespace fifthSem
 {
     public delegate void AlarmsChangedEventHandler(object sender, AlarmsChangedEventArgs e);
+    public delegate void TempLimitsChangedEventHandler(object sender, TempLimitsChangedEventArgs e);
     public class AlarmsChangedEventArgs : EventArgs
     {
         public List<Alarm> Alarms;
@@ -19,6 +20,20 @@ namespace fifthSem
         {
             this.Alarms = Alarms;
             this.FilteredAlarms = FilteredAlarms;
+        }
+    }
+    public class TempLimitsChangedEventArgs : EventArgs
+    {
+        public double LoLoLimit { get; set; }
+        public double LoLimit { get; set; }
+        public double HiLimit { get; set; }
+        public double HiHiLimit { get; set; }
+        public TempLimitsChangedEventArgs(double LoLo, double Lo, double Hi, double HiHi)
+        {
+            this.LoLoLimit = LoLo;
+            this.LoLimit = Lo;
+            this.HiLimit = Hi;
+            this.HiHiLimit = HiHi;
         }
     }
     public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8, TempMissing = 9 }
@@ -55,10 +70,67 @@ namespace fifthSem
         private System.Timers.Timer timer;
         private bool updateNeeded = false;
         private List<AlarmTypes> filteredAlarms;
-        public double TempLimitLoLo { get; set; }
-        public double TempLimitLo { get; set; }
-        public double TempLimitHi { get; set; }
-        public double TempLimitHiHi { get; set; }
+        private double tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi;
+        public double TempLimitLoLo 
+        {
+            get
+            {
+                return tempLimitLoLo;
+            }
+            set
+            {
+                if (value != tempLimitLoLo)
+                {
+                    tempLimitLoLo = value;
+                    OnTempLimitsChanged();
+                }
+            }
+        }
+        public double TempLimitLo
+        {
+            get
+            {
+                return tempLimitLo;
+            }
+            set
+            {
+                if (value != tempLimitLo)
+                {
+                    tempLimitLo = value;
+                    OnTempLimitsChanged();
+                }
+            }
+        }
+        public double TempLimitHi
+        {
+            get
+            {
+                return tempLimitHi;
+            }
+            set
+            {
+                if (value != tempLimitHi)
+                {
+                    tempLimitHi = value;
+                    OnTempLimitsChanged();
+                }
+            }
+        }
+        public double TempLimitHiHi
+        {
+            get
+            {
+                return tempLimitHiHi;
+            }
+            set
+            {
+                if (value != tempLimitHiHi)
+                {
+                    tempLimitHiHi = value;
+                    OnTempLimitsChanged();
+                }
+            }
+        }
         public List<Alarm> AllAlarms
         {
             get
@@ -80,7 +152,20 @@ namespace fifthSem
                 AlarmsChangedEvent(this, new AlarmsChangedEventArgs(AllAlarms, FilteredAlarms));
             }
         }
+        private void OnTempLimitsChanged()
+        {
+            if (TempLimitsChangedEvent != null)
+            {
+                TempLimitsChangedEvent(this, new TempLimitsChangedEventArgs(TempLimitLoLo, TempLimitLo, TempLimitHi, TempLimitHiHi));
+            }
+        }
+        private void SendTempUpdate()
+        {
+            ScpAlarmLimitBroadcast scpPacket = new ScpAlarmLimitBroadcast(tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi);
+            scpHost.SendRequestAsync(scpPacket);
+        }
         public event AlarmsChangedEventHandler AlarmsChangedEvent;
+        public event TempLimitsChangedEventHandler TempLimitsChangedEvent;
 
         public AlarmManager(ScadaCommunicationProtocol.ScpHost scpHost)
         {
@@ -322,6 +407,14 @@ namespace fifthSem
             {
                 // Receiving updated alarm list from master
                 deSerializeAlarms(((ScpAlarmBroadcast)e.Packet).Alarm);
+            }
+            else if (e.Packet is ScpAlarmLimitBroadcast)
+            {
+                ScpAlarmLimitBroadcast packet = (ScpAlarmLimitBroadcast)e.Packet;
+                TempLimitLoLo = packet.LoLoLimit;
+                TempLimitLo = packet.LoLimit;
+                TempLimitHi = packet.HiLimit;
+                TempLimitHiHi = packet.HiHiLimit;
             }
         }
 
