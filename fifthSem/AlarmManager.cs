@@ -47,6 +47,7 @@ namespace fifthSem
     /// The AlarmManager communicates with other SCP hosts automatically to keep alarms updated
     /// Subscribe to AlarmsChangedEvent to be notified when there is a change in the alarm list
     /// Use SetAlarmStatus to set an alarm to High/Low or Acked state.
+    /// 
     /// </summary>
     public class AlarmManager
     {
