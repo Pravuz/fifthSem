@@ -65,7 +65,7 @@ namespace fifthSem
     {
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private bool timerAlarmHigh, deStarted, comTrouble;
+        private bool timerAlarmHigh, deStarted, comTrouble, comErr;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
@@ -111,6 +111,7 @@ namespace fifthSem
             //initial booleans used to avoid multiple startups and masters.
             deStarted = false;
             comTrouble = false;
+            comErr = false;
         }
 
         /// <summary>
@@ -208,25 +209,23 @@ namespace fifthSem
         /// </summary>
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
-            bool err = false;
+            comErr = false;
             switch (e.alarm)
-            { 
+            {
                 case RS485.AlarmStatus.ComportFailure:
-                    err = true;
+                    if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
+                    comErr = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.RS485Failure:
-                    err = true;
+                    if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
+                    comErr = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.None:
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
                     break;
-            }
-            if (err && mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
-            {
-                comTrouble = true;
             }
         }
 
@@ -311,7 +310,7 @@ namespace fifthSem
                 case ScpConnectionStatus.Slave:
                     if (e.Packet is ScpTempBroadcast && 
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
-                        mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave))
+                        mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave || comErr))
                     {
                         if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
