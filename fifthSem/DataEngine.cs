@@ -59,7 +59,7 @@ namespace fifthSem
     {
         private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private bool timerAlarmHigh, deStarted;
+        private bool timerAlarmHigh, deStarted, comTrouble;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
         private DateTime lastLog;
@@ -104,6 +104,7 @@ namespace fifthSem
             mScpHost.AddHost("FREDRIK");
 
             deStarted = false;
+            comTrouble = false;
         }
 
         /// <summary>
@@ -172,6 +173,7 @@ namespace fifthSem
         {
             timerAlarmHigh = true;
             mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
+            mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
@@ -205,13 +207,9 @@ namespace fifthSem
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
                     break;
             }
-            //Here the master is in trouble and broadcast a request for someone to take over. 
-            //If no one can take over, the network still needs a master, and this master will remain.
             if (err && mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
-            { 
-                //send broadcast asking for new master candidate. 
-                //response is recieved in packethandler, case master. if no response, this master will remain.
-                //rs485 status event will also make sure that this master will no longer be a candidate.
+            {
+                comTrouble = true;
             }
         }
 
@@ -222,22 +220,18 @@ namespace fifthSem
                 case RS485.ConnectionStatus.Master:
                     mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
-                    //mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Slave:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
-                    //mScpHost.CanBeMaster = true;
                     break;
                 case RS485.ConnectionStatus.Waiting:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
-                    //mScpHost.CanBeMaster = false;
                     break;
                 case RS485.ConnectionStatus.Stop:
                     mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
-                    //mScpHost.CanBeMaster = false;
                     break;
             }
         }
@@ -283,9 +277,10 @@ namespace fifthSem
                     {
                     //endring av alarmgrenser
                     }
-                    else if (e.Packet is ScpMasterRequest)
+                    else if (e.Packet is ScpMasterRequest && comTrouble)
                     {
                         e.Response = new ScpMasterResponse(true);
+                        comTrouble = false;
                     }
                     break;
                 case ScpConnectionStatus.Slave:
@@ -300,7 +295,6 @@ namespace fifthSem
                     {
                         //endring av alarmgrenser
                     }
-                    //else if (e.Packet is ) MASTER TA OVER LOGIKK HER
                     break;
                 case ScpConnectionStatus.Waiting:
                     //kommer vel aldri til å skje? 
