@@ -167,7 +167,7 @@ namespace fifthSem
         private void SendTempUpdate()
         {
             ScpAlarmLimitBroadcast scpPacket = new ScpAlarmLimitBroadcast(tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi);
-            scpHost.SendRequestAsync(scpPacket);
+            scpHost.SendBroadcastAsync(scpPacket);
         }
         public event AlarmsChangedEventHandler AlarmsChangedEvent;
         public event TempLimitsChangedEventHandler TempLimitsChangedEvent;
