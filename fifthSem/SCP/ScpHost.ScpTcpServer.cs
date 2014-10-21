@@ -23,6 +23,7 @@ namespace ScadaCommunicationProtocol
 
             private List<ScpTcpClient> scpClients = new List<ScpTcpClient>();
             private TcpListener tcpListener;
+            private ScpHost scpHost;
 
             public List<String> Hosts = new List<String>();
             public event MessageEventHandler MessageEvent;
@@ -56,8 +57,9 @@ namespace ScadaCommunicationProtocol
                     PacketEvent(this, e);
                 }
             }
-            public ScpTcpServer()
+            public ScpTcpServer(ScpHost scpHost)
             {
+                this.scpHost = scpHost;
                 _lock = new object();
             }
 
@@ -71,7 +73,6 @@ namespace ScadaCommunicationProtocol
                 if (!enabled)
                 {
                     enabled = true;
-                    //Task listenerTask = listener();
                     Task listenerTask = Task.Run(() => listener());
                 }
             }
@@ -112,7 +113,6 @@ namespace ScadaCommunicationProtocol
                     {
                         TcpClient client = await tcpListener.AcceptTcpClientAsync();
                         Task connector = connectClientAsync(client);
-                        //Task connector = Task.Run(() => connectClientAsync(client));
                     }
 
                 }
@@ -127,15 +127,20 @@ namespace ScadaCommunicationProtocol
                 {
                     clientsConnected++;
                 }
-                ScpTcpClient scpClient = new ScpTcpClient();
+                ScpTcpClient scpClient = new ScpTcpClient(scpHost);
                 scpClient.PacketEvent += scpClient_PacketEvent;
                 scpClient.MessageEvent += MessageEvent;
                 Task scpClientTask = scpClient.Connect(client);
                 try
                 {
-                    //Task scpClientTask = Task.Run(() => scpClient.Connect(client));
+                    try
+                    {
+                        await Task.Delay(1000, scpClient.requestCancelToken.Token);
+                    }
+                    catch
+                    {
 
-                    await Task.Delay(1000);
+                    }
                     if (scpClient.Hostname == "") // No response from master, so disconnect
                     {
                         scpClient.Disconnect();
@@ -177,17 +182,17 @@ namespace ScadaCommunicationProtocol
                 if (e.Packet is ScpRegRequest)
                 {
                     ScpRegRequest request = (ScpRegRequest)e.Packet;
-                    //byte[] test = request.GetBytes();
                     bool allowConnection = Hosts.Exists(host => host == request.Hostname);
                     ScpPacket packet = new ScpRegResponse(allowConnection);
                     packet.Id = request.Id;
-                    if (allowConnection)
-                    {
-                        ((ScpTcpClient)sender).Hostname = request.Hostname;
-                    }
                     try
                     {
-                        await ((ScpTcpClient)sender).SendAsync(packet).ConfigureAwait(false);
+                        if (allowConnection)
+                        {
+                            ((ScpTcpClient)sender).Hostname = request.Hostname;
+                            await ((ScpTcpClient)sender).SendAsync(packet);//.ConfigureAwait(false);
+                            ((ScpTcpClient)sender).requestCancelToken.Cancel();
+                        }
                     }
                     catch // F.ex. timeout
                     {

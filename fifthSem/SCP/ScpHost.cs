@@ -87,6 +87,8 @@ namespace ScadaCommunicationProtocol
         private bool canBeMaster = true;
         private IPAddress masterIPAddress;
         private Task checkTask;
+        private bool forceMaster = false;
+        private CancellationTokenSource cancelMaster;
 
         public ScpConnectionStatus ScpConnectionStatus
         {
@@ -167,10 +169,12 @@ namespace ScadaCommunicationProtocol
             ScpHost.Priority = priority;
             ScpHost.Name = System.Environment.MachineName;
 
+            cancelMaster = new CancellationTokenSource();
+
             scpUdpServer = new ScpUdpServer();
             scpUdpClient = new ScpUdpClient();
-            scpTcpServer = new ScpTcpServer();
-            scpTcpClient = new ScpTcpClient();
+            scpTcpServer = new ScpTcpServer(this);
+            scpTcpClient = new ScpTcpClient(this);
 
             scpTcpClient.MessageEvent += OnMessageEvent;
             scpTcpClient.PacketEvent += OnPacketEvent;
@@ -178,6 +182,22 @@ namespace ScadaCommunicationProtocol
             scpTcpServer.MessageEvent += OnMessageEvent;
             scpTcpServer.PacketEvent += OnPacketEvent;
             scpTcpServer.SlaveConnectionEvent += OnSlaveConnectionEvent;
+        }
+
+        public async Task<bool> RequestSwitchToMaster()
+        {
+            if (scpConnectionStatus == ScpConnectionStatus.Slave)
+            {
+                ScpPacket response = await SendRequestAsync(new ScpMasterRequest());
+                if ((response != null) && (response is ScpMasterResponse))
+                {
+                    if (((ScpMasterResponse)response).Ok)
+                    {
+                        forceMaster = true;
+                    }
+                }
+            }
+            return false;
         }
 
         /// <summary>
@@ -249,8 +269,7 @@ namespace ScadaCommunicationProtocol
             while (true)
             {
                 OnMessageEvent(this, new MessageEventArgs("Trying to discover master...."));
-                await Task.Delay(Priority * 100);
-                if (scpUdpClient.DiscoverMaster(out reply))
+                if ((!forceMaster) && (scpUdpClient.DiscoverMaster(out reply)))
                 {
                     // Take slave role and connect to master
                     masterIPAddress = reply.MasterIPEndPoint.Address;
@@ -273,6 +292,10 @@ namespace ScadaCommunicationProtocol
                         OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
                         setConnectionStatus(ScpConnectionStatus.Waiting);
                         scpTcpClient.Disconnect();
+                        if (!forceMaster)
+                        {
+                            await Task.Delay(1000 + Priority * 1000);
+                        }
                     }
                     else
                     {
@@ -285,6 +308,7 @@ namespace ScadaCommunicationProtocol
                 else if (canBeMaster)
                 {
                     // Take master role. 
+                    forceMaster = false;
                     OnMessageEvent(this, new MessageEventArgs("No master found, taking role as master."));
                     scpUdpServer.Start(); // Listen for UDP broadcast
                     scpTcpServer.Start(); // Start SCP server
@@ -304,8 +328,20 @@ namespace ScadaCommunicationProtocol
                                 scpTcpServer.Stop();
                             }
                         }
-                        await Task.Delay(5000);
+                        try
+                        {
+                            await Task.Delay(5000, cancelMaster.Token);
+                        }
+                        catch
+                        {
+                            OnMessageEvent(this, new MessageEventArgs("Cancel master request!"));
+                            setConnectionStatus(ScpConnectionStatus.Waiting);
+                            scpUdpServer.Stop();
+                            scpTcpServer.Stop();
+                            cancelMaster = new CancellationTokenSource();
+                        }
                     }
+                    await Task.Delay(1000);
                 }
                 else
                 {
