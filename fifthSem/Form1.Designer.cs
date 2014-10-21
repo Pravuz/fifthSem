@@ -34,6 +34,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
             this.txtDebug = new System.Windows.Forms.TextBox();
             this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
@@ -72,7 +73,6 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.button1 = new System.Windows.Forms.Button();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
@@ -111,6 +111,16 @@
             this.tabPageCC.TabIndex = 0;
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(622, 296);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(99, 23);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "Switch to master";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // txtDebug
             // 
@@ -403,6 +413,7 @@
             // 
             this.cmbMPri.FormattingEnabled = true;
             this.cmbMPri.Items.AddRange(new object[] {
+            "None",
             "1",
             "2",
             "3",
@@ -517,16 +528,6 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(622, 296);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(99, 23);
-            this.button1.TabIndex = 15;
-            this.button1.Text = "Switch to master";
-            this.button1.UseVisualStyleBackColor = true;
-            this.button1.Click += new System.EventHandler(this.button1_Click);
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -535,6 +536,7 @@
             this.Controls.Add(this.tabCCALEL);
             this.Name = "Form1";
             this.Text = "Skadd";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
             this.tabPageCC.PerformLayout();

@@ -83,7 +83,6 @@ namespace fifthSem
                 if (value != tempLimitLoLo)
                 {
                     tempLimitLoLo = value;
-                    OnTempLimitsChanged();
                     SendTempUpdate();
                 }
             }
@@ -99,7 +98,6 @@ namespace fifthSem
                 if (value != tempLimitLo)
                 {
                     tempLimitLo = value;
-                    OnTempLimitsChanged();
                     SendTempUpdate();
                 }
             }
@@ -115,7 +113,6 @@ namespace fifthSem
                 if (value != tempLimitHi)
                 {
                     tempLimitHi = value;
-                    OnTempLimitsChanged();
                     SendTempUpdate();
                 }
             }
@@ -131,7 +128,6 @@ namespace fifthSem
                 if (value != tempLimitHiHi)
                 {
                     tempLimitHiHi = value;
-                    OnTempLimitsChanged();
                     SendTempUpdate();
                 }
             }
@@ -182,6 +178,10 @@ namespace fifthSem
             scpHost.ScpConnectionStatusEvent += ScpConnectionStatusEvent;
             alarms = new List<Alarm>();
             filteredAlarms = new List<AlarmTypes>();
+            tempLimitLoLo = -10000;
+            tempLimitLo = -10000;
+            tempLimitHi = 10000;
+            tempLimitHiHi = 10000;
         }
 
         public void SetAlarmFilter(AlarmTypes type, bool filter)
@@ -232,6 +232,7 @@ namespace fifthSem
             if (e.Connected)
             {
                 setMasterAlarmStatus(AlarmTypes.HostMissing, AlarmCommand.Low, e.Name);
+                SendTempUpdate();
                 updateNeeded = true;
             }
             else
@@ -279,10 +280,6 @@ namespace fifthSem
         public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource = "")
         {
             bool result = false;
-            if (Type.ToString().Contains("Temp"))
-            {
-                alarmsource = "Process";
-            }
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
                 setMasterAlarmStatus(Type, Command, alarmsource);
@@ -332,6 +329,10 @@ namespace fifthSem
             if (scpHost.ScpConnectionStatus != ScpConnectionStatus.Master)
             {
                 return;
+            }
+            if (Type.ToString().Contains("Temp"))
+            {
+                alarmsource = "Process";
             }
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
             bool changed = false;

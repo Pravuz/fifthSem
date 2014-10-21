@@ -37,13 +37,61 @@ namespace fifthSem.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        [global::System.Configuration.DefaultSettingValueAttribute("None")]
         public string COMPort {
             get {
                 return ((string)(this["COMPort"]));
             }
             set {
                 this["COMPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double TempLimitLoLo {
+            get {
+                return ((double)(this["TempLimitLoLo"]));
+            }
+            set {
+                this["TempLimitLoLo"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double TempLimitLo {
+            get {
+                return ((double)(this["TempLimitLo"]));
+            }
+            set {
+                this["TempLimitLo"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double TempLimitHi {
+            get {
+                return ((double)(this["TempLimitHi"]));
+            }
+            set {
+                this["TempLimitHi"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("0")]
+        public double TempLimitHiHi {
+            get {
+                return ((double)(this["TempLimitHiHi"]));
+            }
+            set {
+                this["TempLimitHiHi"] = value;
             }
         }
     }
