@@ -148,6 +148,7 @@ namespace fifthSem
                 mRS485.ComputerAddress = ComputerPriority;
                 ScpHost.Priority = ComputerPriority;
                 deStarted = true;
+                mScpHost.CanBeMaster = true;
             }
         }
 
@@ -186,19 +187,30 @@ namespace fifthSem
 
         private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
+            bool err = false;
             switch (e.alarm)
             { 
                 case RS485.AlarmStatus.ComportFailure:
+                    err = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.RS485Failure:
+                    err = true;
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.None:
                     mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
                     mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
                     break;
-            }  
+            }
+            //Here the master is in trouble and broadcast a request for someone to take over. 
+            //If no one can take over, the network still needs a master, and this master will remain.
+            if (err && mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            { 
+                //send broadcast asking for new master candidate. 
+                //response is recieved in packethandler, case master. if no response, this master will remain.
+                //rs485 status event will also make sure that this master will no longer be a candidate.
+            }
         }
 
         private void ConnectionStatusRS485Handler(object sender, RS485.ConnectionStatusEventArgs e)
@@ -282,6 +294,7 @@ namespace fifthSem
                     {
                         //endring av alarmgrenser
                     }
+                    //else if (e.Packet is ) MASTER TA OVER LOGIKK HER
                     break;
                 case ScpConnectionStatus.Waiting:
                     //kommer vel aldri til å skje? 
