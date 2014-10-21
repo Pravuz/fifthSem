@@ -34,6 +34,7 @@
             System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.chkTempMissingAlarm = new System.Windows.Forms.CheckBox();
@@ -71,7 +72,7 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.txtDebug = new System.Windows.Forms.TextBox();
+            this.button1 = new System.Windows.Forms.Button();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
@@ -99,6 +100,7 @@
             // 
             // tabPageCC
             // 
+            this.tabPageCC.Controls.Add(this.button1);
             this.tabPageCC.Controls.Add(this.txtDebug);
             this.tabPageCC.Controls.Add(this.chrtTemp);
             this.tabPageCC.Controls.Add(this.groupBox2);
@@ -109,6 +111,14 @@
             this.tabPageCC.TabIndex = 0;
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
+            // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(760, 7);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(303, 455);
+            this.txtDebug.TabIndex = 14;
             // 
             // chrtTemp
             // 
@@ -218,6 +228,7 @@
             this.dGFilteredAlarms.Location = new System.Drawing.Point(18, 30);
             this.dGFilteredAlarms.Name = "dGFilteredAlarms";
             this.dGFilteredAlarms.ReadOnly = true;
+            this.dGFilteredAlarms.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dGFilteredAlarms.Size = new System.Drawing.Size(590, 196);
             this.dGFilteredAlarms.TabIndex = 0;
             this.dGFilteredAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
@@ -232,6 +243,7 @@
             this.toolTipAck.SetToolTip(this.btnAck, "This button will acknowledge the alarm that is visible. If the problem has not be" +
         "en solved the alarm will persist. See AlarmList Tab for more information.");
             this.btnAck.UseVisualStyleBackColor = true;
+            this.btnAck.Click += new System.EventHandler(this.btnAck_Click);
             // 
             // tabPageAL
             // 
@@ -263,6 +275,7 @@
             this.Acknowledge2.TabIndex = 1;
             this.Acknowledge2.Text = "Acknowledge";
             this.Acknowledge2.UseVisualStyleBackColor = true;
+            this.Acknowledge2.Click += new System.EventHandler(this.Acknowledge2_Click);
             // 
             // dGAllAlarms
             // 
@@ -273,6 +286,7 @@
             this.dGAllAlarms.Location = new System.Drawing.Point(6, 19);
             this.dGAllAlarms.Name = "dGAllAlarms";
             this.dGAllAlarms.ReadOnly = true;
+            this.dGAllAlarms.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
             this.dGAllAlarms.Size = new System.Drawing.Size(918, 405);
             this.dGAllAlarms.TabIndex = 0;
             this.dGAllAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
@@ -503,13 +517,15 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
-            // txtDebug
+            // button1
             // 
-            this.txtDebug.Location = new System.Drawing.Point(760, 7);
-            this.txtDebug.Multiline = true;
-            this.txtDebug.Name = "txtDebug";
-            this.txtDebug.Size = new System.Drawing.Size(303, 455);
-            this.txtDebug.TabIndex = 14;
+            this.button1.Location = new System.Drawing.Point(622, 296);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(99, 23);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "Switch to master";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
@@ -583,6 +599,7 @@
         private System.Windows.Forms.TextBox txtHHLvl;
         private System.Windows.Forms.Button btnSetLimits;
         private System.Windows.Forms.TextBox txtDebug;
+        private System.Windows.Forms.Button button1;
     }
 }
 

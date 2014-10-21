@@ -143,6 +143,7 @@ namespace fifthSem
             if (e.Connected)
             {
                 setMasterAlarmStatus(AlarmTypes.HostMissing, AlarmCommand.Low, e.Name);
+                updateNeeded = true;
             }
             else
             {
@@ -182,6 +183,7 @@ namespace fifthSem
                     setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
                     setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
                 }
+                SendAlarmUpdate();
             }
         }
 
@@ -237,7 +239,13 @@ namespace fifthSem
 
         private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="")
         {
+            // Failsafe to makesure only alarms are set when master
+            if (scpHost.ScpConnectionStatus != ScpConnectionStatus.Master)
+            {
+                return;
+            }
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
+            bool changed = false;
             switch (Command)
             {
                 case AlarmCommand.High:
@@ -246,36 +254,52 @@ namespace fifthSem
                         alarm = new Alarm(Type, alarmsource);
                         alarm.Filtered = filteredAlarms.Contains(Type);
                         alarms.Add(alarm);
+                        changed = true;
                     }
                     else
                     {
-                        alarm.Filtered = filteredAlarms.Contains(Type);
-                        alarm.High = true;
+                        if (!alarm.High)
+                        {
+                            alarm.Filtered = filteredAlarms.Contains(Type);
+                            alarm.High = true;
+                            changed = true;
+                        }
                     }
                     break;
                 case AlarmCommand.Low:
                     if (alarm != null)
                     {
-                        alarm.High = false;
-                        if (alarm.Acked) // If Alarm already acked we can remove it
+                        if (alarm.High)
                         {
-                            alarms.Remove(alarm);
+                            alarm.High = false;
+                            if (alarm.Acked) // If Alarm already acked we can remove it
+                            {
+                                alarms.Remove(alarm);
+                            }
+                            changed = true;
                         }
                     }
                     break;
                 case AlarmCommand.Ack:
                     if (alarm != null)
                     {
-                        alarm.Acked = true;
-                        if (!alarm.High)
+                        if (!alarm.Acked)
                         {
-                            alarms.Remove(alarm);
+                            alarm.Acked = true;
+                            if (!alarm.High)
+                            {
+                                alarms.Remove(alarm);
+                            }
+                            changed = true;
                         }
                     }
                     break;
             }
-            updateNeeded = true;
-            OnAlarmsChanged();
+            if (changed)
+            {
+                updateNeeded = true;
+                OnAlarmsChanged();
+            }
         }
 
         private void SendAlarmUpdate()

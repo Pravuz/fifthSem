@@ -92,6 +92,14 @@ namespace fifthSem
                 return;
             }
             txtTCP_IP_MS.Text = e.status;
+            if (e.status == "Slave")
+            {
+                button1.Enabled = true;
+            }
+            else
+            {
+                button1.Enabled = false;
+            }
         }
 
         //private void DataEngineAlarmEventHandler(object sender, DataEngineAlarmEventArgs e)
@@ -225,6 +233,35 @@ namespace fifthSem
                 mDataEngine.deAlarmManager.TempLimitLo = lo;
                 mDataEngine.deAlarmManager.TempLimitLoLo = lolo;
             }
+        }
+
+        private void btnAck_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dGFilteredAlarms.SelectedRows)
+            {
+                if (row.Index != -1)
+                {
+                    Alarm alarm = (Alarm)row.DataBoundItem;
+                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
+                }
+            }
+        }
+
+        private void Acknowledge2_Click(object sender, EventArgs e)
+        {
+            foreach (DataGridViewRow row in dGAllAlarms.SelectedRows)
+            {
+                if (row.Index != -1)
+                {
+                    Alarm alarm = (Alarm)row.DataBoundItem;
+                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
+                }
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            mDataEngine.deScpHost.RequestSwitchToMaster();
         }
              
     }

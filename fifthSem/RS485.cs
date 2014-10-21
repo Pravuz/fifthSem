@@ -24,7 +24,7 @@ using System.Timers;
 namespace RS485
 {
     public enum ConnectionStatus {Stop, Waiting, Master, Slave};
-    public enum AlarmStatus { None, RS485Failure, ComportFailure }
+    public enum AlarmStatus {None, ComportFailure, RS485Failure};
 
     public delegate void TempEventHandler(object sender, TempEventArgs e);
     public delegate void ConnectionStatusEventHandler(object sender, ConnectionStatusEventArgs e);
@@ -42,7 +42,6 @@ namespace RS485
     public class AlarmEventArgs : EventArgs
     {
         public AlarmStatus alarm;
-
         public AlarmEventArgs(AlarmStatus alarm)
 
         {
@@ -82,6 +81,9 @@ namespace RS485
         // Property on Stop-Waiting-Master-Slave status
         public ConnectionStatus connectionStatus_extern;
         private ConnectionStatus connectionStatus_intern;
+        
+        // Property on AlarmStatus
+        public AlarmStatus alarmStatus;
 
         // Public eventhandlers for new temp, new connection status and new alarm
         public event TempEventHandler TempHandler;
@@ -96,6 +98,10 @@ namespace RS485
         {
             // Default computer address
             computerAddress = 0;
+
+            // Default com port connection status stop
+            connectionStatus_extern = ConnectionStatus.Stop;
+            if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
         }
         
         // Private function ReadTimout. Depending on computeraddress, the time before before connectionstatus becomes master. 
@@ -130,11 +136,11 @@ namespace RS485
                 serialPort.DataReceived +=
                     new SerialDataReceivedEventHandler(serialPortDataReceived);
                 serialPort.Open();
-                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(AlarmStatus.None));
             }
             catch
             {
-                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(AlarmStatus.ComportFailure));
+                alarmStatus = AlarmStatus.ComportFailure;
+                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
             }
             // Set connectionStatus
             connectionStatus_intern = ConnectionStatus.Slave;
@@ -183,7 +189,13 @@ namespace RS485
                 // Flags a ConnectionStatusHandler event
                 if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
             }
-            
+
+            if (alarmStatus != AlarmStatus.None)
+            {
+                alarmStatus = AlarmStatus.None;
+                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
+            }
+           
             // Read data from port
             int dataLength = serialPort.BytesToRead;
             byte[] data = new byte[dataLength];
@@ -245,9 +257,10 @@ namespace RS485
                     {
                         serialPort.WriteLine("#023\r");
                     }
-                    catch
+                    catch(Exception e)
                     {
-                        if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(AlarmStatus.ComportFailure));
+                        alarmStatus = AlarmStatus.ComportFailure;
+                        if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
                         stopCom();
                     }
                     // Com port surveillance. If Master does not receive temp after 3 request, an alarm event is flagged.
@@ -258,7 +271,8 @@ namespace RS485
                             connectionStatus_extern = ConnectionStatus.Waiting;
                             if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
                             getTempTimeoutCounter++;
-                            if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(AlarmStatus.RS485Failure));
+                            alarmStatus = AlarmStatus.RS485Failure;
+                            if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
                             getTempTimeout = 0; // Reset timeout, allowing new alarms be flagged
                         }
                     }
