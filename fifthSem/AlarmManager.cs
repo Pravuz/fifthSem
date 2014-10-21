@@ -84,6 +84,7 @@ namespace fifthSem
                 {
                     tempLimitLoLo = value;
                     OnTempLimitsChanged();
+                    SendTempUpdate();
                 }
             }
         }
@@ -99,6 +100,7 @@ namespace fifthSem
                 {
                     tempLimitLo = value;
                     OnTempLimitsChanged();
+                    SendTempUpdate();
                 }
             }
         }
@@ -114,6 +116,7 @@ namespace fifthSem
                 {
                     tempLimitHi = value;
                     OnTempLimitsChanged();
+                    SendTempUpdate();
                 }
             }
         }
@@ -129,6 +132,7 @@ namespace fifthSem
                 {
                     tempLimitHiHi = value;
                     OnTempLimitsChanged();
+                    SendTempUpdate();
                 }
             }
         }
@@ -412,10 +416,11 @@ namespace fifthSem
             else if (e.Packet is ScpAlarmLimitBroadcast)
             {
                 ScpAlarmLimitBroadcast packet = (ScpAlarmLimitBroadcast)e.Packet;
-                TempLimitLoLo = packet.LoLoLimit;
-                TempLimitLo = packet.LoLimit;
-                TempLimitHi = packet.HiLimit;
-                TempLimitHiHi = packet.HiHiLimit;
+                tempLimitLoLo = packet.LoLoLimit;
+                tempLimitLo = packet.LoLimit;
+                tempLimitHi = packet.HiLimit;
+                tempLimitHiHi = packet.HiHiLimit;
+                OnTempLimitsChanged();
             }
         }
 
