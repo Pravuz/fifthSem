@@ -178,8 +178,8 @@ namespace fifthSem
         private async void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timerAlarmHigh = true;
-            await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
-            if(mScpHost.CanBeMaster) await mScpHost.RequestSwitchToMaster();
+            if(mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
+            if(mScpHost.CanBeMaster && mScpHost.ScpConnectionStatus != ScpConnectionStatus.Master) await mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
@@ -239,7 +239,7 @@ namespace fifthSem
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
                     break;
                 case RS485.ConnectionStatus.Slave:
-                    mTimer.Stop();
+                    mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     break;
                 case RS485.ConnectionStatus.Waiting:
