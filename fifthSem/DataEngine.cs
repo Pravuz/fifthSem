@@ -94,6 +94,11 @@ namespace fifthSem
             mRS485 = new RS485.RS485(); //passing prio later here aswell.
             mScpHost.CanBeMaster = false;
 
+            //subscribe to events
+            mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+            mScpHost.PacketEvent += PacketHandler;
+            mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+
             //Add hosts allowed to connect to the network. 
             //Hardcoded temporarily. 
             mScpHost.AddHost("OUROBORUS-PC");
@@ -113,10 +118,10 @@ namespace fifthSem
         {
             if (!deStarted)
             {
-                //subscribe to events
-                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-                mScpHost.PacketEvent += PacketHandler;
-                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+                ////subscribe to events
+                //mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                //mScpHost.PacketEvent += PacketHandler;
+                //mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
                 //starts protocols
                 mScpHost.Start();
@@ -133,12 +138,12 @@ namespace fifthSem
             if (!deStarted)
             {
                 //subscribe to events
-                mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-                mScpHost.PacketEvent += PacketHandler;
+                //mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
+                //mScpHost.PacketEvent += PacketHandler;
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
                 mRS485.TempHandler += TempEventHandler;
                 mRS485.AlarmHandler += AlarmEventHandler;
-                mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
+                //mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
                 //starts protocols
                 mScpHost.Start();
