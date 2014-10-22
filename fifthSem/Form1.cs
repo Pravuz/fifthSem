@@ -145,8 +145,35 @@ namespace fifthSem
                 });
                 return;
             }
+            List<Alarm> selectedAlarms = new List<Alarm>();
+            foreach (DataGridViewRow row in dGAllAlarms.SelectedRows)
+            {
+                selectedAlarms.Add((Alarm)row.DataBoundItem);
+            }
             dGAllAlarms.DataSource = e.Alarms;
+            dGAllAlarms.ClearSelection();
+            foreach (DataGridViewRow row in dGAllAlarms.Rows)
+            {
+                if (selectedAlarms.Contains((Alarm)row.DataBoundItem))
+                {
+                    row.Selected = true;
+                }
+            }
+
+            selectedAlarms.Clear();
+            foreach (DataGridViewRow row in dGFilteredAlarms.SelectedRows)
+            {
+                selectedAlarms.Add((Alarm)row.DataBoundItem);
+            }
             dGFilteredAlarms.DataSource = e.FilteredAlarms;
+            dGFilteredAlarms.ClearSelection();
+            foreach (DataGridViewRow row in dGFilteredAlarms.Rows)
+            {
+                if (selectedAlarms.Contains((Alarm)row.DataBoundItem))
+                {
+                    row.Selected = true;
+                }
+            }
         }
         private void startDataEngine()
         {
@@ -296,28 +323,28 @@ namespace fifthSem
             }
         }
 
-        private void btnAck_Click(object sender, EventArgs e)
+        private void ackAlarms(DataGridView dg)
         {
-            foreach (DataGridViewRow row in dGFilteredAlarms.SelectedRows)
+            List<Alarm> alarms = new List<Alarm>();
+            foreach (DataGridViewRow row in dg.SelectedRows)
             {
                 if (row.Index != -1)
-                {
-                    Alarm alarm = (Alarm)row.DataBoundItem;
-                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
-                }
+                    alarms.Add((Alarm)row.DataBoundItem);
             }
+            foreach (Alarm alarm in alarms)
+            {
+                mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
+            }
+        }
+
+        private void btnAck_Click(object sender, EventArgs e)
+        {
+            ackAlarms(dGFilteredAlarms);
         }
 
         private void Acknowledge2_Click(object sender, EventArgs e)
         {
-            foreach (DataGridViewRow row in dGAllAlarms.SelectedRows)
-            {
-                if (row.Index != -1)
-                {
-                    Alarm alarm = (Alarm)row.DataBoundItem;
-                    mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
-                }
-            }
+            ackAlarms(dGAllAlarms);
         }
 
         private void button1_Click(object sender, EventArgs e)

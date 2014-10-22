@@ -235,6 +235,7 @@
             this.dGFilteredAlarms.AllowUserToAddRows = false;
             this.dGFilteredAlarms.AllowUserToDeleteRows = false;
             this.dGFilteredAlarms.AllowUserToResizeRows = false;
+            this.dGFilteredAlarms.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dGFilteredAlarms.Location = new System.Drawing.Point(18, 30);
             this.dGFilteredAlarms.Name = "dGFilteredAlarms";
             this.dGFilteredAlarms.ReadOnly = true;
@@ -292,7 +293,7 @@
             this.dGAllAlarms.AllowUserToAddRows = false;
             this.dGAllAlarms.AllowUserToDeleteRows = false;
             this.dGAllAlarms.AllowUserToResizeRows = false;
-            this.dGAllAlarms.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dGAllAlarms.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.DisableResizing;
             this.dGAllAlarms.Location = new System.Drawing.Point(6, 19);
             this.dGAllAlarms.Name = "dGAllAlarms";
             this.dGAllAlarms.ReadOnly = true;
