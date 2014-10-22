@@ -487,7 +487,8 @@ namespace fifthSem
                 }
                 else
                 {
-                    SetAlarmFilter(new AlarmTypes[] { scpRequest.AlarmType }, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                    setMasterAlarmFilter(scpRequest.AlarmType, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                    OnAlarmFiltersChanged();
                 }
                 e.Response = new ScpAlarmResponse(true);
             }
@@ -500,6 +501,7 @@ namespace fifthSem
             {
                 // Receiving updated alarm filter list from master
                 deSerializeFilters(((ScpAlarmFilterBroadcast)e.Packet).Filters);
+                OnAlarmFiltersChanged();
             }
             else if (e.Packet is ScpAlarmLimitBroadcast)
             {
