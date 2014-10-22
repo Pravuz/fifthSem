@@ -198,6 +198,11 @@ namespace fifthSem
                 await mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
                 mAlarmManager.SetTemp(e.temp);
             }
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                mTimer.Stop();
+                mTimer.Start();
+            }
             writeTempToLog(e.temp);
         }
 
@@ -311,7 +316,12 @@ namespace fifthSem
                         (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
                         mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave || comErr))
                     {
-                        if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp)); 
+                        if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp));
+                        if (mScpHost.CanBeMaster)
+                        {
+                            mTimer.Stop();
+                            mTimer.Start();
+                        }
                         writeTempToLog(((ScpTempBroadcast)e.Packet).Temp);
                     }
                     break;
@@ -363,8 +373,6 @@ namespace fifthSem
         private async void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
-            mTimer.Stop();
-            mTimer.Start();
             if (timerAlarmHigh)
             {
                 await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
