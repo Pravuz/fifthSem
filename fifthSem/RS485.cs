@@ -71,11 +71,12 @@ namespace RS485
         Thread getTempThread;
         System.Timers.Timer timeout;
 
-        // Private varables for class
+        // Private variables for class
         private int computerAddress;
         private int getTempTimeout = 0; // Flagg alarm when ConnectionStatus = Master and no temp has been received after 5 requests.
         private int getTempTimeoutCounter = 0; //
         private bool threadEnabled;
+        private bool comportEnabled = false;
         private string tempData = "";
 
         // Property on Stop-Waiting-Master-Slave status
@@ -84,6 +85,7 @@ namespace RS485
         
         // Property on AlarmStatus
         public AlarmStatus alarmStatus;
+        public bool ComportEnabled { get { return comportEnabled; } }
 
         // Public eventhandlers for new temp, new connection status and new alarm
         public event TempEventHandler TempHandler;
@@ -136,6 +138,7 @@ namespace RS485
             serialPort.DataReceived +=
                 new SerialDataReceivedEventHandler(serialPortDataReceived);
             serialPort.Open();
+            comportEnabled = true;
             }
             catch
             {
@@ -155,7 +158,6 @@ namespace RS485
             timeout = new System.Timers.Timer(ReadTimeout(computerAddress));
             timeout.Elapsed += OnTimedEvent;
             timeout.Start();
-
         }
 
         // Function to close down the com port and set connection status = Waiting. Flags a ConnectionStatusHandler event
@@ -169,6 +171,7 @@ namespace RS485
                 connectionStatus_intern = ConnectionStatus.Slave;
                 connectionStatus_extern = ConnectionStatus.Stop;
                 if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+                comportEnabled = false;
             }
         }
 
