@@ -31,6 +31,16 @@ namespace fifthSem
 
         void deAlarmManager_AlarmFiltersChangedEvent(object sender, AlarmFiltersChangedEventArgs e)
         {
+            if (this.InvokeRequired) // InvokeRequired is true if event is triggered from another thread
+            {
+                // In this case trigger the event using BeginInvoke which makes sure the event is handled by the main thread
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    deAlarmManager_AlarmFiltersChangedEvent(sender, e);
+                });
+                return;
+            }
+
             chkTempAlarms.Checked = !e.Filters.Contains(AlarmTypes.TempHi);
             chkHostMissingAlarms.Checked = !e.Filters.Contains(AlarmTypes.HostMissing);
             chkRS485Alarms.Checked = !e.Filters.Contains(AlarmTypes.RS485Error);
