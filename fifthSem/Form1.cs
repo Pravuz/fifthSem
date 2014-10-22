@@ -41,11 +41,11 @@ namespace fifthSem
                 return;
             }
 
-            chkTempAlarms.Checked = !e.Filters.Contains(AlarmTypes.TempHi);
-            chkHostMissingAlarms.Checked = !e.Filters.Contains(AlarmTypes.HostMissing);
-            chkRS485Alarms.Checked = !e.Filters.Contains(AlarmTypes.RS485Error);
-            chkCOMAlarms.Checked = !e.Filters.Contains(AlarmTypes.SerialPortError);
-            chkTempMissingAlarm.Checked = !e.Filters.Contains(AlarmTypes.TempMissing);
+            chkTempAlarms.Checked = e.Filters.Contains(AlarmTypes.TempHi);
+            chkHostMissingAlarms.Checked = e.Filters.Contains(AlarmTypes.HostMissing);
+            chkRS485Alarms.Checked = e.Filters.Contains(AlarmTypes.RS485Error);
+            chkCOMAlarms.Checked = e.Filters.Contains(AlarmTypes.SerialPortError);
+            chkTempMissingAlarm.Checked = e.Filters.Contains(AlarmTypes.TempMissing);
         }
 
         void LoadConfig()
@@ -134,6 +134,24 @@ namespace fifthSem
             txtDebug.AppendText(e.Message + System.Environment.NewLine);
         }
 
+        void updateAlarmgrid(DataGridView dg, List<Alarm> alarmList)
+        {
+            List<Alarm> selectedAlarms = new List<Alarm>();
+            foreach (DataGridViewRow row in dg.SelectedRows)
+            {
+                selectedAlarms.Add((Alarm)row.DataBoundItem);
+            }
+            dg.DataSource = alarmList;
+            dg.ClearSelection();
+            foreach (DataGridViewRow row in dg.Rows)
+            {
+                Alarm alarm = (Alarm)row.DataBoundItem;
+                if (selectedAlarms.Exists(al => al.Type == alarm.Type & al.Source == alarm.Source))
+                {
+                    row.Selected = true;
+                }
+            }
+        }
 
         void deAlarmManager_AlarmsChangedEvent(object sender, AlarmsChangedEventArgs e)
         {
@@ -145,35 +163,8 @@ namespace fifthSem
                 });
                 return;
             }
-            List<Alarm> selectedAlarms = new List<Alarm>();
-            foreach (DataGridViewRow row in dGAllAlarms.SelectedRows)
-            {
-                selectedAlarms.Add((Alarm)row.DataBoundItem);
-            }
-            dGAllAlarms.DataSource = e.Alarms;
-            dGAllAlarms.ClearSelection();
-            foreach (DataGridViewRow row in dGAllAlarms.Rows)
-            {
-                if (selectedAlarms.Contains((Alarm)row.DataBoundItem))
-                {
-                    row.Selected = true;
-                }
-            }
-
-            selectedAlarms.Clear();
-            foreach (DataGridViewRow row in dGFilteredAlarms.SelectedRows)
-            {
-                selectedAlarms.Add((Alarm)row.DataBoundItem);
-            }
-            dGFilteredAlarms.DataSource = e.FilteredAlarms;
-            dGFilteredAlarms.ClearSelection();
-            foreach (DataGridViewRow row in dGFilteredAlarms.Rows)
-            {
-                if (selectedAlarms.Contains((Alarm)row.DataBoundItem))
-                {
-                    row.Selected = true;
-                }
-            }
+            updateAlarmgrid(dGAllAlarms, e.Alarms);
+            updateAlarmgrid(dGFilteredAlarms, e.FilteredAlarms);
         }
         private void startDataEngine()
         {
@@ -281,27 +272,27 @@ namespace fifthSem
             mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempHi,
                                                                          AlarmTypes.TempHiHi,
                                                                          AlarmTypes.TempLo,
-                                                                         AlarmTypes.TempLoLo }, !chkTempAlarms.Checked);
+                                                                         AlarmTypes.TempLoLo }, chkTempAlarms.Checked);
         }
 
         private void chkRS485Alarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.RS485Error }, !chkRS485Alarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.RS485Error }, chkRS485Alarms.Checked);
         }
 
         private void chkHostMissingAlarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.HostMissing }, !chkHostMissingAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.HostMissing }, chkHostMissingAlarms.Checked);
         }
 
         private void chkCOMAlarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.SerialPortError }, !chkCOMAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.SerialPortError }, chkCOMAlarms.Checked);
         }
 
         private void chkTempMissingAlarm_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempMissing }, !chkTempMissingAlarm.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempMissing }, chkTempMissingAlarm.Checked);
         }
 
         private void btnApply_Click(object sender, EventArgs e)

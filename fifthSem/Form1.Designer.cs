@@ -29,9 +29,9 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
             this.button1 = new System.Windows.Forms.Button();
@@ -73,6 +73,7 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
+            this.label9 = new System.Windows.Forms.Label();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
@@ -132,25 +133,26 @@
             // 
             // chrtTemp
             // 
-            chartArea2.AxisX.LabelStyle.Format = "HH:mm:ss";
-            chartArea2.Name = "ChartArea1";
-            this.chrtTemp.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chrtTemp.Legends.Add(legend2);
+            chartArea1.AxisX.LabelStyle.Format = "HH:mm:ss";
+            chartArea1.Name = "ChartArea1";
+            this.chrtTemp.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chrtTemp.Legends.Add(legend1);
             this.chrtTemp.Location = new System.Drawing.Point(8, 244);
             this.chrtTemp.Name = "chrtTemp";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.Legend = "Legend1";
-            series2.Name = "SerTemp";
-            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            this.chrtTemp.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Legend = "Legend1";
+            series1.Name = "SerTemp";
+            series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            this.chrtTemp.Series.Add(series1);
             this.chrtTemp.Size = new System.Drawing.Size(745, 218);
             this.chrtTemp.TabIndex = 13;
             this.chrtTemp.Text = "chrtTemp";
             // 
             // groupBox2
             // 
+            this.groupBox2.Controls.Add(this.label9);
             this.groupBox2.Controls.Add(this.chkTempMissingAlarm);
             this.groupBox2.Controls.Add(this.chkCOMAlarms);
             this.groupBox2.Controls.Add(this.chkHostMissingAlarms);
@@ -168,9 +170,7 @@
             // chkTempMissingAlarm
             // 
             this.chkTempMissingAlarm.AutoSize = true;
-            this.chkTempMissingAlarm.Checked = true;
-            this.chkTempMissingAlarm.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkTempMissingAlarm.Location = new System.Drawing.Point(614, 151);
+            this.chkTempMissingAlarm.Location = new System.Drawing.Point(614, 203);
             this.chkTempMissingAlarm.Name = "chkTempMissingAlarm";
             this.chkTempMissingAlarm.Size = new System.Drawing.Size(114, 17);
             this.chkTempMissingAlarm.TabIndex = 16;
@@ -181,9 +181,7 @@
             // chkCOMAlarms
             // 
             this.chkCOMAlarms.AutoSize = true;
-            this.chkCOMAlarms.Checked = true;
-            this.chkCOMAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkCOMAlarms.Location = new System.Drawing.Point(614, 128);
+            this.chkCOMAlarms.Location = new System.Drawing.Point(614, 180);
             this.chkCOMAlarms.Name = "chkCOMAlarms";
             this.chkCOMAlarms.Size = new System.Drawing.Size(76, 17);
             this.chkCOMAlarms.TabIndex = 15;
@@ -194,9 +192,7 @@
             // chkHostMissingAlarms
             // 
             this.chkHostMissingAlarms.AutoSize = true;
-            this.chkHostMissingAlarms.Checked = true;
-            this.chkHostMissingAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkHostMissingAlarms.Location = new System.Drawing.Point(614, 105);
+            this.chkHostMissingAlarms.Location = new System.Drawing.Point(614, 157);
             this.chkHostMissingAlarms.Name = "chkHostMissingAlarms";
             this.chkHostMissingAlarms.Size = new System.Drawing.Size(109, 17);
             this.chkHostMissingAlarms.TabIndex = 14;
@@ -207,9 +203,7 @@
             // chkRS485Alarms
             // 
             this.chkRS485Alarms.AutoSize = true;
-            this.chkRS485Alarms.Checked = true;
-            this.chkRS485Alarms.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkRS485Alarms.Location = new System.Drawing.Point(614, 82);
+            this.chkRS485Alarms.Location = new System.Drawing.Point(614, 134);
             this.chkRS485Alarms.Name = "chkRS485Alarms";
             this.chkRS485Alarms.Size = new System.Drawing.Size(85, 17);
             this.chkRS485Alarms.TabIndex = 13;
@@ -220,9 +214,7 @@
             // chkTempAlarms
             // 
             this.chkTempAlarms.AutoSize = true;
-            this.chkTempAlarms.Checked = true;
-            this.chkTempAlarms.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.chkTempAlarms.Location = new System.Drawing.Point(614, 59);
+            this.chkTempAlarms.Location = new System.Drawing.Point(614, 111);
             this.chkTempAlarms.Name = "chkTempAlarms";
             this.chkTempAlarms.Size = new System.Drawing.Size(112, 17);
             this.chkTempAlarms.TabIndex = 12;
@@ -529,6 +521,15 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(614, 92);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(77, 13);
+            this.label9.TabIndex = 17;
+            this.label9.Text = "Filtered alarms:";
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -603,6 +604,7 @@
         private System.Windows.Forms.Button btnSetLimits;
         private System.Windows.Forms.TextBox txtDebug;
         private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Label label9;
     }
 }
 
