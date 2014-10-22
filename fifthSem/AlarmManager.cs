@@ -11,6 +11,7 @@ using System.IO;
 namespace fifthSem
 {
     public delegate void AlarmsChangedEventHandler(object sender, AlarmsChangedEventArgs e);
+    public delegate void TempLimitsChangedEventHandler(object sender, TempLimitsChangedEventArgs e);
     public class AlarmsChangedEventArgs : EventArgs
     {
         public List<Alarm> Alarms;
@@ -19,6 +20,20 @@ namespace fifthSem
         {
             this.Alarms = Alarms;
             this.FilteredAlarms = FilteredAlarms;
+        }
+    }
+    public class TempLimitsChangedEventArgs : EventArgs
+    {
+        public double LoLoLimit { get; set; }
+        public double LoLimit { get; set; }
+        public double HiLimit { get; set; }
+        public double HiHiLimit { get; set; }
+        public TempLimitsChangedEventArgs(double LoLo, double Lo, double Hi, double HiHi)
+        {
+            this.LoLoLimit = LoLo;
+            this.LoLimit = Lo;
+            this.HiLimit = Hi;
+            this.HiHiLimit = HiHi;
         }
     }
     public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8, TempMissing = 9 }
@@ -47,6 +62,7 @@ namespace fifthSem
     /// The AlarmManager communicates with other SCP hosts automatically to keep alarms updated
     /// Subscribe to AlarmsChangedEvent to be notified when there is a change in the alarm list
     /// Use SetAlarmStatus to set an alarm to High/Low or Acked state.
+    /// 
     /// </summary>
     public class AlarmManager
     {
@@ -55,10 +71,67 @@ namespace fifthSem
         private System.Timers.Timer timer;
         private bool updateNeeded = false;
         private List<AlarmTypes> filteredAlarms;
-        public double TempLimitLoLo { get; set; }
-        public double TempLimitLo { get; set; }
-        public double TempLimitHi { get; set; }
-        public double TempLimitHiHi { get; set; }
+        private double tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi;
+        public double TempLimitLoLo 
+        {
+            get
+            {
+                return tempLimitLoLo;
+            }
+            set
+            {
+                if (value != tempLimitLoLo)
+                {
+                    tempLimitLoLo = value;
+                    SendTempUpdate();
+                }
+            }
+        }
+        public double TempLimitLo
+        {
+            get
+            {
+                return tempLimitLo;
+            }
+            set
+            {
+                if (value != tempLimitLo)
+                {
+                    tempLimitLo = value;
+                    SendTempUpdate();
+                }
+            }
+        }
+        public double TempLimitHi
+        {
+            get
+            {
+                return tempLimitHi;
+            }
+            set
+            {
+                if (value != tempLimitHi)
+                {
+                    tempLimitHi = value;
+                    SendTempUpdate();
+                }
+            }
+        }
+        public double TempLimitHiHi
+        {
+            get
+            {
+                return tempLimitHiHi;
+            }
+            set
+            {
+                if (value != tempLimitHiHi)
+                {
+                    tempLimitHiHi = value;
+                    SendTempUpdate();
+                }
+            }
+        }
         public List<Alarm> AllAlarms
         {
             get
@@ -80,7 +153,20 @@ namespace fifthSem
                 AlarmsChangedEvent(this, new AlarmsChangedEventArgs(AllAlarms, FilteredAlarms));
             }
         }
+        private void OnTempLimitsChanged()
+        {
+            if (TempLimitsChangedEvent != null)
+            {
+                TempLimitsChangedEvent(this, new TempLimitsChangedEventArgs(TempLimitLoLo, TempLimitLo, TempLimitHi, TempLimitHiHi));
+            }
+        }
+        private void SendTempUpdate()
+        {
+            ScpAlarmLimitBroadcast scpPacket = new ScpAlarmLimitBroadcast(tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi);
+            scpHost.SendBroadcastAsync(scpPacket);
+        }
         public event AlarmsChangedEventHandler AlarmsChangedEvent;
+        public event TempLimitsChangedEventHandler TempLimitsChangedEvent;
 
         public AlarmManager(ScadaCommunicationProtocol.ScpHost scpHost)
         {
@@ -92,6 +178,10 @@ namespace fifthSem
             scpHost.ScpConnectionStatusEvent += ScpConnectionStatusEvent;
             alarms = new List<Alarm>();
             filteredAlarms = new List<AlarmTypes>();
+            tempLimitLoLo = -10000;
+            tempLimitLo = -10000;
+            tempLimitHi = 10000;
+            tempLimitHiHi = 10000;
         }
 
         public void SetAlarmFilter(AlarmTypes type, bool filter)
@@ -142,6 +232,8 @@ namespace fifthSem
             if (e.Connected)
             {
                 setMasterAlarmStatus(AlarmTypes.HostMissing, AlarmCommand.Low, e.Name);
+                SendTempUpdate();
+                updateNeeded = true;
             }
             else
             {
@@ -156,41 +248,38 @@ namespace fifthSem
             {
                 if (temp > TempLimitHiHi)
                 {
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
                 }
                 else if (temp > TempLimitHi)
                 {
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
 
-                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLoLo)
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
                 }
                 else if (temp < TempLimitLo)
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
 
-                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
                 }
                 else
                 {
-                    SetAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
-                    SetAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
+                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
                 }
+                SendAlarmUpdate();
             }
         }
 
         public async Task<bool> SetAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource = "")
         {
             bool result = false;
-            if (Type.ToString().Contains("Temp"))
-            {
-                alarmsource = "Process";
-            }
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
                 setMasterAlarmStatus(Type, Command, alarmsource);
@@ -236,6 +325,15 @@ namespace fifthSem
 
         private void setMasterAlarmStatus(AlarmTypes Type, AlarmCommand Command, string alarmsource="")
         {
+            // Failsafe to makesure only alarms are set when master
+            if (scpHost.ScpConnectionStatus != ScpConnectionStatus.Master)
+            {
+                return;
+            }
+            if (Type.ToString().Contains("Temp"))
+            {
+                alarmsource = "Process";
+            }
             Alarm alarm = alarms.FirstOrDefault(a => a.Type == Type && a.Source == alarmsource);
             bool changed = false;
             switch (Command)
@@ -287,9 +385,9 @@ namespace fifthSem
                     }
                     break;
             }
-            updateNeeded = true;
             if (changed)
             {
+                updateNeeded = true;
                 OnAlarmsChanged();
             }
         }
@@ -315,6 +413,15 @@ namespace fifthSem
             {
                 // Receiving updated alarm list from master
                 deSerializeAlarms(((ScpAlarmBroadcast)e.Packet).Alarm);
+            }
+            else if (e.Packet is ScpAlarmLimitBroadcast)
+            {
+                ScpAlarmLimitBroadcast packet = (ScpAlarmLimitBroadcast)e.Packet;
+                tempLimitLoLo = packet.LoLoLimit;
+                tempLimitLo = packet.LoLimit;
+                tempLimitHi = packet.HiLimit;
+                tempLimitHiHi = packet.HiHiLimit;
+                OnTempLimitsChanged();
             }
         }
 

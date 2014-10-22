@@ -23,10 +23,80 @@ namespace fifthSem
             mDataEngine.mNewTempHandler += DataEngineNewTempHandler;
             mDataEngine.mNewTcpStatusHandler += DataEngineNewTcpStatusHandler;
             mDataEngine.mNewComStatusHandler += DataEngineNewComStatusHandler;
-            //mDataEngine.mAlarmEventHandler += DataEngineAlarmEventHandler;
             mDataEngine.deAlarmManager.AlarmsChangedEvent += deAlarmManager_AlarmsChangedEvent;
+            mDataEngine.deAlarmManager.TempLimitsChangedEvent += deAlarmManager_TempLimitsChangedEvent;
             mDataEngine.deScpHost.MessageEvent += scpHost_MessageEvent;
+        }
 
+        void LoadConfig()
+        {
+            for (int i = 0; i < cmbCOM.Items.Count;i++ )
+            {
+                if (Properties.Settings.Default.COMPort == ((string)cmbCOM.Items[i]))
+                {
+                    cmbCOM.SelectedIndex = i;
+                }
+            }
+            for (int i = 0; i < cmbMPri.Items.Count; i++)
+            {
+                if (Properties.Settings.Default.Priority.ToString() == ((string)cmbMPri.Items[i])
+                    || ((Properties.Settings.Default.Priority == 0) && (((string)cmbMPri.Items[i]) == "None")))
+                {
+                    cmbMPri.SelectedIndex = i;
+                }
+            }
+            mDataEngine.deAlarmManager.TempLimitLoLo = Properties.Settings.Default.TempLimitLoLo;
+            mDataEngine.deAlarmManager.TempLimitLo = Properties.Settings.Default.TempLimitLo;
+            mDataEngine.deAlarmManager.TempLimitHi = Properties.Settings.Default.TempLimitHi;
+            mDataEngine.deAlarmManager.TempLimitHiHi = Properties.Settings.Default.TempLimitHiHi;
+            txtLLLvl.Text = Properties.Settings.Default.TempLimitLoLo.ToString();
+            txtLLvl.Text = Properties.Settings.Default.TempLimitLo.ToString();
+            txtHLvl.Text = Properties.Settings.Default.TempLimitHi.ToString();
+            txtHHLvl.Text = Properties.Settings.Default.TempLimitHiHi.ToString();
+
+            startDataEngine();
+        }
+
+        void SaveConfig()
+        {
+            if (cmbCOM.SelectedItem != null)
+                Properties.Settings.Default.COMPort = (string)cmbCOM.SelectedItem;
+            if (cmbMPri.SelectedItem != null && ((string)cmbMPri.SelectedItem) != "None")
+                Properties.Settings.Default.Priority = Convert.ToInt16((string)cmbMPri.SelectedItem);
+
+            Properties.Settings.Default.Save();
+        }
+
+        void SaveTempLimits()
+        {
+            double hi, hihi, lo, lolo;
+            if (Double.TryParse(txtHLvl.Text, out hi) && Double.TryParse(txtHHLvl.Text, out hihi) && Double.TryParse(txtLLvl.Text, out lo) && Double.TryParse(txtLLLvl.Text, out lolo))
+            {
+                Properties.Settings.Default.TempLimitLoLo = lolo;
+                Properties.Settings.Default.TempLimitLo = lo;
+                Properties.Settings.Default.TempLimitHi = hi;
+                Properties.Settings.Default.TempLimitHiHi = hihi;
+            }
+            Properties.Settings.Default.Save();
+        }
+
+        void deAlarmManager_TempLimitsChangedEvent(object sender, TempLimitsChangedEventArgs e)
+        {
+            if (this.InvokeRequired) // InvokeRequired is true if event is triggered from another thread
+            {
+                // In this case trigger the event using BeginInvoke which makes sure the event is handled by the main thread
+                this.BeginInvoke((MethodInvoker)delegate
+                {
+                    deAlarmManager_TempLimitsChangedEvent(sender, e);
+                });
+                return;
+            }
+            txtLLLvl.Text = e.LoLoLimit.ToString();
+            txtLLvl.Text = e.LoLimit.ToString();
+            txtHLvl.Text = e.HiLimit.ToString();
+            txtHHLvl.Text = e.HiHiLimit.ToString();
+
+            SaveTempLimits();
         }
 
         void scpHost_MessageEvent(object sender, ScadaCommunicationProtocol.MessageEventArgs e)
@@ -60,11 +130,15 @@ namespace fifthSem
         }
         private void startDataEngine()
         {
-            mDataEngine.Start();
-        }
-        private void startDataEngine(string s,int p)
-        {
-            mDataEngine.Start(s,p);
+            if (cmbCOM.SelectedItem != null && ((string)cmbCOM.SelectedItem) != "None"
+                && cmbMPri.SelectedItem != null && ((string)cmbMPri.SelectedItem) != "None")
+            {
+                mDataEngine.Start(cmbCOM.SelectedItem.ToString(), Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
+            }
+            else
+            {
+                mDataEngine.Start();
+            }
         }
 
         private void DataEngineNewTempHandler(object sender, DataEngineNewTempArgs e)
@@ -92,20 +166,15 @@ namespace fifthSem
                 return;
             }
             txtTCP_IP_MS.Text = e.status;
+            if (e.status == "Slave")
+            {
+                button1.Enabled = true;
+            }
+            else
+            {
+                button1.Enabled = false;
+            }
         }
-
-        //private void DataEngineAlarmEventHandler(object sender, DataEngineAlarmEventArgs e)
-        //{
-        //    if (this.InvokeRequired)
-        //    {
-        //        this.BeginInvoke((MethodInvoker)delegate
-        //        {
-        //            DataEngineAlarmEventHandler(sender, e);
-        //        });
-        //        return;
-        //    }
-        //    txtAlarmList.AppendText(DateTime.Now + e.alarmType + e.alarmCommand + e.alarmSender + "\n");
-        //}
 
         private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
         {
@@ -120,40 +189,15 @@ namespace fifthSem
             txtRS485_MS.Text = e.status;
         }
 
-
-
-        private void btnSetLimits_Click(object sender, EventArgs e)
-        {
-            double hHTemp, hTemp, lTemp, lLTemp;
-            if ((Double.TryParse(txtHHLvl.Text, out hHTemp)) & (Double.TryParse(txtHLvl.Text, out hTemp)) & (Double.TryParse(txtLLvl.Text, out lTemp)) & (Double.TryParse(txtLLLvl.Text, out lLTemp)))
-            { }
-            else
-            {
-                MessageBox.Show("Incorrect Values!","" ,MessageBoxButtons.OK);
-            }
-        }
-
-        private void btnSetPri_Click(object sender, EventArgs e)
-        {
-            //Program.setPrio(Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString(),Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            else startDataEngine();
-        }
-
-    
         public void serialPortNames()
         {
             // Get a list of serial port names. 
-
-            string[] ports = SerialPort.GetPortNames();
+            List<string> ports;
+            ports = SerialPort.GetPortNames().ToList();
+            ports.Insert(0, "None");
+            
             cmbCOM.DataSource = ports;
         }
-
-        private void cmbCOM_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            //Program.setPort(cmbCOM.SelectedItem.ToString());
-        }
-
         private void dGAllAlarms_RowPrePaint(object sender, DataGridViewRowPrePaintEventArgs e)
         {
             DataGridView dg = (DataGridView)sender;
@@ -211,8 +255,8 @@ namespace fifthSem
 
         private void btnApply_Click(object sender, EventArgs e)
         {
-            if (cmbCOM.SelectedItem != null) startDataEngine(cmbCOM.SelectedItem.ToString(), Convert.ToInt32(cmbMPri.SelectedItem.ToString()));
-            else startDataEngine();
+            SaveConfig();
+            MessageBox.Show("Program needs to be restarted if COM and/or Master priority settings are changed!");
         }
 
         private void btnSetLimits_Click_1(object sender, EventArgs e)
@@ -224,6 +268,7 @@ namespace fifthSem
                 mDataEngine.deAlarmManager.TempLimitHiHi = hihi;
                 mDataEngine.deAlarmManager.TempLimitLo = lo;
                 mDataEngine.deAlarmManager.TempLimitLoLo = lolo;
+                SaveTempLimits();
             }
         }
 
@@ -249,6 +294,16 @@ namespace fifthSem
                     mDataEngine.deAlarmManager.SetAlarmStatus(alarm.Type, AlarmCommand.Ack, alarm.Source);
                 }
             }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            mDataEngine.deScpHost.RequestSwitchToMaster();
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            LoadConfig();
         }
              
     }

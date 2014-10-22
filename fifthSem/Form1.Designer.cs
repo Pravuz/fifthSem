@@ -29,11 +29,13 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea5 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend5 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series5 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.button1 = new System.Windows.Forms.Button();
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.chkTempMissingAlarm = new System.Windows.Forms.CheckBox();
@@ -71,7 +73,6 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.txtDebug = new System.Windows.Forms.TextBox();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
@@ -99,6 +100,7 @@
             // 
             // tabPageCC
             // 
+            this.tabPageCC.Controls.Add(this.button1);
             this.tabPageCC.Controls.Add(this.txtDebug);
             this.tabPageCC.Controls.Add(this.chrtTemp);
             this.tabPageCC.Controls.Add(this.groupBox2);
@@ -110,21 +112,39 @@
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
             // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(622, 296);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(99, 23);
+            this.button1.TabIndex = 15;
+            this.button1.Text = "Switch to master";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(760, 7);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(303, 455);
+            this.txtDebug.TabIndex = 14;
+            // 
             // chrtTemp
             // 
-            chartArea5.AxisX.LabelStyle.Format = "HH:mm:ss";
-            chartArea5.Name = "ChartArea1";
-            this.chrtTemp.ChartAreas.Add(chartArea5);
-            legend5.Name = "Legend1";
-            this.chrtTemp.Legends.Add(legend5);
+            chartArea2.AxisX.LabelStyle.Format = "HH:mm:ss";
+            chartArea2.Name = "ChartArea1";
+            this.chrtTemp.ChartAreas.Add(chartArea2);
+            legend2.Name = "Legend1";
+            this.chrtTemp.Legends.Add(legend2);
             this.chrtTemp.Location = new System.Drawing.Point(8, 244);
             this.chrtTemp.Name = "chrtTemp";
-            series5.ChartArea = "ChartArea1";
-            series5.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series5.Legend = "Legend1";
-            series5.Name = "SerTemp";
-            series5.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            this.chrtTemp.Series.Add(series5);
+            series2.ChartArea = "ChartArea1";
+            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series2.Legend = "Legend1";
+            series2.Name = "SerTemp";
+            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            this.chrtTemp.Series.Add(series2);
             this.chrtTemp.Size = new System.Drawing.Size(745, 218);
             this.chrtTemp.TabIndex = 13;
             this.chrtTemp.Text = "chrtTemp";
@@ -393,6 +413,7 @@
             // 
             this.cmbMPri.FormattingEnabled = true;
             this.cmbMPri.Items.AddRange(new object[] {
+            "None",
             "1",
             "2",
             "3",
@@ -507,14 +528,6 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
-            // txtDebug
-            // 
-            this.txtDebug.Location = new System.Drawing.Point(760, 7);
-            this.txtDebug.Multiline = true;
-            this.txtDebug.Name = "txtDebug";
-            this.txtDebug.Size = new System.Drawing.Size(303, 455);
-            this.txtDebug.TabIndex = 14;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -523,6 +536,7 @@
             this.Controls.Add(this.tabCCALEL);
             this.Name = "Form1";
             this.Text = "Skadd";
+            this.Load += new System.EventHandler(this.Form1_Load);
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
             this.tabPageCC.PerformLayout();
@@ -587,6 +601,7 @@
         private System.Windows.Forms.TextBox txtHHLvl;
         private System.Windows.Forms.Button btnSetLimits;
         private System.Windows.Forms.TextBox txtDebug;
+        private System.Windows.Forms.Button button1;
     }
 }
 
