@@ -89,6 +89,9 @@ namespace ScadaCommunicationProtocol
                         case ScpPacketTypes.AlarmBroadcast:
                             packet = new ScpAlarmBroadcast(bytes, length);
                             break;
+                        case ScpPacketTypes.AlarmFilterBroadcast:
+                            packet = new ScpAlarmFilterBroadcast(bytes, length);
+                            break;
                         case ScpPacketTypes.AlarmLimitBroadcast:
                             packet = new ScpAlarmLimitBroadcast(bytes, length);
                             break;
