@@ -283,6 +283,7 @@ namespace fifthSem
             {
                 setMasterAlarmStatus(AlarmTypes.HostMissing, AlarmCommand.Low, e.Name);
                 SendTempUpdate();
+                SendFilterUpdate();
                 updateNeeded = true;
             }
             else
