@@ -177,11 +177,11 @@ namespace fifthSem
         /// This event is triggered when DataEngine does not recieve a new temperaturereading after a given timeinterval. 
         /// Initiates a RequestSwitchToMaster, which will only be completed if the computer is currently a Slave.
         /// </summary>
-        private void mTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timerAlarmHigh = true;
-            mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
-            mScpHost.RequestSwitchToMaster();
+            await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
+            await mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
@@ -191,12 +191,12 @@ namespace fifthSem
         /// If this computer is master, a broadcast will be sent with the temperature
         /// Writes data to log.
         /// </summary>
-        private void TempEventHandler(object sender, RS485.TempEventArgs e)
+        private async void TempEventHandler(object sender, RS485.TempEventArgs e)
         {
             if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(e.temp));
             if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
-                mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
+                await mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
                 mAlarmManager.SetTemp(e.temp);
             }
             writeTempToLog(e.temp);
@@ -207,7 +207,7 @@ namespace fifthSem
         /// If this computer is master, comTrouble will be set to true.
         /// This allows for a new computer with com to assume role as Master.
         /// </summary>
-        private void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
+        private async void AlarmEventHandler(object sender, RS485.AlarmEventArgs e)
         {
             comErr = false;
             switch (e.alarm)
@@ -215,16 +215,16 @@ namespace fifthSem
                 case RS485.AlarmStatus.ComportFailure:
                     if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
                     comErr = true;
-                    mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
+                    await mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.RS485Failure:
                     if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) comTrouble = true;
                     comErr = true;
-                    mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
+                    await mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.High, ScpHost.Name);
                     break;
                 case RS485.AlarmStatus.None:
-                    mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
-                    mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    await mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                    await mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
                     break;
             }
         }
@@ -361,14 +361,14 @@ namespace fifthSem
         /// 
         /// </summary>
         /// <param name="s"></param>
-        private void writeTempToLog(double s)
+        private async void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
             mTimer.Stop();
             mTimer.Start();
             if (timerAlarmHigh)
             {
-                mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
+                await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
                 timerAlarmHigh = false;
             }
             
