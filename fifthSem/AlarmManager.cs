@@ -417,9 +417,13 @@ namespace fifthSem
                     }
                     else
                     {
-                        if (!alarm.High)
+                        if (alarm.Filtered != filteredAlarms.Contains(Type))
                         {
                             alarm.Filtered = filteredAlarms.Contains(Type);
+                            changed = true;
+                        }
+                        if (!alarm.High)
+                        {
                             alarm.High = true;
                             changed = true;
                         }
