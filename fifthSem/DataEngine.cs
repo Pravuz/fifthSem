@@ -65,6 +65,7 @@ namespace fifthSem
     {
         private string portNr, logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
+        private double lastLoggedTemp = 0;
         private bool timerAlarmHigh, deStarted, comTrouble, comErr;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
@@ -389,7 +390,11 @@ namespace fifthSem
             {
                 Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
             }
-            writeToFile(now + ";" + s);
+            if (s != lastLoggedTemp)
+            {
+                writeToFile(now + ";" + s);
+                lastLoggedTemp = s;
+            }
             lastLog = now;
         }
 

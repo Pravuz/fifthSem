@@ -80,7 +80,7 @@ namespace fifthSem
         private System.Timers.Timer timer;
         private bool updateNeeded = false;
         private List<AlarmTypes> filteredAlarms;
-        private double tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi;
+        private double tempLimitLoLo, tempLimitLo, tempLimitHi, tempLimitHiHi, lastTemp;
         public double TempLimitLoLo 
         {
             get
@@ -93,6 +93,9 @@ namespace fifthSem
                 {
                     tempLimitLoLo = value;
                     SendTempUpdate();
+                    double temp = lastTemp;
+                    lastTemp = 0;
+                    SetTemp(temp);
                 }
             }
         }
@@ -108,6 +111,9 @@ namespace fifthSem
                 {
                     tempLimitLo = value;
                     SendTempUpdate();
+                    double temp = lastTemp;
+                    lastTemp = 0;
+                    SetTemp(temp);
                 }
             }
         }
@@ -123,6 +129,9 @@ namespace fifthSem
                 {
                     tempLimitHi = value;
                     SendTempUpdate();
+                    double temp = lastTemp;
+                    lastTemp = 0;
+                    SetTemp(temp);
                 }
             }
         }
@@ -138,6 +147,9 @@ namespace fifthSem
                 {
                     tempLimitHiHi = value;
                     SendTempUpdate();
+                    double temp = lastTemp;
+                    lastTemp = 0;
+                    SetTemp(temp);
                 }
             }
         }
@@ -295,35 +307,49 @@ namespace fifthSem
 
         public void SetTemp(double temp)
         {
+            if (temp == lastTemp)
+            {
+                return;
+            }
+            lastTemp = temp;
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
                 if (temp > TempLimitHiHi)
                 {
                     setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.High);
                 }
-                else if (temp > TempLimitHi)
+                else if (temp < (TempLimitHiHi - 0.5))
                 {
                     setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
+                }
 
+                if (temp > TempLimitHi)
+                {
                     setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.High);
                 }
-                else if (temp < TempLimitLoLo)
+                else if (temp < (TempLimitHi - 0.5))
+                {
+                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
+                }
+
+                if (temp < TempLimitLoLo)
                 {
                     setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.High);
                 }
-                else if (temp < TempLimitLo)
+                else if (temp > (TempLimitLoLo + 0.5))
                 {
                     setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
+                }
 
+                if (temp < TempLimitLo)
+                {
                     setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.High);
                 }
-                else
+                else if (temp > (TempLimitLo + 0.5))
                 {
-                    setMasterAlarmStatus(AlarmTypes.TempLoLo, AlarmCommand.Low);
                     setMasterAlarmStatus(AlarmTypes.TempLo, AlarmCommand.Low);
-                    setMasterAlarmStatus(AlarmTypes.TempHi, AlarmCommand.Low);
-                    setMasterAlarmStatus(AlarmTypes.TempHiHi, AlarmCommand.Low);
                 }
+
                 SendAlarmUpdate();
             }
         }
