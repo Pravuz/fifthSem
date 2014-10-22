@@ -181,6 +181,7 @@ namespace fifthSem
             if(mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
             if(mScpHost.CanBeMaster && mScpHost.ScpConnectionStatus != ScpConnectionStatus.Master) await mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
+            mTimer.Stop();
         }
 
         #region ComEvents
@@ -243,11 +244,9 @@ namespace fifthSem
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     break;
                 case RS485.ConnectionStatus.Waiting:
-                    mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Waiting"));
                     break;
                 case RS485.ConnectionStatus.Stop:
-                    mTimer.Stop();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Stop"));
                     break;
             }
