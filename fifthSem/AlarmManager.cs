@@ -11,6 +11,7 @@ using System.IO;
 namespace fifthSem
 {
     public delegate void AlarmsChangedEventHandler(object sender, AlarmsChangedEventArgs e);
+    public delegate void AlarmFiltersChangedEventHandler(object sender, AlarmFiltersChangedEventArgs e);
     public delegate void TempLimitsChangedEventHandler(object sender, TempLimitsChangedEventArgs e);
     public class AlarmsChangedEventArgs : EventArgs
     {
@@ -20,6 +21,14 @@ namespace fifthSem
         {
             this.Alarms = Alarms;
             this.FilteredAlarms = FilteredAlarms;
+        }
+    }
+    public class AlarmFiltersChangedEventArgs : EventArgs
+    {
+        public List<AlarmTypes> Filters;
+        public AlarmFiltersChangedEventArgs(List<AlarmTypes> Filters)
+        {
+            this.Filters = Filters;
         }
     }
     public class TempLimitsChangedEventArgs : EventArgs
@@ -37,7 +46,7 @@ namespace fifthSem
         }
     }
     public enum AlarmTypes { TempLoLo = 1, TempLo = 2, TempHi = 3, TempHiHi = 4, TempChangeFast = 5, HostMissing = 6, RS485Error = 7, SerialPortError = 8, TempMissing = 9 }
-    public enum AlarmCommand { High=1, Low=2, Ack=3 }
+    public enum AlarmCommand { High=1, Low=2, Ack=3, FilterOn=4, FilterOff=5 }
 
     [Serializable]
     public class Alarm
@@ -153,6 +162,13 @@ namespace fifthSem
                 AlarmsChangedEvent(this, new AlarmsChangedEventArgs(AllAlarms, FilteredAlarms));
             }
         }
+        private void OnAlarmFiltersChanged()
+        {
+            if (AlarmFiltersChangedEvent != null)
+            {
+                AlarmFiltersChangedEvent(this, new AlarmFiltersChangedEventArgs(filteredAlarms));
+            }
+        }
         private void OnTempLimitsChanged()
         {
             if (TempLimitsChangedEvent != null)
@@ -166,6 +182,7 @@ namespace fifthSem
             scpHost.SendBroadcastAsync(scpPacket);
         }
         public event AlarmsChangedEventHandler AlarmsChangedEvent;
+        public event AlarmFiltersChangedEventHandler AlarmFiltersChangedEvent;
         public event TempLimitsChangedEventHandler TempLimitsChangedEvent;
 
         public AlarmManager(ScadaCommunicationProtocol.ScpHost scpHost)
@@ -184,7 +201,34 @@ namespace fifthSem
             tempLimitHiHi = 10000;
         }
 
-        public void SetAlarmFilter(AlarmTypes type, bool filter)
+        public async Task<bool> SetAlarmFilter(AlarmTypes type, bool filter)
+        {
+            bool result = false;
+            if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                setMasterAlarmFilter(type, filter);
+                SendFilterUpdate();
+                result = true;
+            }
+            else if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Slave)
+            {
+                try
+                {
+                    ScpAlarmRequest scpPacket = new ScpAlarmRequest(type, filter ? AlarmCommand.FilterOn : AlarmCommand.FilterOff, "");
+                    ScpPacket response = await scpHost.SendRequestAsync(scpPacket);
+                    if (response != null && response is ScpAlarmResponse)
+                    {
+                        result = ((ScpAlarmResponse)response).Ok;
+                    }
+                }
+                catch
+                {
+                }
+            }
+            return result;
+        }
+
+        private void setMasterAlarmFilter(AlarmTypes type, bool filter)
         {
             if (filter)
             {
@@ -313,6 +357,16 @@ namespace fifthSem
             ms.Close();
             return bytes;
         }
+        public byte[] serializeFilters()
+        {
+            byte[] bytes;
+            MemoryStream ms = new MemoryStream();
+            BinaryFormatter formatter = new BinaryFormatter();
+            formatter.Serialize(ms, filteredAlarms);
+            bytes = ms.ToArray();
+            ms.Close();
+            return bytes;
+        }
 
         private void deSerializeAlarms(byte[] bytes)
         {
@@ -320,6 +374,14 @@ namespace fifthSem
             BinaryFormatter formatter = new BinaryFormatter();
             alarms = (List<Alarm>)formatter.Deserialize(ms);
             OnAlarmsChanged();
+            ms.Close();
+        }
+        private void deSerializeFilters(byte[] bytes)
+        {
+            MemoryStream ms = new MemoryStream(bytes);
+            BinaryFormatter formatter = new BinaryFormatter();
+            filteredAlarms = (List<AlarmTypes>)formatter.Deserialize(ms);
+            //OnAlarmsChanged();
             ms.Close();
         }
 
@@ -401,18 +463,37 @@ namespace fifthSem
                 updateNeeded = false;
             }
         }
+        private void SendFilterUpdate()
+        {
+            ScpAlarmFilterBroadcast packet = new ScpAlarmFilterBroadcast(serializeFilters());
+            scpHost.SendBroadcastAsync(packet).ConfigureAwait(false);
+        }
         private void PacketHandler(object sender, ScpPacketEventArgs e)
         {
             if (e.Packet is ScpAlarmRequest && scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
                 ScpAlarmRequest scpRequest = (ScpAlarmRequest)e.Packet;
-                SetAlarmStatus(scpRequest.AlarmType, scpRequest.AlarmCommand, scpRequest.AlarmSource).ConfigureAwait(false);
+                if (scpRequest.AlarmCommand == AlarmCommand.Ack || 
+                    scpRequest.AlarmCommand == AlarmCommand.High || 
+                    scpRequest.AlarmCommand == AlarmCommand.Low)
+                {
+                    SetAlarmStatus(scpRequest.AlarmType, scpRequest.AlarmCommand, scpRequest.AlarmSource).ConfigureAwait(false);
+                }
+                else
+                {
+                    SetAlarmFilter(scpRequest.AlarmType, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                }
                 e.Response = new ScpAlarmResponse(true);
             }
             else if (e.Packet is ScpAlarmBroadcast && scpHost.ScpConnectionStatus == ScpConnectionStatus.Slave)
             {
                 // Receiving updated alarm list from master
                 deSerializeAlarms(((ScpAlarmBroadcast)e.Packet).Alarm);
+            }
+            else if (e.Packet is ScpAlarmFilterBroadcast && scpHost.ScpConnectionStatus == ScpConnectionStatus.Slave)
+            {
+                // Receiving updated alarm filter list from master
+                deSerializeFilters(((ScpAlarmFilterBroadcast)e.Packet).Filters);
             }
             else if (e.Packet is ScpAlarmLimitBroadcast)
             {

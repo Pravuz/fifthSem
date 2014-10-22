@@ -25,7 +25,17 @@ namespace fifthSem
             mDataEngine.mNewComStatusHandler += DataEngineNewComStatusHandler;
             mDataEngine.deAlarmManager.AlarmsChangedEvent += deAlarmManager_AlarmsChangedEvent;
             mDataEngine.deAlarmManager.TempLimitsChangedEvent += deAlarmManager_TempLimitsChangedEvent;
+            mDataEngine.deAlarmManager.AlarmFiltersChangedEvent += deAlarmManager_AlarmFiltersChangedEvent;
             mDataEngine.deScpHost.MessageEvent += scpHost_MessageEvent;
+        }
+
+        void deAlarmManager_AlarmFiltersChangedEvent(object sender, AlarmFiltersChangedEventArgs e)
+        {
+            chkTempAlarms.Checked = !e.Filters.Contains(AlarmTypes.TempHi);
+            chkHostMissingAlarms.Checked = !e.Filters.Contains(AlarmTypes.HostMissing);
+            chkRS485Alarms.Checked = !e.Filters.Contains(AlarmTypes.RS485Error);
+            chkCOMAlarms.Checked = !e.Filters.Contains(AlarmTypes.SerialPortError);
+            chkTempMissingAlarm.Checked = !e.Filters.Contains(AlarmTypes.TempMissing);
         }
 
         void LoadConfig()
@@ -194,6 +204,10 @@ namespace fifthSem
             // Get a list of serial port names. 
             List<string> ports;
             ports = SerialPort.GetPortNames().ToList();
+            if (!ports.Contains(Properties.Settings.Default.COMPort))
+            {
+                ports.Insert(0,Properties.Settings.Default.COMPort);
+            }
             ports.Insert(0, "None");
             
             cmbCOM.DataSource = ports;
