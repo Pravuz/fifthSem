@@ -241,30 +241,30 @@ namespace fifthSem
 
         private void chkTempAlarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHi, !chkTempAlarms.Checked);
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempHiHi, !chkTempAlarms.Checked);
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLo, !chkTempAlarms.Checked);
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempLoLo, !chkTempAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempHi,
+                                                                         AlarmTypes.TempHiHi,
+                                                                         AlarmTypes.TempLo,
+                                                                         AlarmTypes.TempLoLo }, !chkTempAlarms.Checked);
         }
 
         private void chkRS485Alarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.RS485Error, !chkRS485Alarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.RS485Error }, !chkRS485Alarms.Checked);
         }
 
         private void chkHostMissingAlarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.HostMissing, !chkHostMissingAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.HostMissing }, !chkHostMissingAlarms.Checked);
         }
 
         private void chkCOMAlarms_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.SerialPortError, !chkCOMAlarms.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.SerialPortError }, !chkCOMAlarms.Checked);
         }
 
         private void chkTempMissingAlarm_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(AlarmTypes.TempMissing, !chkTempMissingAlarm.Checked);
+            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempMissing }, !chkTempMissingAlarm.Checked);
         }
 
         private void btnApply_Click(object sender, EventArgs e)

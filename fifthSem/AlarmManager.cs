@@ -201,12 +201,15 @@ namespace fifthSem
             tempLimitHiHi = 10000;
         }
 
-        public async Task<bool> SetAlarmFilter(AlarmTypes type, bool filter)
+        public async Task<bool> SetAlarmFilter(AlarmTypes[] types, bool filter)
         {
             bool result = false;
             if (scpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
-                setMasterAlarmFilter(type, filter);
+                foreach (AlarmTypes type in types)
+                {
+                    setMasterAlarmFilter(type, filter);
+                }
                 SendFilterUpdate();
                 result = true;
             }
@@ -214,11 +217,14 @@ namespace fifthSem
             {
                 try
                 {
-                    ScpAlarmRequest scpPacket = new ScpAlarmRequest(type, filter ? AlarmCommand.FilterOn : AlarmCommand.FilterOff, "");
-                    ScpPacket response = await scpHost.SendRequestAsync(scpPacket);
-                    if (response != null && response is ScpAlarmResponse)
+                    foreach (AlarmTypes type in types)
                     {
-                        result = ((ScpAlarmResponse)response).Ok;
+                        ScpAlarmRequest scpPacket = new ScpAlarmRequest(type, filter ? AlarmCommand.FilterOn : AlarmCommand.FilterOff, "");
+                        ScpPacket response = await scpHost.SendRequestAsync(scpPacket);
+                        if (response != null && response is ScpAlarmResponse)
+                        {
+                            result = ((ScpAlarmResponse)response).Ok;
+                        }
                     }
                 }
                 catch
@@ -481,7 +487,7 @@ namespace fifthSem
                 }
                 else
                 {
-                    SetAlarmFilter(scpRequest.AlarmType, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                    SetAlarmFilter(new AlarmTypes[] { scpRequest.AlarmType }, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
                 }
                 e.Response = new ScpAlarmResponse(true);
             }
