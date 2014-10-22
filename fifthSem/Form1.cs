@@ -307,7 +307,8 @@ namespace fifthSem
         private void btnApply_Click(object sender, EventArgs e)
         {
             SaveConfig();
-            MessageBox.Show("Program needs to be restarted if COM and/or Master priority settings are changed!");
+            mDataEngine.stop();
+            startDataEngine();
         }
 
         private void btnSetLimits_Click_1(object sender, EventArgs e)

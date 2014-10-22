@@ -163,7 +163,7 @@ namespace fifthSem
         /// <summary>
         /// Making sure everything stops when told. 
         /// </summary>
-        private void stop()
+        public void stop()
         {
             deStarted = false;
             mTimer.Stop();
@@ -385,15 +385,11 @@ namespace fifthSem
                 timerAlarmHigh = false;
             }
 
-            if (lastLog != null)
+            if (lastLog.AddSeconds(10) < now)
             {
-                if (lastLog.AddSeconds(10) < now)
-                {
-                    Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
-                    writeToFile(now + ";" + s);
-                }
+                Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
             }
-            else writeToFile(now + ";" + s);
+            writeToFile(now + ";" + s);
             lastLog = now;
         }
 
