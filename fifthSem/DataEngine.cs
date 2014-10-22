@@ -179,7 +179,7 @@ namespace fifthSem
         {
             timerAlarmHigh = true;
             await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
-            await mScpHost.RequestSwitchToMaster();
+            if(mScpHost.CanBeMaster) await mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
         }
 
@@ -377,10 +377,10 @@ namespace fifthSem
                 if (lastLog.AddSeconds(10) < now)
                 {
                     Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
-                    writeToFile("Temperature reading " + DateTime.Now + ": " + s);
+                    writeToFile("Temperature reading " + now + ": " + s);
                 }
             }
-            else writeToFile("Temperature reading " + DateTime.Now + ": " + s);
+            else writeToFile("Temperature reading " + now + ": " + s);
             lastLog = now;
         }
 
