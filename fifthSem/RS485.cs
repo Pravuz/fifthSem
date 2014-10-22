@@ -117,6 +117,8 @@ namespace RS485
             getTempThread = new Thread(new ThreadStart(GetTemp));
             getTempThread.IsBackground = true;
 
+            try
+            {
             // RS485 settings
             serialPort = new SerialPort();
             serialPort.PortName = SetPortName;
@@ -130,12 +132,10 @@ namespace RS485
             serialPort.ReadTimeout = 500;
             serialPort.WriteTimeout = 500;
 
-            try
-            {
-                // Subscribe to event and open serial port for data
-                serialPort.DataReceived +=
-                    new SerialDataReceivedEventHandler(serialPortDataReceived);
-                serialPort.Open();
+            // Subscribe to event and open serial port for data
+            serialPort.DataReceived +=
+                new SerialDataReceivedEventHandler(serialPortDataReceived);
+            serialPort.Open();
             }
             catch
             {
