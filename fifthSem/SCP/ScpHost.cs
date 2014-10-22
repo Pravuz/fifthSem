@@ -209,13 +209,19 @@ namespace ScadaCommunicationProtocol
         public async Task SendBroadcastAsync(ScpPacket packet)
         {
             //ScpPacket packet = new ScpPacket(ScpTcpPacketTypes.Broadcast, data);
-            if (scpConnectionStatus == ScpConnectionStatus.Slave)
+            try
             {
-                await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
+                if (scpConnectionStatus == ScpConnectionStatus.Slave)
+                {
+                    await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
+                }
+                else if (scpConnectionStatus == ScpConnectionStatus.Master)
+                {
+                    await scpTcpServer.BroadcastAsync(packet).ConfigureAwait(false);
+                }
             }
-            else if (scpConnectionStatus == ScpConnectionStatus.Master)
+            catch
             {
-                await scpTcpServer.BroadcastAsync(packet).ConfigureAwait(false);
             }
         }
 
@@ -229,11 +235,17 @@ namespace ScadaCommunicationProtocol
         public async Task<ScpPacket> SendRequestAsync(ScpPacket request)
         {
             ScpPacket response = null;
-            if (scpConnectionStatus == ScpConnectionStatus.Slave)
+            try
             {
-                //ScpTcpPacket packet = new ScpTcpPacket(ScpTcpPacketTypes.Request, data);
-                //ScpTcpPacket response = await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
-                response = await scpTcpClient.SendAsync(request).ConfigureAwait(false);
+                if (scpConnectionStatus == ScpConnectionStatus.Slave)
+                {
+                    //ScpTcpPacket packet = new ScpTcpPacket(ScpTcpPacketTypes.Request, data);
+                    //ScpTcpPacket response = await scpTcpClient.SendAsync(packet).ConfigureAwait(false);
+                    response = await scpTcpClient.SendAsync(request).ConfigureAwait(false);
+                }
+            }
+            catch
+            {
             }
             return response;
         }
