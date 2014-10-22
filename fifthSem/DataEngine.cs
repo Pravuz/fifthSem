@@ -63,7 +63,7 @@ namespace fifthSem
     /// </summary>
     class DataEngine
     {
-        private string logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
+        private string portNr, logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
         private bool timerAlarmHigh, deStarted, comTrouble, comErr;
         private ScpHost mScpHost;
@@ -126,11 +126,6 @@ namespace fifthSem
         {
             if (!deStarted)
             {
-                ////subscribe to events
-                //mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-                //mScpHost.PacketEvent += PacketHandler;
-                //mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
-
                 //starts protocols
                 mScpHost.Start();
                 deStarted = true;
@@ -147,17 +142,15 @@ namespace fifthSem
         {
             if (!deStarted)
             {
-                //subscribe to events
-                //mScpHost.ScpConnectionStatusEvent += ConnectionStatusHandler;
-                //mScpHost.PacketEvent += PacketHandler;
+                //subscribe to additional events
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
                 mRS485.TempHandler += TempEventHandler;
                 mRS485.AlarmHandler += AlarmEventHandler;
-                //mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
                 //starts protocols
                 mScpHost.Start();
-                mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
+                this.portNr = portNr;
+                //mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
 
                 //passing priority to protocols. 
                 mRS485.ComputerAddress = ComputerPriority;
@@ -277,9 +270,11 @@ namespace fifthSem
             switch (e.Status)
             {
                 case ScpConnectionStatus.Master:
+                    if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
                     break;
                 case ScpConnectionStatus.Slave:
+                    if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
                     logSync();
                     break;
