@@ -304,6 +304,7 @@ namespace fifthSem
                 case ScpConnectionStatus.Master:
                     if (e.Packet is ScpLogFileRequest)
                     {
+                        logFileCheck(); //updates filesize.
                         if (logFileSize > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
                         else
@@ -341,6 +342,7 @@ namespace fifthSem
         /// </summary>
         private async void logSync()
         {
+            logFileCheck(); //updates filesize.
             ScpPacket response = null;
             try
             {
@@ -388,17 +390,18 @@ namespace fifthSem
                 if (lastLog.AddSeconds(10) < now)
                 {
                     Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
-                    writeToFile("Temperature reading " + now + ": " + s);
+                    writeToFile(now + ";" + s);
                 }
             }
-            else writeToFile("Temperature reading " + now + ": " + s);
+            else writeToFile(now + ";" + s);
             lastLog = now;
         }
 
         /// <summary>
-        /// 
+        /// Appends the desired text to the logfile. 
+        /// If the logfile does not exists, it will be created. 
         /// </summary>
-        /// <param name="s"></param>
+        /// <param name="s">Desired text to append.</param>
         private void writeToFile(string s)
         {
             try
@@ -416,7 +419,10 @@ namespace fifthSem
         }
 
         /// <summary>
-        /// 
+        /// Checkings wether or not a log file allready exists
+        /// If it exists the filesize will be fetched. 
+        /// If the folder that will contain the logfile does not exists,
+        /// it will be created. 
         /// </summary>
         private void logFileCheck()
         {
@@ -430,6 +436,8 @@ namespace fifthSem
             {
                 Directory.CreateDirectory(logFolder);
             }
+            //no need to create the file, 
+            //it will be created in the writeToFile method if it does not allready exists.
         }
         #endregion
     }
