@@ -17,7 +17,7 @@ namespace fifthSem
     public delegate void DataEngineNewTcpStatusHandler(object sender, DataEngineNewTcpStatusArgs e);
     public delegate void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e);
     public delegate void DataEngineMessageHandler(object sender, DataEngineMessageArgs e);
-    
+
     public class DataEngineNewTempArgs : EventArgs
     {
         public double temp;
@@ -73,7 +73,7 @@ namespace fifthSem
         private AlarmManager mAlarmManager;
         //this AlarmManager object is used in the GUI. 
         //Since it's created here, it needs to be available for the GUI via this GET
-        public AlarmManager deAlarmManager { get{return mAlarmManager; } }
+        public AlarmManager deAlarmManager { get { return mAlarmManager; } }
         public ScpHost deScpHost { get { return mScpHost; } }
 
         public event DataEngineNewTempHandler mNewTempHandler;
@@ -178,8 +178,12 @@ namespace fifthSem
         private async void mTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             timerAlarmHigh = true;
-            if(mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
-            if(mScpHost.CanBeMaster && mScpHost.ScpConnectionStatus != ScpConnectionStatus.Master) await mScpHost.RequestSwitchToMaster();
+            if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master) await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.High);
+            if (mScpHost.CanBeMaster && 
+                mScpHost.ScpConnectionStatus != ScpConnectionStatus.Master && 
+                (mRS485.connectionStatus_extern == RS485.ConnectionStatus.Slave || 
+                mRS485.connectionStatus_extern == RS485.ConnectionStatus.Master)) 
+                await mScpHost.RequestSwitchToMaster();
             Debug.WriteLine(this, "DataEngine: TempMissing!");
             mTimer.Stop();
         }
@@ -298,7 +302,7 @@ namespace fifthSem
             switch (mScpHost.ScpConnectionStatus)
             {
                 case ScpConnectionStatus.Master:
-                    if(e.Packet is ScpLogFileRequest)
+                    if (e.Packet is ScpLogFileRequest)
                     {
                         if (logFileSize > ((ScpLogFileRequest)e.Packet).FileSize)
                             e.Response = new ScpLogFileResponse(File.ReadAllBytes(logFilePath));
@@ -312,8 +316,8 @@ namespace fifthSem
                     }
                     break;
                 case ScpConnectionStatus.Slave:
-                    if (e.Packet is ScpTempBroadcast && 
-                        (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master || 
+                    if (e.Packet is ScpTempBroadcast &&
+                        (mRS485.connectionStatus_extern != RS485.ConnectionStatus.Master ||
                         mRS485.connectionStatus_extern != RS485.ConnectionStatus.Slave || comErr))
                     {
                         if (mNewTempHandler != null) mNewTempHandler(this, new DataEngineNewTempArgs(((ScpTempBroadcast)e.Packet).Temp));
@@ -337,7 +341,7 @@ namespace fifthSem
         /// </summary>
         private async void logSync()
         {
-            ScpPacket response = null; 
+            ScpPacket response = null;
             try
             {
                 response = await mScpHost.SendRequestAsync(new ScpLogFileRequest(logFileSize));
@@ -378,7 +382,7 @@ namespace fifthSem
                 await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
                 timerAlarmHigh = false;
             }
-            
+
             if (lastLog != null)
             {
                 if (lastLog.AddSeconds(10) < now)
