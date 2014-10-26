@@ -29,13 +29,16 @@
         private void InitializeComponent()
         {
             this.components = new System.ComponentModel.Container();
-            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea2 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
-            System.Windows.Forms.DataVisualization.Charting.Legend legend2 = new System.Windows.Forms.DataVisualization.Charting.Legend();
-            System.Windows.Forms.DataVisualization.Charting.Series series2 = new System.Windows.Forms.DataVisualization.Charting.Series();
+            System.Windows.Forms.DataVisualization.Charting.ChartArea chartArea1 = new System.Windows.Forms.DataVisualization.Charting.ChartArea();
+            System.Windows.Forms.DataVisualization.Charting.Legend legend1 = new System.Windows.Forms.DataVisualization.Charting.Legend();
+            System.Windows.Forms.DataVisualization.Charting.Series series1 = new System.Windows.Forms.DataVisualization.Charting.Series();
             this.tabCCALEL = new System.Windows.Forms.TabControl();
             this.tabPageCC = new System.Windows.Forms.TabPage();
+            this.Temperature = new System.Windows.Forms.GroupBox();
+            this.txtTemperature = new System.Windows.Forms.TextBox();
             this.chrtTemp = new System.Windows.Forms.DataVisualization.Charting.Chart();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.label9 = new System.Windows.Forms.Label();
             this.chkTempMissingAlarm = new System.Windows.Forms.CheckBox();
             this.chkCOMAlarms = new System.Windows.Forms.CheckBox();
             this.chkHostMissingAlarms = new System.Windows.Forms.CheckBox();
@@ -48,6 +51,9 @@
             this.Acknowledge2 = new System.Windows.Forms.Button();
             this.dGAllAlarms = new System.Windows.Forms.DataGridView();
             this.tabPageCF = new System.Windows.Forms.TabPage();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.txtDebug = new System.Windows.Forms.TextBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
             this.label8 = new System.Windows.Forms.Label();
             this.cmbCOM = new System.Windows.Forms.ComboBox();
@@ -69,14 +75,9 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.label9 = new System.Windows.Forms.Label();
-            this.txtDebug = new System.Windows.Forms.TextBox();
-            this.Temperature = new System.Windows.Forms.GroupBox();
-            this.txtTemperature = new System.Windows.Forms.TextBox();
-            this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
+            this.Temperature.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).BeginInit();
             this.groupBox2.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dGFilteredAlarms)).BeginInit();
@@ -84,10 +85,9 @@
             this.groupBox3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dGAllAlarms)).BeginInit();
             this.tabPageCF.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.groupBox5.SuspendLayout();
             this.groupBox1.SuspendLayout();
-            this.Temperature.SuspendLayout();
-            this.groupBox4.SuspendLayout();
             this.SuspendLayout();
             // 
             // tabCCALEL
@@ -113,21 +113,40 @@
             this.tabPageCC.Text = "ControlCenter";
             this.tabPageCC.UseVisualStyleBackColor = true;
             // 
+            // Temperature
+            // 
+            this.Temperature.Controls.Add(this.txtTemperature);
+            this.Temperature.Controls.Add(this.chrtTemp);
+            this.Temperature.Location = new System.Drawing.Point(8, 248);
+            this.Temperature.Name = "Temperature";
+            this.Temperature.Size = new System.Drawing.Size(884, 217);
+            this.Temperature.TabIndex = 21;
+            this.Temperature.TabStop = false;
+            this.Temperature.Text = "Temperature";
+            // 
+            // txtTemperature
+            // 
+            this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.txtTemperature.Location = new System.Drawing.Point(23, 30);
+            this.txtTemperature.Name = "txtTemperature";
+            this.txtTemperature.Size = new System.Drawing.Size(100, 62);
+            this.txtTemperature.TabIndex = 0;
+            // 
             // chrtTemp
             // 
-            chartArea2.AxisX.LabelStyle.Format = "HH:mm:ss";
-            chartArea2.Name = "ChartArea1";
-            this.chrtTemp.ChartAreas.Add(chartArea2);
-            legend2.Name = "Legend1";
-            this.chrtTemp.Legends.Add(legend2);
+            chartArea1.AxisX.LabelStyle.Format = "HH:mm:ss";
+            chartArea1.Name = "ChartArea1";
+            this.chrtTemp.ChartAreas.Add(chartArea1);
+            legend1.Name = "Legend1";
+            this.chrtTemp.Legends.Add(legend1);
             this.chrtTemp.Location = new System.Drawing.Point(129, 19);
             this.chrtTemp.Name = "chrtTemp";
-            series2.ChartArea = "ChartArea1";
-            series2.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
-            series2.Legend = "Legend1";
-            series2.Name = "SerTemp";
-            series2.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
-            this.chrtTemp.Series.Add(series2);
+            series1.ChartArea = "ChartArea1";
+            series1.ChartType = System.Windows.Forms.DataVisualization.Charting.SeriesChartType.Line;
+            series1.Legend = "Legend1";
+            series1.Name = "SerTemp";
+            series1.XValueType = System.Windows.Forms.DataVisualization.Charting.ChartValueType.DateTime;
+            this.chrtTemp.Series.Add(series1);
             this.chrtTemp.Size = new System.Drawing.Size(735, 192);
             this.chrtTemp.TabIndex = 13;
             this.chrtTemp.Text = "chrtTemp";
@@ -149,6 +168,15 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "Alarm";
             // 
+            // label9
+            // 
+            this.label9.AutoSize = true;
+            this.label9.Location = new System.Drawing.Point(765, 92);
+            this.label9.Name = "label9";
+            this.label9.Size = new System.Drawing.Size(77, 13);
+            this.label9.TabIndex = 17;
+            this.label9.Text = "Filtered alarms:";
+            // 
             // chkTempMissingAlarm
             // 
             this.chkTempMissingAlarm.AutoSize = true;
@@ -158,7 +186,7 @@
             this.chkTempMissingAlarm.TabIndex = 16;
             this.chkTempMissingAlarm.Text = "TempMissingAlarm";
             this.chkTempMissingAlarm.UseVisualStyleBackColor = true;
-            this.chkTempMissingAlarm.CheckedChanged += new System.EventHandler(this.chkTempMissingAlarm_CheckedChanged);
+            this.chkTempMissingAlarm.CheckedChanged += new System.EventHandler(this.chkAlarmFilter_CheckedChanged);
             // 
             // chkCOMAlarms
             // 
@@ -169,7 +197,7 @@
             this.chkCOMAlarms.TabIndex = 15;
             this.chkCOMAlarms.Text = "COMAlarm";
             this.chkCOMAlarms.UseVisualStyleBackColor = true;
-            this.chkCOMAlarms.CheckedChanged += new System.EventHandler(this.chkCOMAlarms_CheckedChanged);
+            this.chkCOMAlarms.CheckedChanged += new System.EventHandler(this.chkAlarmFilter_CheckedChanged);
             // 
             // chkHostMissingAlarms
             // 
@@ -180,7 +208,7 @@
             this.chkHostMissingAlarms.TabIndex = 14;
             this.chkHostMissingAlarms.Text = "HostMissingAlarm";
             this.chkHostMissingAlarms.UseVisualStyleBackColor = true;
-            this.chkHostMissingAlarms.CheckedChanged += new System.EventHandler(this.chkHostMissingAlarms_CheckedChanged);
+            this.chkHostMissingAlarms.CheckedChanged += new System.EventHandler(this.chkAlarmFilter_CheckedChanged);
             // 
             // chkRS485Alarms
             // 
@@ -191,7 +219,7 @@
             this.chkRS485Alarms.TabIndex = 13;
             this.chkRS485Alarms.Text = "RS485Alarm";
             this.chkRS485Alarms.UseVisualStyleBackColor = true;
-            this.chkRS485Alarms.CheckedChanged += new System.EventHandler(this.chkRS485Alarms_CheckedChanged);
+            this.chkRS485Alarms.CheckedChanged += new System.EventHandler(this.chkAlarmFilter_CheckedChanged);
             // 
             // chkTempAlarms
             // 
@@ -202,7 +230,7 @@
             this.chkTempAlarms.TabIndex = 12;
             this.chkTempAlarms.Text = "TemperatureAlarm";
             this.chkTempAlarms.UseVisualStyleBackColor = true;
-            this.chkTempAlarms.CheckedChanged += new System.EventHandler(this.chkTempAlarms_CheckedChanged);
+            this.chkTempAlarms.CheckedChanged += new System.EventHandler(this.chkAlarmFilter_CheckedChanged);
             // 
             // dGFilteredAlarms
             // 
@@ -287,6 +315,34 @@
             this.tabPageCF.TabIndex = 2;
             this.tabPageCF.Text = "Config";
             this.tabPageCF.UseVisualStyleBackColor = true;
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.button1);
+            this.groupBox4.Controls.Add(this.txtDebug);
+            this.groupBox4.Location = new System.Drawing.Point(706, 3);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(359, 462);
+            this.groupBox4.TabIndex = 24;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "Debug info";
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(20, 427);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(99, 23);
+            this.button1.TabIndex = 24;
+            this.button1.Text = "Switch to master";
+            this.button1.UseVisualStyleBackColor = true;
+            // 
+            // txtDebug
+            // 
+            this.txtDebug.Location = new System.Drawing.Point(20, 19);
+            this.txtDebug.Multiline = true;
+            this.txtDebug.Name = "txtDebug";
+            this.txtDebug.Size = new System.Drawing.Size(333, 402);
+            this.txtDebug.TabIndex = 23;
             // 
             // groupBox5
             // 
@@ -485,62 +541,6 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
-            // label9
-            // 
-            this.label9.AutoSize = true;
-            this.label9.Location = new System.Drawing.Point(765, 92);
-            this.label9.Name = "label9";
-            this.label9.Size = new System.Drawing.Size(77, 13);
-            this.label9.TabIndex = 17;
-            this.label9.Text = "Filtered alarms:";
-            // 
-            // txtDebug
-            // 
-            this.txtDebug.Location = new System.Drawing.Point(20, 19);
-            this.txtDebug.Multiline = true;
-            this.txtDebug.Name = "txtDebug";
-            this.txtDebug.Size = new System.Drawing.Size(333, 402);
-            this.txtDebug.TabIndex = 23;
-            // 
-            // Temperature
-            // 
-            this.Temperature.Controls.Add(this.txtTemperature);
-            this.Temperature.Controls.Add(this.chrtTemp);
-            this.Temperature.Location = new System.Drawing.Point(8, 248);
-            this.Temperature.Name = "Temperature";
-            this.Temperature.Size = new System.Drawing.Size(884, 217);
-            this.Temperature.TabIndex = 21;
-            this.Temperature.TabStop = false;
-            this.Temperature.Text = "Temperature";
-            // 
-            // txtTemperature
-            // 
-            this.txtTemperature.Font = new System.Drawing.Font("Microsoft Sans Serif", 36F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.txtTemperature.Location = new System.Drawing.Point(23, 30);
-            this.txtTemperature.Name = "txtTemperature";
-            this.txtTemperature.Size = new System.Drawing.Size(100, 62);
-            this.txtTemperature.TabIndex = 0;
-            // 
-            // groupBox4
-            // 
-            this.groupBox4.Controls.Add(this.button1);
-            this.groupBox4.Controls.Add(this.txtDebug);
-            this.groupBox4.Location = new System.Drawing.Point(706, 3);
-            this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(359, 462);
-            this.groupBox4.TabIndex = 24;
-            this.groupBox4.TabStop = false;
-            this.groupBox4.Text = "Debug info";
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(20, 427);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(99, 23);
-            this.button1.TabIndex = 24;
-            this.button1.Text = "Switch to master";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -552,6 +552,8 @@
             this.Load += new System.EventHandler(this.Form1_Load);
             this.tabCCALEL.ResumeLayout(false);
             this.tabPageCC.ResumeLayout(false);
+            this.Temperature.ResumeLayout(false);
+            this.Temperature.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.chrtTemp)).EndInit();
             this.groupBox2.ResumeLayout(false);
             this.groupBox2.PerformLayout();
@@ -560,14 +562,12 @@
             this.groupBox3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dGAllAlarms)).EndInit();
             this.tabPageCF.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.groupBox5.ResumeLayout(false);
             this.groupBox5.PerformLayout();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
-            this.Temperature.ResumeLayout(false);
-            this.Temperature.PerformLayout();
-            this.groupBox4.ResumeLayout(false);
-            this.groupBox4.PerformLayout();
             this.ResumeLayout(false);
 
         }

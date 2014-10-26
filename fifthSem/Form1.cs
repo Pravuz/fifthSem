@@ -41,11 +41,23 @@ namespace fifthSem
                 return;
             }
 
+            // This is needed to make sure CheckedChanged is not triggered when .Checked is updated here.
+            // CheckedChange should only be triggered when changed from GUI
+            foreach (CheckBox chk in tabCCALEL.TabPages["tabPageCC"].Controls["groupBox2"].Controls.OfType<CheckBox>())
+            {
+                chk.CheckedChanged -= chkAlarmFilter_CheckedChanged;
+            }
+
             chkTempAlarms.Checked = e.Filters.Contains(AlarmTypes.TempHi);
             chkHostMissingAlarms.Checked = e.Filters.Contains(AlarmTypes.HostMissing);
             chkRS485Alarms.Checked = e.Filters.Contains(AlarmTypes.RS485Error);
             chkCOMAlarms.Checked = e.Filters.Contains(AlarmTypes.SerialPortError);
             chkTempMissingAlarm.Checked = e.Filters.Contains(AlarmTypes.TempMissing);
+
+            foreach (CheckBox chk in tabCCALEL.TabPages["tabPageCC"].Controls["groupBox2"].Controls.OfType<CheckBox>())
+            {
+                chk.CheckedChanged += chkAlarmFilter_CheckedChanged;
+            }
         }
 
         void LoadConfig()
@@ -267,32 +279,30 @@ namespace fifthSem
             }
         }
 
-        private void chkTempAlarms_CheckedChanged(object sender, EventArgs e)
+        private void chkAlarmFilter_CheckedChanged(object sender, EventArgs e)
         {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempHi,
-                                                                         AlarmTypes.TempHiHi,
-                                                                         AlarmTypes.TempLo,
-                                                                         AlarmTypes.TempLoLo }, chkTempAlarms.Checked);
-        }
-
-        private void chkRS485Alarms_CheckedChanged(object sender, EventArgs e)
-        {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.RS485Error }, chkRS485Alarms.Checked);
-        }
-
-        private void chkHostMissingAlarms_CheckedChanged(object sender, EventArgs e)
-        {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.HostMissing }, chkHostMissingAlarms.Checked);
-        }
-
-        private void chkCOMAlarms_CheckedChanged(object sender, EventArgs e)
-        {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.SerialPortError }, chkCOMAlarms.Checked);
-        }
-
-        private void chkTempMissingAlarm_CheckedChanged(object sender, EventArgs e)
-        {
-            mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempMissing }, chkTempMissingAlarm.Checked);
+            CheckBox chk = (CheckBox)sender;
+            switch (chk.Name)
+            {
+                case "chkTempAlarms":
+                    mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempHi,
+                                                                                 AlarmTypes.TempHiHi,
+                                                                                 AlarmTypes.TempLo,
+                                                                                 AlarmTypes.TempLoLo }, chkTempAlarms.Checked);
+                    break;
+                case "chkRS485Alarms":
+                    mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.RS485Error }, chkRS485Alarms.Checked);
+                    break;
+                case "chkCOMAlarms":
+                    mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.SerialPortError }, chkCOMAlarms.Checked);
+                    break;
+                case "chkHostMissingAlarms":
+                    mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.HostMissing }, chkHostMissingAlarms.Checked);
+                    break;
+                case "chkTempMissingAlarm":
+                    mDataEngine.deAlarmManager.SetAlarmFilter(new AlarmTypes[] { AlarmTypes.TempMissing }, chkTempMissingAlarm.Checked);
+                    break;
+            }
         }
 
         private void btnApply_Click(object sender, EventArgs e)
