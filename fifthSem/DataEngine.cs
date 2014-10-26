@@ -105,15 +105,6 @@ namespace fifthSem
             mScpHost.PacketEvent += PacketHandler;
             mRS485.ConnectionStatusHandler += ConnectionStatusRS485Handler;
 
-            //Add hosts allowed to connect to the network. 
-            //Hardcoded temporarily. 
-            mScpHost.AddHost("OUROBORUS-PC");
-            mScpHost.AddHost("WIN-9S0NTTTKCR6");
-            mScpHost.AddHost("WALDEJER-PC");
-            mScpHost.AddHost("ANDERS");
-            mScpHost.AddHost("HILDE-PC");
-            mScpHost.AddHost("FREDRIK");
-
             //initial booleans used to avoid multiple startups and masters.
             deStarted = false;
             comTrouble = false;

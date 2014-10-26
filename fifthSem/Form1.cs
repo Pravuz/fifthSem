@@ -85,6 +85,7 @@ namespace fifthSem
             txtLLvl.Text = Properties.Settings.Default.TempLimitLo.ToString();
             txtHLvl.Text = Properties.Settings.Default.TempLimitHi.ToString();
             txtHHLvl.Text = Properties.Settings.Default.TempLimitHiHi.ToString();
+            txtHosts.Text = Properties.Settings.Default.Hosts.Replace(",", System.Environment.NewLine);
 
             startDataEngine();
         }
@@ -95,7 +96,7 @@ namespace fifthSem
                 Properties.Settings.Default.COMPort = (string)cmbCOM.SelectedItem;
             if (cmbMPri.SelectedItem != null && ((string)cmbMPri.SelectedItem) != "None")
                 Properties.Settings.Default.Priority = Convert.ToInt16((string)cmbMPri.SelectedItem);
-
+            Properties.Settings.Default.Hosts = txtHosts.Text.Replace(System.Environment.NewLine, ",").Trim();
             Properties.Settings.Default.Save();
         }
 
@@ -180,6 +181,11 @@ namespace fifthSem
         }
         private void startDataEngine()
         {
+            mDataEngine.deScpHost.ClearHosts();
+            foreach (string host in Properties.Settings.Default.Hosts.Split(new Char[] { ',' }))
+            {
+                mDataEngine.deScpHost.AddHost(host);
+            }
             if (cmbCOM.SelectedItem != null && ((string)cmbCOM.SelectedItem) != "None"
                 && cmbMPri.SelectedItem != null && ((string)cmbMPri.SelectedItem) != "None")
             {

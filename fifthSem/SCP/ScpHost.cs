@@ -271,6 +271,11 @@ namespace ScadaCommunicationProtocol
         {
             scpTcpServer.Hosts.Add(Hostname);
         }
+
+        public void ClearHosts()
+        {
+            scpTcpServer.Hosts.Clear();
+        }
         /// <summary>
         /// Detects master/slave role of this host on the network
         /// </summary>

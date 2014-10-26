@@ -94,5 +94,17 @@ namespace fifthSem.Properties {
                 this["TempLimitHiHi"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string Hosts {
+            get {
+                return ((string)(this["Hosts"]));
+            }
+            set {
+                this["Hosts"] = value;
+            }
+        }
     }
 }
