@@ -68,7 +68,7 @@ namespace ScadaCommunicationProtocol
                         if ((e.Response is ScpMasterResponse) && (((ScpMasterResponse)e.Response).Ok)) 
                         {
                             // In this case the master has agreed to let another master take over
-                            scpHost.cancelMaster.Cancel();
+                            scpHost.CancelMaster();
                         }
                     }
                 }

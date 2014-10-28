@@ -159,6 +159,7 @@ namespace fifthSem
             deStarted = false;
             mTimer.Stop();
             mRS485.stopCom();
+            mScpHost.Stop();
         }
 
         /// <summary>
@@ -289,6 +290,9 @@ namespace fifthSem
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
+                    break;
+                case ScpConnectionStatus.Stopped:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Stopped"));
                     break;
                 default:
                     break;

@@ -9,7 +9,7 @@ using System.Net;
 
 namespace ScadaCommunicationProtocol
 {
-    public enum ScpConnectionStatus { Waiting, Master, Slave };
+    public enum ScpConnectionStatus { Stopped, Waiting, Master, Slave };
 
     public delegate void MessageEventHandler(object sender, MessageEventArgs e);
     public delegate void ScpConnectionStatusEventHandler(object sender, ScpConnectionStatusEventArgs e);
@@ -75,7 +75,7 @@ namespace ScadaCommunicationProtocol
         /// </summary>
         public event SlaveConnectionEventHandler SlaveConnectionEvent;
 
-        private ScpConnectionStatus scpConnectionStatus = ScpConnectionStatus.Waiting;
+        private ScpConnectionStatus scpConnectionStatus = ScpConnectionStatus.Stopped;
 
 
         private ScpUdpServer scpUdpServer;
@@ -251,9 +251,29 @@ namespace ScadaCommunicationProtocol
         }
         public void Start()
         {
-            if (checkTask == null)
+            if (scpConnectionStatus == ScpConnectionStatus.Stopped)
             {
+                setConnectionStatus(ScpConnectionStatus.Waiting);
                 checkTask = Task.Run(() => checkScpConnection());
+            }
+        }
+
+        public void Stop()
+        {
+            if (scpConnectionStatus != ScpConnectionStatus.Stopped)
+            {
+                setConnectionStatus(ScpConnectionStatus.Stopped);
+                cancelMaster.Cancel();
+                checkTask.Wait();
+            }
+        }
+
+        private void CancelMaster()
+        {
+            if (scpConnectionStatus == ScpConnectionStatus.Master)
+            {
+                setConnectionStatus(ScpConnectionStatus.Waiting);
+                cancelMaster.Cancel();
             }
         }
         /// <summary>
@@ -286,87 +306,96 @@ namespace ScadaCommunicationProtocol
         {
             ScpMasterDiscoverReply reply;
             int delay = 1000;
-            while (true)
+            try
             {
-                OnMessageEvent(this, new MessageEventArgs("Trying to discover master...."));
-                if ((!forceMaster) && (scpUdpClient.DiscoverMaster(out reply)))
+                while (scpConnectionStatus != ScpConnectionStatus.Stopped)
                 {
-                    // Take slave role and connect to master
-                    masterIPAddress = reply.MasterIPEndPoint.Address;
-                    OnMessageEvent(this, new MessageEventArgs("Taking role as slave, connecting to master: " + reply.FromHostName + " (" + masterIPAddress.ToString() + ")"));
-                    scpTcpClient.Hostname = reply.FromHostName;
-
-                    // Open TCP connection to master
-                    bool connected = await scpTcpClient.Connect(reply.MasterIPEndPoint.Address, ScpHost.TcpServerPort, ScpHost.Name);
-                    if (connected)
+                    OnMessageEvent(this, new MessageEventArgs("Trying to discover master...."));
+                    if ((!forceMaster) && (scpUdpClient.DiscoverMaster(out reply)))
                     {
-                        delay = 1000;
-                        setConnectionStatus(ScpConnectionStatus.Slave);
-                        try
+                        // Take slave role and connect to master
+                        masterIPAddress = reply.MasterIPEndPoint.Address;
+                        OnMessageEvent(this, new MessageEventArgs("Taking role as slave, connecting to master: " + reply.FromHostName + " (" + masterIPAddress.ToString() + ")"));
+                        scpTcpClient.Hostname = reply.FromHostName;
+
+                        // Open TCP connection to master
+                        bool connected = await scpTcpClient.Connect(reply.MasterIPEndPoint.Address, ScpHost.TcpServerPort, ScpHost.Name);
+                        if (connected)
                         {
-                            await scpTcpClient.ReaderTask;
+                            delay = 1000;
+                            setConnectionStatus(ScpConnectionStatus.Slave);
+                            try
+                            {
+                                await scpTcpClient.ReaderTask;
+                            }
+                            catch
+                            {
+                            }
+                            OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
+                            setConnectionStatus(ScpConnectionStatus.Waiting);
+                            scpTcpClient.Disconnect();
+                            if (!forceMaster && scpConnectionStatus != ScpConnectionStatus.Stopped)
+                            {
+                                await Task.Delay(1000 + Priority * 1000);
+                            }
                         }
-                        catch
+                        else
                         {
+                            OnMessageEvent(this, new MessageEventArgs("Failure connecting to master."));
+                            await Task.Delay(delay);
+                            delay *= 2;
                         }
-                        OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
-                        setConnectionStatus(ScpConnectionStatus.Waiting);
-                        scpTcpClient.Disconnect();
-                        if (!forceMaster)
+
+                    }
+                    else if (canBeMaster)
+                    {
+                        // Take master role. 
+                        forceMaster = false;
+                        OnMessageEvent(this, new MessageEventArgs("No master found, taking role as master."));
+                        scpUdpServer.Start(); // Listen for UDP broadcast
+                        scpTcpServer.Start(); // Start SCP server
+
+                        setConnectionStatus(ScpConnectionStatus.Master);
+
+                        // checking if other master is present, fall back to slave if another master with higher priority exists
+                        while (scpConnectionStatus == ScpConnectionStatus.Master)
                         {
-                            await Task.Delay(1000 + Priority * 1000);
+                            if (scpUdpClient.DiscoverMaster(out reply))
+                            {
+                                if ((reply.MasterPriority <= ScpHost.Priority) && (reply.FromHostName != ScpHost.Name))
+                                {
+                                    OnMessageEvent(this, new MessageEventArgs("Other higher priority master found: " + reply.FromHostName + " switching to slave mode"));
+                                    setConnectionStatus(ScpConnectionStatus.Waiting);
+                                    scpUdpServer.Stop();
+                                    scpTcpServer.Stop();
+                                }
+                            }
+                            try
+                            {
+                                await Task.Delay(5000, cancelMaster.Token);
+                            }
+                            catch
+                            {
+                                OnMessageEvent(this, new MessageEventArgs("Cancel master request!"));
+                                scpUdpServer.Stop();
+                                scpTcpServer.Stop();
+                                cancelMaster = new CancellationTokenSource();
+                            }
+                        }
+                        if (scpConnectionStatus != ScpConnectionStatus.Stopped)
+                        {
+                            await Task.Delay(1000);
                         }
                     }
                     else
                     {
-                        OnMessageEvent(this, new MessageEventArgs("Failure connecting to master."));
-                        await Task.Delay(delay);
-                        delay *= 2;
+                        await Task.Delay(1000);// Make sure we wait some seconds before trying another connection...
                     }
-
                 }
-                else if (canBeMaster)
-                {
-                    // Take master role. 
-                    forceMaster = false;
-                    OnMessageEvent(this, new MessageEventArgs("No master found, taking role as master."));
-                    scpUdpServer.Start(); // Listen for UDP broadcast
-                    scpTcpServer.Start(); // Start SCP server
-
-                    setConnectionStatus(ScpConnectionStatus.Master);
-
-                    // checking if other master is present, fall back to slave if another master with higher priority exists
-                    while (scpConnectionStatus == ScpConnectionStatus.Master)
-                    {
-                        if (scpUdpClient.DiscoverMaster(out reply))
-                        {
-                            if ((reply.MasterPriority <= ScpHost.Priority) && (reply.FromHostName != ScpHost.Name))
-                            {
-                                OnMessageEvent(this, new MessageEventArgs("Other higher priority master found: " + reply.FromHostName + " switching to slave mode"));
-                                setConnectionStatus(ScpConnectionStatus.Waiting);
-                                scpUdpServer.Stop();
-                                scpTcpServer.Stop();
-                            }
-                        }
-                        try
-                        {
-                            await Task.Delay(5000, cancelMaster.Token);
-                        }
-                        catch
-                        {
-                            OnMessageEvent(this, new MessageEventArgs("Cancel master request!"));
-                            setConnectionStatus(ScpConnectionStatus.Waiting);
-                            scpUdpServer.Stop();
-                            scpTcpServer.Stop();
-                            cancelMaster = new CancellationTokenSource();
-                        }
-                    }
-                    await Task.Delay(1000);
-                }
-                else
-                {
-                    await Task.Delay(1000);// Make sure we wait some seconds before trying another connection...
-                }
+            }
+            catch
+            {
+                setConnectionStatus(ScpConnectionStatus.Stopped);
             }
         }
 
