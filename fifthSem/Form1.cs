@@ -323,6 +323,11 @@ namespace fifthSem
             double hi,hihi,lo,lolo;
             if (Double.TryParse(txtHLvl.Text, out hi) && Double.TryParse(txtHHLvl.Text, out hihi) && Double.TryParse(txtLLvl.Text, out lo) && Double.TryParse(txtLLLvl.Text, out lolo))
             {
+                if (hi >= hihi || lo >= hi || lolo >= lo)
+                {
+                    MessageBox.Show("Limits must be: HiHi>Hi>Lo>LoLo!");
+                    return;
+                }
                 mDataEngine.deAlarmManager.TempLimitHi = hi;
                 mDataEngine.deAlarmManager.TempLimitHiHi = hihi;
                 mDataEngine.deAlarmManager.TempLimitLo = lo;
