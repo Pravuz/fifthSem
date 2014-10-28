@@ -191,6 +191,11 @@ namespace fifthSem
             {
                 await mScpHost.SendBroadcastAsync(new ScpTempBroadcast(e.temp));
                 mAlarmManager.SetTemp(e.temp);
+                if (timerAlarmHigh)
+                {
+                    await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
+                    timerAlarmHigh = false;
+                }
             }
             if (mScpHost.ScpConnectionStatus == ScpConnectionStatus.Master)
             {
@@ -370,11 +375,6 @@ namespace fifthSem
         private async void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
-            //if (timerAlarmHigh)
-            //{
-            //    await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
-            //    timerAlarmHigh = false;
-            //}
             if (lastLog.AddSeconds(10) < now)
             {
                 Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
