@@ -241,11 +241,9 @@ namespace fifthSem
             switch (e.status)
             {
                 case RS485.ConnectionStatus.Master:
-                    mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Master"));
                     break;
                 case RS485.ConnectionStatus.Slave:
-                    mTimer.Start();
                     if (mNewComStatusHandler != null) mNewComStatusHandler(this, new DataEngineNewComStatusArgs("Slave"));
                     break;
                 case RS485.ConnectionStatus.Waiting:
@@ -276,10 +274,17 @@ namespace fifthSem
                 case ScpConnectionStatus.Master:
                     if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
+                    mTimer.Stop();
+                    mTimer.Start();
                     break;
                 case ScpConnectionStatus.Slave:
                     if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Slave"));
+                    if (mScpHost.CanBeMaster)
+                    {
+                        mTimer.Stop();
+                        mTimer.Start();
+                    }
                     logSync();
                     break;
                 case ScpConnectionStatus.Waiting:
