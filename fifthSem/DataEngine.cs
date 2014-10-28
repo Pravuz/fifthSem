@@ -65,7 +65,6 @@ namespace fifthSem
     {
         private string portNr, logFile, logFilePath, logFolder = @"\Loggs\"; //%USERPROFILE%\My Documents
         private long logFileSize = 0;
-        private double lastLoggedTemp = 0;
         private bool timerAlarmHigh, deStarted, comTrouble, comErr;
         private ScpHost mScpHost;
         private RS485.RS485 mRS485;
@@ -372,21 +371,16 @@ namespace fifthSem
         {
             DateTime now = DateTime.Now;
             if (timerAlarmHigh)
-            {
-                await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
-                timerAlarmHigh = false;
-            }
-
+            //{
+            //    await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
+            //    timerAlarmHigh = false;
+            //}
             if (lastLog.AddSeconds(10) < now)
             {
                 Debug.WriteLine("DataEngine: 10 sekunder siden sist logging");
-            }
-            if (s != lastLoggedTemp)
-            {
                 writeToFile(now + ";" + s);
-                lastLoggedTemp = s;
+                lastLog = now;
             }
-            lastLog = now;
         }
 
         /// <summary>
