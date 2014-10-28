@@ -158,7 +158,6 @@ namespace fifthSem
         {
             deStarted = false;
             mTimer.Stop();
-            mTimer.Dispose();
             mRS485.stopCom();
         }
 
@@ -198,6 +197,7 @@ namespace fifthSem
                 mTimer.Stop();
                 mTimer.Start();
             }
+            comErr = false;
             writeTempToLog(e.temp);
         }
 
