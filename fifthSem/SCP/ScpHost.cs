@@ -262,8 +262,16 @@ namespace ScadaCommunicationProtocol
         {
             if (scpConnectionStatus != ScpConnectionStatus.Stopped)
             {
-                setConnectionStatus(ScpConnectionStatus.Stopped);
-                cancelMaster.Cancel();
+                if (scpConnectionStatus == ScpConnectionStatus.Master)
+                {
+                    setConnectionStatus(ScpConnectionStatus.Stopped);
+                    cancelMaster.Cancel();
+                }
+                else if (scpConnectionStatus == ScpConnectionStatus.Slave)
+                {
+                    setConnectionStatus(ScpConnectionStatus.Stopped);
+                    scpTcpClient.Disconnect();
+                }
                 checkTask.Wait();
             }
         }
@@ -326,13 +334,16 @@ namespace ScadaCommunicationProtocol
                             setConnectionStatus(ScpConnectionStatus.Slave);
                             try
                             {
-                                await scpTcpClient.ReaderTask;
+                                await scpTcpClient.ReaderTask.ConfigureAwait(false);
                             }
                             catch
                             {
                             }
                             OnMessageEvent(this, new MessageEventArgs("Connection to master lost."));
-                            setConnectionStatus(ScpConnectionStatus.Waiting);
+                            if (scpConnectionStatus != ScpConnectionStatus.Stopped)
+                            {
+                                setConnectionStatus(ScpConnectionStatus.Waiting);
+                            }
                             scpTcpClient.Disconnect();
                             if (!forceMaster && scpConnectionStatus != ScpConnectionStatus.Stopped)
                             {

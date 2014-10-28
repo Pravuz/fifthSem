@@ -156,6 +156,12 @@ namespace fifthSem
         /// </summary>
         public void stop()
         {
+            if (deStarted)
+            {
+                mScpHost.SlaveConnectionEvent -= SlaveConnectionHandler;
+                mRS485.TempHandler -= TempEventHandler;
+                mRS485.AlarmHandler -= AlarmEventHandler;
+            }
             deStarted = false;
             mTimer.Stop();
             mRS485.stopCom();
