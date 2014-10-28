@@ -45,16 +45,29 @@
             this.chkRS485Alarms = new System.Windows.Forms.CheckBox();
             this.chkTempAlarms = new System.Windows.Forms.CheckBox();
             this.dGFilteredAlarms = new System.Windows.Forms.DataGridView();
+            this.Type = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Source = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.High = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Acked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.Timestamp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.Filtered = new System.Windows.Forms.DataGridViewTextBoxColumn();
             this.btnAck = new System.Windows.Forms.Button();
             this.tabPageAL = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
             this.Acknowledge2 = new System.Windows.Forms.Button();
             this.dGAllAlarms = new System.Windows.Forms.DataGridView();
+            this.allType = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.allSource = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.allHigh = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.allAcked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
+            this.allTimestamp = new System.Windows.Forms.DataGridViewTextBoxColumn();
+            this.allFiltered = new System.Windows.Forms.DataGridViewCheckBoxColumn();
             this.tabPageCF = new System.Windows.Forms.TabPage();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
-            this.button1 = new System.Windows.Forms.Button();
             this.txtDebug = new System.Windows.Forms.TextBox();
             this.groupBox5 = new System.Windows.Forms.GroupBox();
+            this.label10 = new System.Windows.Forms.Label();
+            this.txtHosts = new System.Windows.Forms.TextBox();
             this.label8 = new System.Windows.Forms.Label();
             this.cmbCOM = new System.Windows.Forms.ComboBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -75,20 +88,6 @@
             this.txtHHLvl = new System.Windows.Forms.TextBox();
             this.btnSetLimits = new System.Windows.Forms.Button();
             this.toolTipAck = new System.Windows.Forms.ToolTip(this.components);
-            this.Type = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Source = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.High = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Acked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.Timestamp = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.Filtered = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.allType = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.allSource = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.allHigh = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.allAcked = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.allTimestamp = new System.Windows.Forms.DataGridViewTextBoxColumn();
-            this.allFiltered = new System.Windows.Forms.DataGridViewCheckBoxColumn();
-            this.txtHosts = new System.Windows.Forms.TextBox();
-            this.label10 = new System.Windows.Forms.Label();
             this.tabCCALEL.SuspendLayout();
             this.tabPageCC.SuspendLayout();
             this.Temperature.SuspendLayout();
@@ -267,6 +266,61 @@
             this.dGFilteredAlarms.TabIndex = 0;
             this.dGFilteredAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
             // 
+            // Type
+            // 
+            this.Type.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Type.DataPropertyName = "Type";
+            this.Type.HeaderText = "Type";
+            this.Type.Name = "Type";
+            this.Type.ReadOnly = true;
+            // 
+            // Source
+            // 
+            this.Source.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Source.DataPropertyName = "Source";
+            this.Source.FillWeight = 70F;
+            this.Source.HeaderText = "Source";
+            this.Source.Name = "Source";
+            this.Source.ReadOnly = true;
+            // 
+            // High
+            // 
+            this.High.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.High.DataPropertyName = "High";
+            this.High.FillWeight = 30F;
+            this.High.HeaderText = "High";
+            this.High.Name = "High";
+            this.High.ReadOnly = true;
+            // 
+            // Acked
+            // 
+            this.Acked.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Acked.DataPropertyName = "Acked";
+            this.Acked.FillWeight = 30F;
+            this.Acked.HeaderText = "Acked";
+            this.Acked.Name = "Acked";
+            this.Acked.ReadOnly = true;
+            this.Acked.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.Acked.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // Timestamp
+            // 
+            this.Timestamp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Timestamp.DataPropertyName = "Timestamp";
+            this.Timestamp.FillWeight = 70F;
+            this.Timestamp.HeaderText = "Timestamp";
+            this.Timestamp.Name = "Timestamp";
+            this.Timestamp.ReadOnly = true;
+            // 
+            // Filtered
+            // 
+            this.Filtered.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.Filtered.DataPropertyName = "Filtered";
+            this.Filtered.HeaderText = "Filtered";
+            this.Filtered.Name = "Filtered";
+            this.Filtered.ReadOnly = true;
+            this.Filtered.Visible = false;
+            // 
             // btnAck
             // 
             this.btnAck.Location = new System.Drawing.Point(765, 30);
@@ -332,6 +386,62 @@
             this.dGAllAlarms.TabIndex = 0;
             this.dGAllAlarms.RowPrePaint += new System.Windows.Forms.DataGridViewRowPrePaintEventHandler(this.dGAllAlarms_RowPrePaint);
             // 
+            // allType
+            // 
+            this.allType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allType.DataPropertyName = "Type";
+            this.allType.HeaderText = "Type";
+            this.allType.Name = "allType";
+            this.allType.ReadOnly = true;
+            // 
+            // allSource
+            // 
+            this.allSource.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allSource.DataPropertyName = "Source";
+            this.allSource.HeaderText = "Source";
+            this.allSource.Name = "allSource";
+            this.allSource.ReadOnly = true;
+            // 
+            // allHigh
+            // 
+            this.allHigh.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allHigh.DataPropertyName = "High";
+            this.allHigh.FillWeight = 40F;
+            this.allHigh.HeaderText = "High";
+            this.allHigh.Name = "allHigh";
+            this.allHigh.ReadOnly = true;
+            this.allHigh.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.allHigh.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // allAcked
+            // 
+            this.allAcked.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allAcked.DataPropertyName = "Acked";
+            this.allAcked.FillWeight = 40F;
+            this.allAcked.HeaderText = "Acked";
+            this.allAcked.Name = "allAcked";
+            this.allAcked.ReadOnly = true;
+            this.allAcked.Resizable = System.Windows.Forms.DataGridViewTriState.True;
+            this.allAcked.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
+            // 
+            // allTimestamp
+            // 
+            this.allTimestamp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allTimestamp.DataPropertyName = "Timestamp";
+            this.allTimestamp.FillWeight = 70F;
+            this.allTimestamp.HeaderText = "Timestamp";
+            this.allTimestamp.Name = "allTimestamp";
+            this.allTimestamp.ReadOnly = true;
+            // 
+            // allFiltered
+            // 
+            this.allFiltered.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
+            this.allFiltered.DataPropertyName = "Filtered";
+            this.allFiltered.FillWeight = 50F;
+            this.allFiltered.HeaderText = "Filtered";
+            this.allFiltered.Name = "allFiltered";
+            this.allFiltered.ReadOnly = true;
+            // 
             // tabPageCF
             // 
             this.tabPageCF.Controls.Add(this.groupBox4);
@@ -346,7 +456,6 @@
             // 
             // groupBox4
             // 
-            this.groupBox4.Controls.Add(this.button1);
             this.groupBox4.Controls.Add(this.txtDebug);
             this.groupBox4.Location = new System.Drawing.Point(706, 3);
             this.groupBox4.Name = "groupBox4";
@@ -355,21 +464,12 @@
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "Debug info";
             // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(20, 427);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(99, 23);
-            this.button1.TabIndex = 24;
-            this.button1.Text = "Switch to master";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
             // txtDebug
             // 
             this.txtDebug.Location = new System.Drawing.Point(20, 19);
             this.txtDebug.Multiline = true;
             this.txtDebug.Name = "txtDebug";
-            this.txtDebug.Size = new System.Drawing.Size(333, 402);
+            this.txtDebug.Size = new System.Drawing.Size(333, 437);
             this.txtDebug.TabIndex = 23;
             // 
             // groupBox5
@@ -391,6 +491,23 @@
             this.groupBox5.TabIndex = 22;
             this.groupBox5.TabStop = false;
             this.groupBox5.Text = "Setup";
+            // 
+            // label10
+            // 
+            this.label10.AutoSize = true;
+            this.label10.Location = new System.Drawing.Point(27, 185);
+            this.label10.Name = "label10";
+            this.label10.Size = new System.Drawing.Size(34, 13);
+            this.label10.TabIndex = 22;
+            this.label10.Text = "Hosts";
+            // 
+            // txtHosts
+            // 
+            this.txtHosts.Location = new System.Drawing.Point(30, 201);
+            this.txtHosts.Multiline = true;
+            this.txtHosts.Name = "txtHosts";
+            this.txtHosts.Size = new System.Drawing.Size(121, 114);
+            this.txtHosts.TabIndex = 21;
             // 
             // label8
             // 
@@ -571,134 +688,6 @@
             this.btnSetLimits.UseVisualStyleBackColor = true;
             this.btnSetLimits.Click += new System.EventHandler(this.btnSetLimits_Click_1);
             // 
-            // Type
-            // 
-            this.Type.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Type.DataPropertyName = "Type";
-            this.Type.HeaderText = "Type";
-            this.Type.Name = "Type";
-            this.Type.ReadOnly = true;
-            // 
-            // Source
-            // 
-            this.Source.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Source.DataPropertyName = "Source";
-            this.Source.FillWeight = 70F;
-            this.Source.HeaderText = "Source";
-            this.Source.Name = "Source";
-            this.Source.ReadOnly = true;
-            // 
-            // High
-            // 
-            this.High.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.High.DataPropertyName = "High";
-            this.High.FillWeight = 30F;
-            this.High.HeaderText = "High";
-            this.High.Name = "High";
-            this.High.ReadOnly = true;
-            // 
-            // Acked
-            // 
-            this.Acked.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Acked.DataPropertyName = "Acked";
-            this.Acked.FillWeight = 30F;
-            this.Acked.HeaderText = "Acked";
-            this.Acked.Name = "Acked";
-            this.Acked.ReadOnly = true;
-            this.Acked.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.Acked.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // Timestamp
-            // 
-            this.Timestamp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Timestamp.DataPropertyName = "Timestamp";
-            this.Timestamp.FillWeight = 70F;
-            this.Timestamp.HeaderText = "Timestamp";
-            this.Timestamp.Name = "Timestamp";
-            this.Timestamp.ReadOnly = true;
-            // 
-            // Filtered
-            // 
-            this.Filtered.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.Filtered.DataPropertyName = "Filtered";
-            this.Filtered.HeaderText = "Filtered";
-            this.Filtered.Name = "Filtered";
-            this.Filtered.ReadOnly = true;
-            this.Filtered.Visible = false;
-            // 
-            // allType
-            // 
-            this.allType.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allType.DataPropertyName = "Type";
-            this.allType.HeaderText = "Type";
-            this.allType.Name = "allType";
-            this.allType.ReadOnly = true;
-            // 
-            // allSource
-            // 
-            this.allSource.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allSource.DataPropertyName = "Source";
-            this.allSource.HeaderText = "Source";
-            this.allSource.Name = "allSource";
-            this.allSource.ReadOnly = true;
-            // 
-            // allHigh
-            // 
-            this.allHigh.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allHigh.DataPropertyName = "High";
-            this.allHigh.FillWeight = 40F;
-            this.allHigh.HeaderText = "High";
-            this.allHigh.Name = "allHigh";
-            this.allHigh.ReadOnly = true;
-            this.allHigh.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.allHigh.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // allAcked
-            // 
-            this.allAcked.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allAcked.DataPropertyName = "Acked";
-            this.allAcked.FillWeight = 40F;
-            this.allAcked.HeaderText = "Acked";
-            this.allAcked.Name = "allAcked";
-            this.allAcked.ReadOnly = true;
-            this.allAcked.Resizable = System.Windows.Forms.DataGridViewTriState.True;
-            this.allAcked.SortMode = System.Windows.Forms.DataGridViewColumnSortMode.Automatic;
-            // 
-            // allTimestamp
-            // 
-            this.allTimestamp.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allTimestamp.DataPropertyName = "Timestamp";
-            this.allTimestamp.FillWeight = 70F;
-            this.allTimestamp.HeaderText = "Timestamp";
-            this.allTimestamp.Name = "allTimestamp";
-            this.allTimestamp.ReadOnly = true;
-            // 
-            // allFiltered
-            // 
-            this.allFiltered.AutoSizeMode = System.Windows.Forms.DataGridViewAutoSizeColumnMode.Fill;
-            this.allFiltered.DataPropertyName = "Filtered";
-            this.allFiltered.FillWeight = 50F;
-            this.allFiltered.HeaderText = "Filtered";
-            this.allFiltered.Name = "allFiltered";
-            this.allFiltered.ReadOnly = true;
-            // 
-            // txtHosts
-            // 
-            this.txtHosts.Location = new System.Drawing.Point(30, 201);
-            this.txtHosts.Multiline = true;
-            this.txtHosts.Name = "txtHosts";
-            this.txtHosts.Size = new System.Drawing.Size(121, 114);
-            this.txtHosts.TabIndex = 21;
-            // 
-            // label10
-            // 
-            this.label10.AutoSize = true;
-            this.label10.Location = new System.Drawing.Point(27, 185);
-            this.label10.Name = "label10";
-            this.label10.Size = new System.Drawing.Size(34, 13);
-            this.label10.TabIndex = 22;
-            this.label10.Text = "Hosts";
-            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -774,7 +763,6 @@
         private System.Windows.Forms.TextBox txtTemperature;
         private System.Windows.Forms.TextBox txtDebug;
         private System.Windows.Forms.GroupBox groupBox4;
-        private System.Windows.Forms.Button button1;
         private System.Windows.Forms.DataGridView dGFilteredAlarms;
         private System.Windows.Forms.DataGridViewTextBoxColumn Type;
         private System.Windows.Forms.DataGridViewTextBoxColumn Source;
