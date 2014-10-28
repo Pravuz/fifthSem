@@ -94,7 +94,7 @@ namespace fifthSem
                     tempLimitLoLo = value;
                     SendTempUpdate();
                     double temp = lastTemp;
-                    lastTemp = 0;
+                    lastTemp = -10000;
                     SetTemp(temp);
                 }
             }
@@ -112,7 +112,7 @@ namespace fifthSem
                     tempLimitLo = value;
                     SendTempUpdate();
                     double temp = lastTemp;
-                    lastTemp = 0;
+                    lastTemp = -10000;
                     SetTemp(temp);
                 }
             }
@@ -130,7 +130,7 @@ namespace fifthSem
                     tempLimitHi = value;
                     SendTempUpdate();
                     double temp = lastTemp;
-                    lastTemp = 0;
+                    lastTemp = -10000;
                     SetTemp(temp);
                 }
             }
@@ -148,7 +148,7 @@ namespace fifthSem
                     tempLimitHiHi = value;
                     SendTempUpdate();
                     double temp = lastTemp;
-                    lastTemp = 0;
+                    lastTemp = -10000;
                     SetTemp(temp);
                 }
             }
@@ -541,6 +541,7 @@ namespace fifthSem
                 tempLimitLo = packet.LoLimit;
                 tempLimitHi = packet.HiLimit;
                 tempLimitHiHi = packet.HiHiLimit;
+                lastTemp = -10000;
                 OnTempLimitsChanged();
             }
         }
