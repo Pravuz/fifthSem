@@ -443,15 +443,19 @@ namespace fifthSem
                     }
                     else
                     {
-                        if (alarm.Filtered != filteredAlarms.Contains(Type))
-                        {
-                            alarm.Filtered = filteredAlarms.Contains(Type);
-                            changed = true;
-                        }
                         if (!alarm.High)
                         {
+                            alarm.Filtered = filteredAlarms.Contains(Type);
                             alarm.High = true;
                             changed = true;
+                        }
+                        else
+                        {
+                            if (alarm.Filtered && !filteredAlarms.Contains(Type))
+                            {
+                                alarm.Filtered = false;
+                                changed = true;
+                            }
                         }
                     }
                     break;

@@ -86,7 +86,7 @@ namespace ScadaCommunicationProtocol
 
         private bool canBeMaster = true;
         private IPAddress masterIPAddress;
-        private Task checkTask;
+        private Task checkTask = null;
         private bool forceMaster = false;
         private CancellationTokenSource cancelMaster;
 
@@ -251,7 +251,10 @@ namespace ScadaCommunicationProtocol
         }
         public void Start()
         {
-            checkTask = Task.Run(() => checkScpConnection());
+            if (checkTask == null)
+            {
+                checkTask = Task.Run(() => checkScpConnection());
+            }
         }
         /// <summary>
         /// Checks whether a host is connected. Only available when running in Master mode.
