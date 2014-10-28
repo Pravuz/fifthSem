@@ -370,7 +370,7 @@ namespace fifthSem
         private async void writeTempToLog(double s)
         {
             DateTime now = DateTime.Now;
-            if (timerAlarmHigh)
+            //if (timerAlarmHigh)
             //{
             //    await mAlarmManager.SetAlarmStatus(AlarmTypes.TempMissing, AlarmCommand.Low);
             //    timerAlarmHigh = false;
