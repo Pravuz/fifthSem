@@ -222,14 +222,6 @@ namespace fifthSem
                 return;
             }
             txtTCP_IP_MS.Text = e.status;
-            if (e.status == "Slave")
-            {
-                button1.Enabled = true;
-            }
-            else
-            {
-                button1.Enabled = false;
-            }
         }
 
         private void DataEngineNewComStatusHandler(object sender, DataEngineNewComStatusArgs e)
