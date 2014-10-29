@@ -203,12 +203,6 @@ namespace RS485
             //    // Flags a ConnectionStatusHandler event
             //    if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
             //}
-
-            if (alarmStatus != AlarmStatus.None)
-            {
-                alarmStatus = AlarmStatus.None;
-                if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
-            }
            
             // Read data from port
             int dataLength = serialPort.BytesToRead;
@@ -265,6 +259,12 @@ namespace RS485
                     connectionStatus_extern = ConnectionStatus.Slave;
                     // Flags a ConnectionStatusHandler event
                     if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+                }
+
+                if (alarmStatus != AlarmStatus.None)
+                {
+                    alarmStatus = AlarmStatus.None;
+                    if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
                 }
 
                 // Restart timeout timer
