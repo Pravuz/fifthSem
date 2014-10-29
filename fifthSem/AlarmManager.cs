@@ -266,7 +266,11 @@ namespace fifthSem
                         alarm.Filtered = false;
                         updateNeeded = true;
                     }
-                    SendAlarmUpdate();
+                    if (updateNeeded)
+                    {
+                        OnAlarmsChanged();
+                        SendAlarmUpdate();
+                    }
                 }
             }
         }
