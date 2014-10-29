@@ -27,7 +27,7 @@ namespace ScadaCommunicationProtocol
 
             public List<String> Hosts = new List<String>();
             public event MessageEventHandler MessageEvent;
-            public event ScpInternalPacketEventHandler PacketEvent;
+            public event ScpPacketEventHandler PacketEvent;
             public event SlaveConnectionEventHandler SlaveConnectionEvent;
             private void OnMessageEvent(MessageEventArgs e)
             {

@@ -34,7 +34,7 @@ namespace ScadaCommunicationProtocol
         {
             public TcpClient tcpClient;
             public event MessageEventHandler MessageEvent;
-            public event ScpInternalPacketEventHandler PacketEvent;
+            public event ScpPacketEventHandler PacketEvent;
             public Task ReaderTask;
             private Task keepAliveTask;
 
@@ -162,12 +162,17 @@ namespace ScadaCommunicationProtocol
                 int totalbytesread=0;
                 int packetLength = -1;
                 count[0] = 0;
+                CancellationToken ct = cancelClient.Token;
                 try
                 {
                     ns = tcpClient.GetStream();
                     while (enabled)
                     {
-                        bytesread = await ns.ReadAsync(tempbuffer, 0, 8192, cancelClient.Token);
+                        bytesread = await ns.ReadAsync(tempbuffer, 0, 8192, ct);
+                        if (ct.IsCancellationRequested)
+                        {
+                            ct.ThrowIfCancellationRequested();
+                        }
                         Array.Copy(tempbuffer, 0, buffer, totalbytesread, bytesread);
                         totalbytesread += bytesread;
                         if (totalbytesread >= 4)
@@ -306,7 +311,8 @@ namespace ScadaCommunicationProtocol
                     cancelClient.Cancel();
                     tcpClient.Client.Close();
                     tcpClient.Close();
-                    Task.WaitAll(ReaderTask);
+                    //ns.Close();
+                    //Task.WaitAll(ReaderTask);
                     cancelClient = new CancellationTokenSource();
                 }
                 finally
