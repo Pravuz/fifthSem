@@ -173,6 +173,7 @@ namespace RS485
             if (connectionStatus_extern != ConnectionStatus.Stop) // Com port must be opened before closed
             {
                 masterSlave.Stop();
+                timeout.Stop();
                 threadEnabled = false;
                 serialPort.Close();
                 connectionStatus_intern = ConnectionStatus.Slave;
