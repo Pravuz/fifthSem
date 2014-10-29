@@ -195,15 +195,6 @@ namespace RS485
                 getTempTimeoutCounter = 0;
             }
 
-            //  //Sets ConnectionStatus = Slave if not allready a Master
-            //if (connectionStatus_intern != ConnectionStatus.Master)
-            //{
-            //    connectionStatus_intern = ConnectionStatus.Slave;
-            //    connectionStatus_extern = ConnectionStatus.Slave;
-            //    // Flags a ConnectionStatusHandler event
-            //    if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
-            //}
-           
             // Read data from port
             int dataLength = serialPort.BytesToRead;
             byte[] data = new byte[dataLength];
@@ -267,15 +258,11 @@ namespace RS485
                 timeout.Stop();
                 timeout.Start();
                 //timeoutEnabled = false;
-
-                //// Reset getTempTimeout and getTempTimeoutCounter
-                //getTempTimeout = 0;
-                //getTempTimeoutCounter = 0;
             }
 
-            //// Restart master-slave timer
-            //masterSlave.Stop();
-            //masterSlave.Start();
+            // Restart master-slave timer
+            masterSlave.Stop();
+            masterSlave.Start();
         }
 
         // If a Slave has not received new temp, it automatically becomes Master. An event is flagged for connection status changed.
