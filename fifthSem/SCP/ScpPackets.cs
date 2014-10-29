@@ -22,7 +22,10 @@ namespace ScadaCommunicationProtocol
     }
     public abstract class ScpPacket
     {
-        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, AlarmRequest = 3, AlarmResponse = 53, MasterRequest = 4, MasterResponse = 54, TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102, AlarmFilterBroadcast = 103 };
+        protected enum ScpPacketTypes { RegRequest = 1, RegResponse = 51, LogFileRequest = 2, LogFileResponse = 52, 
+                                        AlarmRequest = 3, AlarmResponse = 53, MasterRequest = 4, MasterResponse = 54, 
+                                        TempBroadcast = 100, AlarmBroadcast = 101, AlarmLimitBroadcast = 102, 
+            AlarmFilterBroadcast = 103 };
         private static int newId = 0;
         public static int GetId()
         {
