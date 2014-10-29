@@ -9,7 +9,7 @@ using System.IO;
 
 namespace ScadaCommunicationProtocol
 {
-    public delegate void ScpInternalPacketEventHandler(object sender, ScpPacketEventArgs e);
+    public delegate void ScpPacketEventHandler(object sender, ScpPacketEventArgs e);
     public class ScpPacketEventArgs : EventArgs
     {
         public ScpPacket Packet;

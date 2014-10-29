@@ -34,7 +34,7 @@ namespace ScadaCommunicationProtocol
         {
             public TcpClient tcpClient;
             public event MessageEventHandler MessageEvent;
-            public event ScpInternalPacketEventHandler PacketEvent;
+            public event ScpPacketEventHandler PacketEvent;
             public Task ReaderTask;
             private Task keepAliveTask;
 
