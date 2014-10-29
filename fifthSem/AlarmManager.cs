@@ -523,6 +523,7 @@ namespace fifthSem
                 else
                 {
                     setMasterAlarmFilter(scpRequest.AlarmType, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                    SendFilterUpdate();
                     OnAlarmFiltersChanged();
                 }
                 e.Response = new ScpAlarmResponse(true);

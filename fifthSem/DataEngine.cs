@@ -133,6 +133,9 @@ namespace fifthSem
         {
             if (!deStarted)
             {
+                mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+
                 //subscribe to additional events
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
                 mRS485.TempHandler += TempEventHandler;
