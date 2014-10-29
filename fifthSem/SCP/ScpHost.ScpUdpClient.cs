@@ -26,9 +26,9 @@ namespace ScadaCommunicationProtocol
                 udpClient.Client.ReceiveTimeout = 500;
                 broadcastAddresses = new List<IPAddress>();
                 
-                findBroadcastAddresses();
+                //findBroadcastAddresses();
                 // Hardcoded broadcast address for testing.....
-                //broadcastAddresses.Add(new IPAddress(new byte[] {192,168,9,255}));
+                broadcastAddresses.Add(new IPAddress(new byte[] {192,168,0,255}));
             }
 
             private void findBroadcastAddresses()
