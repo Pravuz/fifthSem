@@ -195,14 +195,14 @@ namespace RS485
                 getTempTimeoutCounter = 0;
             }
 
-              //Sets ConnectionStatus = Slave if not allready a Master
-            if (connectionStatus_intern != ConnectionStatus.Master & timeoutEnabled == true)
-            {
-                connectionStatus_intern = ConnectionStatus.Slave;
-                connectionStatus_extern = ConnectionStatus.Slave;
-                // Flags a ConnectionStatusHandler event
-                if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
-            }
+            //  //Sets ConnectionStatus = Slave if not allready a Master
+            //if (connectionStatus_intern != ConnectionStatus.Master)
+            //{
+            //    connectionStatus_intern = ConnectionStatus.Slave;
+            //    connectionStatus_extern = ConnectionStatus.Slave;
+            //    // Flags a ConnectionStatusHandler event
+            //    if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+            //}
 
             if (alarmStatus != AlarmStatus.None)
             {
@@ -258,6 +258,15 @@ namespace RS485
                     tempData = "";
                 }
 
+                //Sets ConnectionStatus = Slave if not allready a Master
+                if (connectionStatus_intern != ConnectionStatus.Master)
+                {
+                    connectionStatus_intern = ConnectionStatus.Slave;
+                    connectionStatus_extern = ConnectionStatus.Slave;
+                    // Flags a ConnectionStatusHandler event
+                    if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+                }
+
                 // Restart timeout timer
                 timeout.Stop();
                 timeout.Start();
@@ -285,6 +294,8 @@ namespace RS485
             timeoutEnabled = true;
             connectionStatus_extern = ConnectionStatus.Waiting;
             if (null != ConnectionStatusHandler) ConnectionStatusHandler(this, new ConnectionStatusEventArgs(connectionStatus_extern));
+            alarmStatus = AlarmStatus.RS485Failure;
+            if (null != AlarmHandler) AlarmHandler(this, new AlarmEventArgs(alarmStatus));
         }
 
         // Threaded function. As a Master, request new temp from RS485.
