@@ -133,6 +133,9 @@ namespace fifthSem
         {
             if (!deStarted)
             {
+                mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+
                 //subscribe to additional events
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
                 mRS485.TempHandler += TempEventHandler;
@@ -156,9 +159,16 @@ namespace fifthSem
         /// </summary>
         public void stop()
         {
+            if (deStarted)
+            {
+                mScpHost.SlaveConnectionEvent -= SlaveConnectionHandler;
+                mRS485.TempHandler -= TempEventHandler;
+                mRS485.AlarmHandler -= AlarmEventHandler;
+            }
             deStarted = false;
             mTimer.Stop();
             mRS485.stopCom();
+            mScpHost.Stop();
         }
 
         /// <summary>
@@ -289,6 +299,9 @@ namespace fifthSem
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
+                    break;
+                case ScpConnectionStatus.Stopped:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Stopped"));
                     break;
                 default:
                     break;

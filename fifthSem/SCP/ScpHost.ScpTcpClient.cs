@@ -47,6 +47,7 @@ namespace ScadaCommunicationProtocol
             private List<PendingRequest> pendingRequests;
             private bool enabled = false;
             public CancellationTokenSource requestCancelToken = new CancellationTokenSource();
+            private CancellationTokenSource cancelClient = new CancellationTokenSource();
             private Object _lock = new Object();
             private ScpHost scpHost;
             private void OnMessageEvent(MessageEventArgs e)
@@ -68,7 +69,7 @@ namespace ScadaCommunicationProtocol
                         if ((e.Response is ScpMasterResponse) && (((ScpMasterResponse)e.Response).Ok)) 
                         {
                             // In this case the master has agreed to let another master take over
-                            scpHost.cancelMaster.Cancel();
+                            scpHost.CancelMaster();
                         }
                     }
                 }
@@ -166,7 +167,7 @@ namespace ScadaCommunicationProtocol
                     ns = tcpClient.GetStream();
                     while (enabled)
                     {
-                        bytesread = await ns.ReadAsync(tempbuffer, 0, 8192);
+                        bytesread = await ns.ReadAsync(tempbuffer, 0, 8192, cancelClient.Token);
                         Array.Copy(tempbuffer, 0, buffer, totalbytesread, bytesread);
                         totalbytesread += bytesread;
                         if (totalbytesread >= 4)
@@ -241,7 +242,7 @@ namespace ScadaCommunicationProtocol
                     while (enabled)
                     {
                         WritePacket(keepAlivepacket);
-                        await Task.Delay(1000);
+                        await Task.Delay(1000, cancelClient.Token);
                     }
                 }
                 catch
@@ -293,7 +294,8 @@ namespace ScadaCommunicationProtocol
                 tcpClient = client;
                 //writerTask = WriterAsync();
                 keepAliveTask = KeepAlive();
-                await ReaderAsync();
+                ReaderTask = ReaderAsync();
+                await ReaderTask;
             }
 
             public void Disconnect()
@@ -301,8 +303,11 @@ namespace ScadaCommunicationProtocol
                 try
                 {
                     enabled = false;
+                    cancelClient.Cancel();
                     tcpClient.Client.Close();
                     tcpClient.Close();
+                    Task.WaitAll(ReaderTask);
+                    cancelClient = new CancellationTokenSource();
                 }
                 finally
                 {
