@@ -133,8 +133,6 @@ namespace fifthSem
         {
             if (!deStarted)
             {
-                mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
-                mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
 
                 //subscribe to additional events
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
@@ -286,6 +284,11 @@ namespace fifthSem
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
                     mTimer.Stop();
                     mTimer.Start();
+                    if (!comErr)
+                    {
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    }
                     break;
                 case ScpConnectionStatus.Slave:
                     if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
@@ -296,6 +299,11 @@ namespace fifthSem
                         mTimer.Start();
                     }
                     logSync();
+                    if (!comErr)
+                    {
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    }
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));

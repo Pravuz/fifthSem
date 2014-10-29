@@ -260,6 +260,13 @@ namespace fifthSem
                 if (filteredAlarms.Exists(at => at == type))
                 {
                     filteredAlarms.Remove(type);
+
+                    foreach (Alarm alarm in alarms.Where(al => al.Type == type && al.High == true && al.Filtered))
+                    {
+                        alarm.Filtered = false;
+                        updateNeeded = true;
+                    }
+                    SendAlarmUpdate();
                 }
             }
         }
