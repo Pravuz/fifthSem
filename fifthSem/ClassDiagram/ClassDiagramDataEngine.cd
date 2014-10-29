@@ -1,0 +1,82 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="fifthSem.DataEngineNewTempArgs">
+    <Position X="3.25" Y="2.25" Width="2" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="fifthSem.DataEngineNewTcpStatusArgs">
+    <Position X="5.5" Y="2.25" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="fifthSem.DataEngineNewComStatusArgs">
+    <Position X="5.5" Y="0.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="fifthSem.DataEngineMessageArgs">
+    <Position X="3.25" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="fifthSem.DataEngine">
+    <Position X="0.5" Y="0.5" Width="2.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>gAkAAMAIICAAIAAEUQAAKAQRgBAwAAACABAARCAiIAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Delegate Name="fifthSem.DataEngineNewTempHandler">
+    <Position X="3.25" Y="5.25" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAABAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="fifthSem.DataEngineNewTcpStatusHandler">
+    <Position X="5.75" Y="5.25" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAABAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="fifthSem.DataEngineNewComStatusHandler">
+    <Position X="5.75" Y="4" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>ABAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="fifthSem.DataEngineMessageHandler">
+    <Position X="3.25" Y="4" Width="2.25" />
+    <TypeIdentifier>
+      <HashCode>AIAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>DataEngine.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

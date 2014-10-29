@@ -397,7 +397,7 @@ namespace ScadaCommunicationProtocol
             return "ScpTempBroadcast - Temp: " + temp.ToString();
         }
     }
-    public class ScpAlarmBroadcast : ScpPacket
+    public class ScpAlarmBroadcast : ScadaCommunicationProtocol.ScpPacket
     {
         private byte[] alarm;
         public byte[] Alarm
@@ -525,7 +525,7 @@ namespace ScadaCommunicationProtocol
             return "ScpMasterRequest";
         }
     }
-    public class ScpMasterResponse : ScpPacket
+    public class ScpMasterResponse : ScadaCommunicationProtocol.ScpPacket
     {
         private bool ok;
         public bool Ok

@@ -1,0 +1,79 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ClassDiagram MajorVersion="1" MinorVersion="1">
+  <Class Name="RS485.ConnectionStatusEventArgs">
+    <Position X="4.5" Y="0.5" Width="2.25" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RS485.AlarmEventArgs">
+    <Position X="2.75" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAAAAAAAEAAAAAAAAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RS485.TempEventArgs">
+    <Position X="7" Y="0.5" Width="1.5" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAABAAAAAAAAAEAAAAAAAAAAAAAACAAAAAAAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Class Name="RS485.RS485">
+    <Position X="0.5" Y="0.5" Width="2" />
+    <Compartments>
+      <Compartment Name="Fields" Collapsed="true" />
+    </Compartments>
+    <TypeIdentifier>
+      <HashCode>AAAAIEgAAAAgCADEAABIAAMAAAAQQhEAAgASEAAAAFg=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Class>
+  <Enum Name="RS485.ConnectionStatus">
+    <Position X="4.5" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>EAAAAAAAAAAAAACAAAAAAAAAAAAAAAAAIAAAQAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Enum Name="RS485.AlarmStatus">
+    <Position X="2.75" Y="2.25" Width="1.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAgAAAAAAAAAAgAAAAAAAEAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Enum>
+  <Delegate Name="RS485.TempEventHandler">
+    <Position X="4.75" Y="4" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAgAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="RS485.ConnectionStatusEventHandler">
+    <Position X="6.75" Y="4" Width="2.5" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAAAAAQAAAAAAAAAAAAAAAAgAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Delegate Name="RS485.AlarmEventHandler">
+    <Position X="2.75" Y="4" Width="1.75" />
+    <TypeIdentifier>
+      <HashCode>AAAAAAAAAAAAAAAAAAAQAAAQAAAAAAAAAAAAAAAAAAA=</HashCode>
+      <FileName>RS485.cs</FileName>
+    </TypeIdentifier>
+  </Delegate>
+  <Font Name="Segoe UI" Size="9" />
+</ClassDiagram>

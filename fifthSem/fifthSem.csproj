@@ -75,6 +75,13 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <None Include="ClassDiagram\ClassDiagramForm1.cd" />
+    <None Include="ClassDiagram\ClassDiagramAlarmManager.cd" />
+    <None Include="ClassDiagram\ClassDiagramDataEngine.cd" />
+    <None Include="ClassDiagram\ClassDiagramRS485.cd" />
+    <None Include="ClassDiagram\ClassDiagramScpPackets.cd" />
+    <None Include="ClassDiagram\ClassDiagramScpHost.cd" />
+    <None Include="ClassDiagram\ClassDiagramGenerel.cd" />
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
