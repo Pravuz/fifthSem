@@ -300,7 +300,7 @@ namespace ScadaCommunicationProtocol
                 //writerTask = WriterAsync();
                 keepAliveTask = KeepAlive();
                 ReaderTask = ReaderAsync();
-                await ReaderTask;
+                await ReaderTask.ConfigureAwait(false);
             }
 
             public void Disconnect()

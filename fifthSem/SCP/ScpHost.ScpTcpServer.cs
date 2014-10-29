@@ -155,7 +155,7 @@ namespace ScadaCommunicationProtocol
                         OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
                         try
                         {
-                            await scpClientTask;
+                            await scpClientTask.ConfigureAwait(false);
                         }
                         catch
                         {
