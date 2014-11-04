@@ -90,6 +90,7 @@ namespace ScadaCommunicationProtocol
             {
                 byte[] packetbuffer = packet.GetBytes();
                 ScpPacket response = null;
+                System.Diagnostics.Stopwatch stopWatch = new System.Diagnostics.Stopwatch();
 
                 if (!packet.ToString().Contains("Temp"))
                 {
@@ -97,6 +98,7 @@ namespace ScadaCommunicationProtocol
                 }
                 if (packet.IsRequest())
                 {
+                    stopWatch.Start();
                     PendingRequest pendingRequest = new PendingRequest(packet.Id);
                     lock (pendingRequests)
                     {
@@ -116,9 +118,11 @@ namespace ScadaCommunicationProtocol
                     {
                         pendingRequests.Remove(pendingRequest);
                     }
+                    stopWatch.Stop();
                     if (pendingRequest.Response != null)
                     {
                         response = pendingRequest.Response;
+                        OnMessageEvent(new MessageEventArgs("Request time: " + stopWatch.ElapsedMilliseconds.ToString() + "ms"));
                     }
                     else
                     {
