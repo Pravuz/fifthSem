@@ -260,6 +260,17 @@ namespace fifthSem
                 if (filteredAlarms.Exists(at => at == type))
                 {
                     filteredAlarms.Remove(type);
+
+                    foreach (Alarm alarm in alarms.Where(al => al.Type == type && al.High == true && al.Filtered))
+                    {
+                        alarm.Filtered = false;
+                        updateNeeded = true;
+                    }
+                    if (updateNeeded)
+                    {
+                        OnAlarmsChanged();
+                        SendAlarmUpdate();
+                    }
                 }
             }
         }
@@ -523,6 +534,7 @@ namespace fifthSem
                 else
                 {
                     setMasterAlarmFilter(scpRequest.AlarmType, scpRequest.AlarmCommand == AlarmCommand.FilterOn);
+                    SendFilterUpdate();
                     OnAlarmFiltersChanged();
                 }
                 e.Response = new ScpAlarmResponse(true);

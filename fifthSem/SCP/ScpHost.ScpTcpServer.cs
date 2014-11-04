@@ -27,7 +27,7 @@ namespace ScadaCommunicationProtocol
 
             public List<String> Hosts = new List<String>();
             public event MessageEventHandler MessageEvent;
-            public event ScpInternalPacketEventHandler PacketEvent;
+            public event ScpPacketEventHandler PacketEvent;
             public event SlaveConnectionEventHandler SlaveConnectionEvent;
             private void OnMessageEvent(MessageEventArgs e)
             {
@@ -155,7 +155,7 @@ namespace ScadaCommunicationProtocol
                         OnSlaveConnectionEvent(this, new SlaveConnectionEventArgs(true, scpClient.Hostname));
                         try
                         {
-                            await scpClientTask;
+                            await scpClientTask.ConfigureAwait(false);
                         }
                         catch
                         {

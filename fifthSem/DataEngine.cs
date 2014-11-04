@@ -81,9 +81,6 @@ namespace fifthSem
         public event DataEngineNewTcpStatusHandler mNewTcpStatusHandler;
         public event DataEngineMessageHandler mMessageHandler;
 
-        //TODO: når com er frakoblet, og program starter på nytt, 
-        //ligger fortsatt comerror alarm høy, og må fjernes. 
-
         public DataEngine()
         {
             //logfile init. uses month and year for filename
@@ -136,6 +133,7 @@ namespace fifthSem
         {
             if (!deStarted)
             {
+
                 //subscribe to additional events
                 mScpHost.SlaveConnectionEvent += SlaveConnectionHandler;
                 mRS485.TempHandler += TempEventHandler;
@@ -159,10 +157,16 @@ namespace fifthSem
         /// </summary>
         public void stop()
         {
+            if (deStarted)
+            {
+                mScpHost.SlaveConnectionEvent -= SlaveConnectionHandler;
+                mRS485.TempHandler -= TempEventHandler;
+                mRS485.AlarmHandler -= AlarmEventHandler;
+            }
             deStarted = false;
             mTimer.Stop();
             mRS485.stopCom();
-            //trenger å disconnecte SCP. 
+            mScpHost.Stop();
         }
 
         /// <summary>
@@ -280,6 +284,11 @@ namespace fifthSem
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Master"));
                     mTimer.Stop();
                     mTimer.Start();
+                    if (!comErr)
+                    {
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    }
                     break;
                 case ScpConnectionStatus.Slave:
                     if (!mRS485.ComportEnabled && portNr != null) mRS485.startCom(portNr, 9600, 8, Parity.None, StopBits.One, Handshake.None);
@@ -290,9 +299,17 @@ namespace fifthSem
                         mTimer.Start();
                     }
                     logSync();
+                    if (!comErr)
+                    {
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.SerialPortError, AlarmCommand.Low, ScpHost.Name);
+                        mAlarmManager.SetAlarmStatus(AlarmTypes.RS485Error, AlarmCommand.Low, ScpHost.Name);
+                    }
                     break;
                 case ScpConnectionStatus.Waiting:
                     if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Waiting"));
+                    break;
+                case ScpConnectionStatus.Stopped:
+                    if (mNewTcpStatusHandler != null) mNewTcpStatusHandler(this, new DataEngineNewTcpStatusArgs("Stopped"));
                     break;
                 default:
                     break;
