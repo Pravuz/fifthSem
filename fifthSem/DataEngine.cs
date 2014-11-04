@@ -81,6 +81,9 @@ namespace fifthSem
         public event DataEngineNewTcpStatusHandler mNewTcpStatusHandler;
         public event DataEngineMessageHandler mMessageHandler;
 
+        //TODO: når com er frakoblet, og program starter på nytt, 
+        //ligger fortsatt comerror alarm høy, og må fjernes. 
+
         public DataEngine()
         {
             //logfile init. uses month and year for filename
@@ -159,6 +162,7 @@ namespace fifthSem
             deStarted = false;
             mTimer.Stop();
             mRS485.stopCom();
+            //trenger å disconnecte SCP. 
         }
 
         /// <summary>
