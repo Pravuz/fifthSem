@@ -11,10 +11,10 @@ using System.IO.Ports;
 
 namespace fifthSem
 {
-    public partial class Form1 : Form
+    public partial class MainForm : Form
     {
         private DataEngine mDataEngine;
-        public Form1()
+        public MainForm()
         {            
             InitializeComponent();
             serialPortNames();
